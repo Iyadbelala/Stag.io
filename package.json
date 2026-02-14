@@ -1,0 +1,20 @@
+{
+  "name": "stag-io",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Internship management platform",
+  "workspaces": [
+    "app",
+    "server",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"bun run dev:app\" \"bun run dev:server\"",
+    "dev:app": "bun run --filter app dev",
+    "dev:server": "bun run --filter @stag-io/server dev",
+    "build": "bun run --filter @stag-io/shared build && bun run --filter app build && bun run --filter @stag-io/server build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

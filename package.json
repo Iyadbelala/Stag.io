@@ -4,17 +4,19 @@
   "private": true,
   "description": "Internship management platform",
   "workspaces": [
-    "app",
-    "server",
+    "App",
+    "Server",
     "shared"
   ],
   "scripts": {
-    "dev": "concurrently \"bun run dev:app\" \"bun run dev:server\"",
-    "dev:app": "bun run --filter app dev",
-    "dev:server": "bun run --filter @stag-io/server dev",
-    "build": "bun run --filter @stag-io/shared build && bun run --filter app build && bun run --filter @stag-io/server build"
+    "dev": "concurrently \"npm run dev:app\" \"npm run dev:server\"",
+    "dev:app": "npm run dev --workspace=App",
+    "dev:server": "npm run dev --workspace=Server",
+    "build": "npm run build --workspace=shared && npm run build --workspace=App && npm run build --workspace=Server"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "@tailwindcss/postcss": "^4.1.18",
+    "concurrently": "^9.2.1",
+    "tailwindcss": "^4.1.18"
   }
 }

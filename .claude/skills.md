@@ -433,57 +433,57 @@ Admin:
 
 ```
 Stag.io/
-├── .claude                    # AI assistant context file
-├── skills.md                  # This file — knowledge base
-├── README.md                  # Project overview
-├── LICENSE                    # MIT License
 │
-├── src/
-│   ├── app/                   # Next.js App Router
-│   │   ├── (auth)/            # Auth group (login, register)
-│   │   ├── (student)/         # Student space pages
-│   │   ├── (company)/         # Company space pages
-│   │   ├── (admin)/           # Admin space pages
-│   │   ├── api/               # API routes (Protocol layer)
-│   │   ├── layout.tsx         # Root layout
-│   │   ├── page.tsx           # Landing page
-│   │   └── globals.css        # Global styles
+├── App/                            # Next.js frontend (monorepo workspace)
+│   ├── src/
+│   │   ├── app/                    # Next.js App Router (route pages)
+│   │   │   ├── layout.tsx          # Root layout (ThemeProvider, Navbar, Footer)
+│   │   │   ├── page.tsx            # Landing page
+│   │   │   ├── globals.css         # Tailwind v4 theme + dark mode + animations
+│   │   │   ├── about/              # About page route
+│   │   │   ├── login/              # Sign-in route
+│   │   │   ├── register/           # Register route
+│   │   │   ├── blog/ contact/ cookies/ faqs/ help/ privacy/ terms/
+│   │   │   └── ...
+│   │   │
+│   │   ├── Components/             # Reusable UI components
+│   │   │   ├── Logo.tsx            # Brand mark (size, variant props)
+│   │   │   ├── navbar.tsx          # Sticky navbar + dark mode toggle
+│   │   │   ├── footer.tsx          # Multi-column footer
+│   │   │   ├── ThemeContext.tsx     # Dark mode provider (View Transitions API)
+│   │   │   ├── FloatingOrbs.tsx    # Animated blurred background shapes
+│   │   │   ├── FormField.tsx       # Glass-style input + PasswordField
+│   │   │   ├── FieldError.tsx      # Inline validation error with icon
+│   │   │   ├── AuthBrandPanel.tsx  # Auth page left sidebar
+│   │   │   └── slide.tsx           # Carousel / slider component
+│   │   │
+│   │   └── screen/                 # Full-page screen components
+│   │       ├── Homepage/           # Landing page content
+│   │       ├── About/              # About page content
+│   │       ├── Authentication/     # Sign-in / Register (split layout, glass)
+│   │       └── Footer/             # Blog, Contact, Cookies, FAQs, Help, Privacy, Terms
 │   │
-│   ├── components/            # Reusable UI components
-│   │   ├── ui/                # Base components (Button, Input, Card)
-│   │   ├── layout/            # Navbar, Footer, Sidebar
-│   │   └── shared/            # Shared feature components
-│   │
-│   ├── context/               # Context layer (business logic)
-│   │   ├── services/          # Service functions (use cases)
-│   │   └── hooks/             # Custom React hooks
-│   │
-│   ├── model/                 # Model layer (data access)
-│   │   ├── schema/            # Database schemas
-│   │   ├── queries/           # Database query functions
-│   │   └── migrations/        # Database migrations
-│   │
-│   ├── lib/                   # Utility libraries
-│   │   ├── db.ts              # Database connection (Neon)
-│   │   ├── auth.ts            # Authentication utilities
-│   │   └── utils.ts           # General utilities
-│   │
-│   └── types/                 # TypeScript type definitions
-│       ├── student.ts
-│       ├── company.ts
-│       ├── offer.ts
-│       ├── application.ts
-│       └── api.ts
+│   ├── public/                     # Static assets
+│   ├── next.config.ts
+│   ├── tsconfig.json
+│   └── package.json
 │
-├── public/                    # Static assets
-│   ├── logo.svg               # Stag.io logo
-│   └── images/
+├── Server/                         # Express.js backend (monorepo workspace)
+│   └── src/
+│       ├── app.ts
+│       ├── index.ts
+│       └── protocol/routes/
 │
-├── tailwind.config.ts         # Tailwind with design system colors
-├── tsconfig.json              # TypeScript config (strict)
-├── next.config.ts             # Next.js configuration
-├── package.json
-└── .env.local                 # Environment variables (never commit)
+├── shared/                         # Shared types & constants
+│   └── src/
+│       ├── constants/              # roles.ts, status.ts
+│       └── types/                  # index.ts
+│
+├── .claude/
+│   └── skills.md                   # This knowledge base
+├── package.json                    # Monorepo root (npm workspaces)
+├── README.md
+└── LICENSE
 ```
 
 ---
@@ -549,3 +549,20 @@ NEXTAUTH_URL=         # http://localhost:3000 (dev)
 | | | Defined tech stack (Next.js, React, TypeScript, PostgreSQL/Neon, Express) |
 | | | Planned MCP architecture and folder structure |
 | | | Documented three user spaces and core features |
+| 2026-02-19 | Iyed Belala | Built **About** page (`screen/About/page.tsx`) — hero, mission pillars, timeline, who we serve, CTA |
+| | | Implemented **dark mode** with explosion animation (View Transitions API `clip-path` circle reveal, fallback overlay for older browsers) |
+| | | Created `ThemeContext` provider — `useTheme()` hook, localStorage persistence, system preference detection |
+| | | Added `dark-section` CSS class + `html.dark` variable overrides in `globals.css` |
+| | | Moved dark mode toggle to **mobile navbar top bar** (always visible next to hamburger) |
+| | | Built **Authentication** page — split layout: brand panel (left 45%) + glassmorphism form (right) |
+| | | University email validation regex `@univ-xxxx.dz`, auto-detected university from email domain |
+| | | Added `FloatingOrbs` animated background, `float-orb` CSS keyframe animation |
+| | | **Component extraction refactor** — extracted 6 reusable components: |
+| | | — `Logo.tsx` (brand mark, `size` + `variant` props) |
+| | | — `FloatingOrbs.tsx` (animated blurred shapes, `count` prop) |
+| | | — `FieldError.tsx` (inline validation error with icon) |
+| | | — `FormField.tsx` + `PasswordField` (glass-style inputs with leading icon, error/hint) |
+| | | — `AuthBrandPanel.tsx` (auth left sidebar with brand, hero copy, feature pills) |
+| | | Refactored `navbar.tsx` and `footer.tsx` to use `<Logo />` component |
+| | | Reduced Authentication page from ~560 lines → ~270 lines |
+| | | Updated `README.md` project structure, features list, and contributing guide |

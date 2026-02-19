@@ -67,3 +67,71 @@ h3 {
   font-weight: 400;
   color: var(--color-coffee-dark);
 }
+
+/* ============================================
+   Dark Mode — Variable Overrides
+   ============================================ */
+
+html.dark {
+  --color-coffee-dark: #E8D5C4;
+  --color-coffee-warm: #C8946A;
+  --color-coffee-gold: #D4B87A;
+
+  --color-surface-cream: #1A1A2E;
+  --color-surface-white: #12121F;
+  --color-surface-sand: #252538;
+
+  --color-text-primary: #E8E0D8;
+  --color-text-secondary: #B0A89F;
+  --color-text-muted: #7A7470;
+  --color-text-inverse: #FDF8F3;
+
+  --color-logo-sage: #9DAF93;
+
+  --color-status-success: #5FA06E;
+  --color-status-warning: #E0BC4A;
+  --color-status-error: #E05545;
+  --color-status-info: #7BA0C5;
+}
+
+/* Sections that must keep a dark bg even in dark mode */
+html.dark .dark-section {
+  background-color: #0D0D1A !important;
+}
+
+/* ============================================
+   View Transitions — Explosion Effect
+   ============================================ */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  z-index: 99999;
+}
+
+::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* ============================================
+   Floating Orbs — Auth Page Animation
+   ============================================ */
+
+@keyframes float-orb {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(30px, -40px) scale(1.1);
+  }
+  50% {
+    transform: translate(-20px, 20px) scale(0.95);
+  }
+  75% {
+    transform: translate(15px, 35px) scale(1.05);
+  }
+}

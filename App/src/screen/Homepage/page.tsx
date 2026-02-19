@@ -220,7 +220,7 @@ export default function Homepage() {
       </section>
 
       {/* ======== CTA BANNER ======== */}
-      <section className="bg-coffee-dark py-20">
+      <section className="bg-coffee-dark dark-section py-20">
         <div className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="font-heading text-3xl font-semibold !text-text-inverse sm:text-4xl">
             Ready to Transform Your{" "}

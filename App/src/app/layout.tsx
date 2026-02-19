@@ -3,6 +3,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/Components/navbar";
 import Footer from "@/Components/footer";
+import { ThemeProvider } from "@/Components/ThemeContext";
 
 const playfair = Playfair_Display({
   variable: "--font-heading",
@@ -32,9 +33,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="min-h-screen bg-surface-cream font-body text-text-primary antialiased" suppressHydrationWarning>
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        <ThemeProvider>
+          <Navbar />
+          <main>{children}</main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );

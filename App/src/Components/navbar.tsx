@@ -2,30 +2,26 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { HiOutlineMenuAlt3, HiX } from "react-icons/hi";
+import { HiOutlineMenuAlt3, HiX, HiOutlineSun, HiOutlineMoon } from "react-icons/hi";
+import { useTheme } from "@/Components/ThemeContext";
+import Logo from "@/Components/Logo";
 
 const navLinks = [
   { label: "Home", href: "/" },
   { label: "Internships", href: "/internships" },
   { label: "Companies", href: "/companies" },
-  { label: "Universities", href: "/universities" },
   { label: "About", href: "/about" },
 ];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { isDark, toggleTheme, toggleRef } = useTheme();
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-surface-sand bg-surface-white/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
         {/* ---- Logo ---- */}
-        <Link href="/" className="flex items-center gap-1 select-none">
-          <h1 className="text-2xl font-heading font-bold tracking-tight">
-            <span className="text-coffee-dark">Stag</span>
-            <span className="text-coffee-gold">.</span>
-            <span className="text-logo-sage">io</span>
-          </h1>
-        </Link>
+        <Logo />
 
         {/* ---- Desktop Links ---- */}
         <ul className="hidden items-center gap-8 md:flex">
@@ -44,6 +40,23 @@ export default function Navbar() {
 
         {/* ---- Desktop CTA ---- */}
         <div className="hidden items-center gap-3 md:flex">
+          {/* Theme Toggle */}
+          <button
+            ref={toggleRef}
+            onClick={toggleTheme}
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-surface-sand text-coffee-warm transition-colors hover:bg-coffee-gold/20 cursor-pointer"
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            <HiOutlineSun
+              size={18}
+              className={`absolute transition-all duration-300 ${isDark ? "rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"}`}
+            />
+            <HiOutlineMoon
+              size={18}
+              className={`absolute transition-all duration-300 ${isDark ? "rotate-0 scale-100 opacity-100" : "-rotate-90 scale-0 opacity-0"}`}
+            />
+          </button>
+
           <Link
             href="/login"
             className="rounded-button border-2 border-coffee-warm px-5 py-2 text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
@@ -59,13 +72,31 @@ export default function Navbar() {
         </div>
 
         {/* ---- Mobile Toggle ---- */}
-        <button
-          onClick={() => setMobileOpen((prev) => !prev)}
-          className="text-coffee-dark md:hidden"
-          aria-label="Toggle menu"
-        >
-          {mobileOpen ? <HiX size={26} /> : <HiOutlineMenuAlt3 size={26} />}
-        </button>
+        <div className="flex items-center gap-3 md:hidden">
+          {/* Mobile Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="relative flex h-9 w-9 items-center justify-center rounded-full border border-surface-sand text-coffee-warm transition-colors hover:bg-coffee-gold/20 cursor-pointer"
+            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+          >
+            <HiOutlineSun
+              size={18}
+              className={`absolute transition-all duration-300 ${isDark ? "rotate-90 scale-0 opacity-0" : "rotate-0 scale-100 opacity-100"}`}
+            />
+            <HiOutlineMoon
+              size={18}
+              className={`absolute transition-all duration-300 ${isDark ? "rotate-0 scale-100 opacity-100" : "-rotate-90 scale-0 opacity-0"}`}
+            />
+          </button>
+
+          <button
+            onClick={() => setMobileOpen((prev) => !prev)}
+            className="text-coffee-dark"
+            aria-label="Toggle menu"
+          >
+            {mobileOpen ? <HiX size={26} /> : <HiOutlineMenuAlt3 size={26} />}
+          </button>
+        </div>
       </div>
 
       {/* ---- Mobile Menu ---- */}

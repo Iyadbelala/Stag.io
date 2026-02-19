@@ -68,16 +68,46 @@ npm run dev
 ## Project Structure
 
 ```
-src/
-├── app/           # Next.js App Router (pages & API routes)
-├── components/    # Reusable UI components
-├── context/       # Business logic layer (MCP: Context)
-├── model/         # Data access layer (MCP: Model)
-├── lib/           # Utilities and config
-└── types/         # TypeScript type definitions
+Stag.io/
+├── App/                        # Next.js frontend (monorepo workspace)
+│   └── src/
+│       ├── app/                # App Router — route pages
+│       │   ├── layout.tsx      # Root layout (ThemeProvider, Navbar, Footer)
+│       │   ├── page.tsx        # Landing / Homepage
+│       │   ├── globals.css     # Tailwind v4 theme + dark mode overrides
+│       │   ├── about/          # About page
+│       │   ├── login/          # Sign-in route
+│       │   ├── register/       # Register route
+│       │   ├── blog/ contact/ cookies/ faqs/ help/ privacy/ terms/
+│       │   └── ...
+│       ├── Components/         # Reusable UI components
+│       │   ├── Logo.tsx        # Brand mark (size / variant props)
+│       │   ├── navbar.tsx      # Sticky navbar + dark mode toggle
+│       │   ├── footer.tsx      # Site footer
+│       │   ├── ThemeContext.tsx # Dark mode provider (View Transitions API)
+│       │   ├── FloatingOrbs.tsx # Animated background shapes
+│       │   ├── FormField.tsx   # Glass-style form input + PasswordField
+│       │   ├── FieldError.tsx  # Inline validation error
+│       │   ├── AuthBrandPanel.tsx # Auth left sidebar
+│       │   └── slide.tsx       # Carousel / slider
+│       └── screen/             # Full-page screen components
+│           ├── Homepage/
+│           ├── About/
+│           ├── Authentication/
+│           └── Footer/         # Blog, Contact, Cookies, FAQs, etc.
+├── Server/                     # Express.js backend (monorepo workspace)
+│   └── src/
+│       ├── app.ts
+│       ├── index.ts
+│       └── protocol/routes/
+├── shared/                     # Shared types & constants
+│   └── src/
+│       ├── constants/
+│       └── types/
+└── package.json                # Monorepo root (npm workspaces)
 ```
 
-> See [skills.md](skills.md) for the full folder structure and architecture details.
+> See [`.claude/skills.md`](.claude/skills.md) for the complete design system, architecture details, and knowledge base.
 
 ## Team
 
@@ -87,13 +117,22 @@ src/
 | **Ouael Bensouici** | Developer |
 | **Charaf Eddin Zerouki** | Developer |
 
+## Features Implemented
+
+- **Homepage** — Hero section, stats, feature highlights, carousel slides, CTA
+- **About Page** — Mission pillars, timeline, "Who We Serve" section
+- **Authentication** — Sign-in / Register with split-layout glassmorphism design, university email validation (`@univ-xxxx.dz`), auto-detected university, password visibility toggle
+- **Dark Mode** — Explosion animation from toggle switch (View Transitions API with fallback), system preference detection, localStorage persistence
+- **Responsive Navbar** — Desktop + mobile layouts, theme toggle always visible
+- **Footer** — Multi-column nav, social links, dark-section styling
+- **Component Architecture** — Extracted reusable components (Logo, FloatingOrbs, FormField, PasswordField, FieldError, AuthBrandPanel)
+
 ## Contributing
 
-1. Read [`.claude`](.claude) for project context and coding rules
-2. Read [`skills.md`](skills.md) for the knowledge base and design system
-3. Create a branch: `feature/your-feature-name`
-4. Use Conventional Commits: `feat:`, `fix:`, `docs:`, etc.
-5. Submit a Pull Request
+1. Read [`.claude/skills.md`](.claude/skills.md) for the knowledge base and design system
+2. Create a branch: `feature/your-feature-name`
+3. Use Conventional Commits: `feat:`, `fix:`, `docs:`, etc.
+4. Submit a Pull Request
 
 ## License
 

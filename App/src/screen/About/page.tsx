@@ -9,91 +9,51 @@ import {
   HiOutlineGlobe,
   HiOutlineHeart,
   HiOutlineShieldCheck,
-  HiOutlineSparkles,
 } from "react-icons/hi";
+import { useLanguage } from "@/Components/LanguageContext";
+import { type ReactNode } from "react";
 
 /* ============================================
-   Mission Pillars
+   Icon arrays (static)
    ============================================ */
-const pillars = [
-  {
-    icon: <HiOutlineLightBulb size={28} />,
-    title: "Innovation",
-    description:
-      "We leverage modern technology to simplify every step of the internship lifecycle — from discovery to completion.",
-  },
-  {
-    icon: <HiOutlineUserGroup size={28} />,
-    title: "Collaboration",
-    description:
-      "We bridge the gap between students, companies, and universities, creating a connected ecosystem that benefits everyone.",
-  },
-  {
-    icon: <HiOutlineShieldCheck size={28} />,
-    title: "Trust & Transparency",
-    description:
-      "Every partner is verified and every process is transparent, so all stakeholders can engage with confidence.",
-  },
-  {
-    icon: <HiOutlineHeart size={28} />,
-    title: "Student-First",
-    description:
-      "Students are at the heart of everything we build. Their growth and success drive every product decision we make.",
-  },
+const pillarIcons: ReactNode[] = [
+  <HiOutlineLightBulb key="p1" size={28} />,
+  <HiOutlineUserGroup key="p2" size={28} />,
+  <HiOutlineShieldCheck key="p3" size={28} />,
+  <HiOutlineHeart key="p4" size={28} />,
 ];
 
-/* ============================================
-   Timeline Milestones
-   ============================================ */
-const milestones = [
-  {
-    year: "Jan 2026",
-    title: "The Idea Takes Shape",
-    description:
-      "A group of students and educators at Université Constantine 2 identified the need for a unified internship platform.",
-  },
-  {
-    year: "Feb 2026",
-    title: "Building the Foundation",
-    description:
-      "Development began on Stag.io's core platform — smart matching, application tracking, and university oversight tools.",
-  },
-  {
-    year: "Jun 2026",
-    title: "Launch & Growth",
-    description:
-      "Stag.io officially launches, connecting thousands of students with internship opportunities across multiple industries.",
-  },
-];
-
-/* ============================================
-   Who We Serve
-   ============================================ */
-const audiences = [
-  {
-    icon: <HiOutlineAcademicCap size={32} />,
-    title: "Students",
-    description:
-      "Discover internships matched to your skills and interests, apply seamlessly, and track every milestone on one dashboard.",
-  },
-  {
-    icon: <HiOutlineBriefcase size={32} />,
-    title: "Companies",
-    description:
-      "Post opportunities, review top candidates, and manage your intern pipeline with modern, efficient workflows.",
-  },
-  {
-    icon: <HiOutlineGlobe size={32} />,
-    title: "Universities",
-    description:
-      "Monitor student progress, validate internship placements, and ensure academic alignment across your programs.",
-  },
+const audienceIcons: ReactNode[] = [
+  <HiOutlineAcademicCap key="a1" size={32} />,
+  <HiOutlineBriefcase key="a2" size={32} />,
+  <HiOutlineGlobe key="a3" size={32} />,
 ];
 
 /* ============================================
    Component
    ============================================ */
 export default function AboutPage() {
+  const { t } = useLanguage();
+
+  const pillars = [1, 2, 3, 4].map((n, i) => ({
+    icon: pillarIcons[i],
+    title: t(`about.pillar.${n}.title`),
+    description: t(`about.pillar.${n}.desc`),
+  }));
+
+  const milestones = [1, 2, 3].map((n) => ({
+    year: t(`about.milestone.${n}.year`),
+    title: t(`about.milestone.${n}.title`),
+    description: t(`about.milestone.${n}.desc`),
+  }));
+
+  const audienceKeys = ["students", "companies", "universities"] as const;
+  const audiences = audienceKeys.map((key, i) => ({
+    icon: audienceIcons[i],
+    title: t(`about.serve.${key}.title`),
+    description: t(`about.serve.${key}.desc`),
+  }));
+
   return (
     <>
       {/* ======== HERO ======== */}
@@ -104,14 +64,12 @@ export default function AboutPage() {
         <div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 py-28 text-center lg:py-36">
 
           <h1 className="max-w-3xl text-4xl font-heading font-bold leading-tight text-coffee-dark sm:text-5xl lg:text-6xl">
-            Bridging the Gap Between{" "}
-            <span className="text-coffee-gold">Talent&nbsp;&amp;&nbsp;Opportunity</span>
+            {t("about.hero.title")}
+            <span className="text-coffee-gold">{t("about.hero.titleAccent")}</span>
           </h1>
 
           <p className="mt-6 max-w-xl text-base leading-relaxed text-text-secondary sm:text-lg">
-            Stag.io is an internship management platform that connects students,
-            companies, and universities — making internship discovery,
-            application, and oversight effortless for everyone.
+            {t("about.hero.subtitle")}
           </p>
         </div>
       </section>
@@ -120,11 +78,10 @@ export default function AboutPage() {
       <section className="border-t border-surface-sand bg-surface-white py-20">
         <div className="mx-auto max-w-6xl px-6">
           <h2 className="mb-2 text-center font-heading text-3xl font-semibold text-coffee-dark">
-            Our Mission
+            {t("about.mission.title")}
           </h2>
           <p className="mx-auto mb-14 max-w-lg text-center text-sm text-text-muted">
-            We believe every student deserves access to meaningful professional
-            experiences. Our mission is to make that a reality.
+            {t("about.mission.subtitle")}
           </p>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -152,11 +109,10 @@ export default function AboutPage() {
       <section className="bg-surface-cream py-20">
         <div className="mx-auto max-w-3xl px-6">
           <h2 className="mb-2 text-center font-heading text-3xl font-semibold text-coffee-dark">
-            Our Story
+            {t("about.story.title")}
           </h2>
           <p className="mx-auto mb-14 max-w-lg text-center text-sm text-text-muted">
-            From a university project to a platform serving thousands — here is
-            how Stag.io came to life.
+            {t("about.story.subtitle")}
           </p>
 
           <div className="relative border-l-2 border-coffee-gold/30 pl-8">
@@ -189,11 +145,10 @@ export default function AboutPage() {
       <section className="border-t border-surface-sand bg-surface-white py-20">
         <div className="mx-auto max-w-6xl px-6">
           <h2 className="mb-2 text-center font-heading text-3xl font-semibold text-coffee-dark">
-            Who We Serve
+            {t("about.serve.title")}
           </h2>
           <p className="mx-auto mb-14 max-w-lg text-center text-sm text-text-muted">
-            Stag.io is designed for every stakeholder in the internship
-            ecosystem.
+            {t("about.serve.subtitle")}
           </p>
 
           <div className="grid gap-8 sm:grid-cols-3">
@@ -220,27 +175,25 @@ export default function AboutPage() {
       {/* ======== CTA BANNER ======== */}
       <section className="bg-coffee-dark dark-section py-20">
         <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="font-heading text-3xl font-semibold !text-text-inverse sm:text-4xl">
-            Join Us in Shaping the{" "}
-            <span className="text-coffee-gold">Future of Internships</span>
+          <h2 className="font-heading text-3xl font-semibold text-text-inverse! sm:text-4xl">
+            {t("aboutCta.title")}
+            <span className="text-coffee-gold">{t("aboutCta.titleAccent")}</span>
           </h2>
           <p className="mt-4 text-sm leading-relaxed text-text-inverse/90">
-            Whether you&apos;re a student looking for your first opportunity, a
-            company building your talent pipeline, or a university supporting
-            your students — Stag.io is here for you.
+            {t("aboutCta.subtitle")}
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <Link
               href="/register"
               className="rounded-button bg-coffee-gold px-8 py-3.5 text-sm font-semibold text-coffee-dark shadow-lg transition-all hover:bg-coffee-warm hover:text-coffee-dark"
             >
-              Get Started Free
+              {t("aboutCta.primary")}
             </Link>
             <Link
               href="/contact"
               className="rounded-button border-2 border-white/30 px-8 py-3.5 text-sm font-medium text-white transition-colors hover:border-coffee-gold hover:text-coffee-gold"
             >
-              Contact Us
+              {t("aboutCta.secondary")}
             </Link>
           </div>
         </div>

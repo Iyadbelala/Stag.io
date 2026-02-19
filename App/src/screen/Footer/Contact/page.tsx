@@ -79,7 +79,7 @@ export default function ContactPage() {
 
           <button
             type="submit"
-            className="self-start rounded-[--radius-button] bg-coffee-warm px-6 py-2.5 text-sm font-medium text-text-inverse transition-colors hover:bg-coffee-gold"
+            className="w-full rounded-button bg-coffee-warm px-8 py-3.5 text-sm font-medium text-text-inverse shadow-md transition-all hover:bg-coffee-gold hover:shadow-lg cursor-pointer"
           >
             Send Message
           </button>

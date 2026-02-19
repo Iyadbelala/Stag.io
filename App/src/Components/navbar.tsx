@@ -1,21 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { HiOutlineMenuAlt3, HiX, HiOutlineSun, HiOutlineMoon } from "react-icons/hi";
+import { HiOutlineMenuAlt3, HiX, HiOutlineSun, HiOutlineMoon, HiOutlineTranslate } from "react-icons/hi";
 import { useTheme } from "@/Components/ThemeContext";
+import { useLanguage } from "@/Components/LanguageContext";
 import Logo from "@/Components/Logo";
+import type { Lang } from "@/i18n";
 
 const navLinks = [
-  { label: "Home", href: "/" },
-  { label: "Internships", href: "/internships" },
-  { label: "Companies", href: "/companies" },
-  { label: "About", href: "/about" },
+  { labelKey: "nav.home", href: "/" },
+  { labelKey: "nav.internships", href: "/internships" },
+  { labelKey: "nav.companies", href: "/companies" },
+  { labelKey: "nav.about", href: "/about" },
+];
+
+const languages: { code: Lang; label: string }[] = [
+  { code: "en", label: "English" },
+  { code: "fr", label: "Français" },
+  { code: "ar", label: "العربية" },
 ];
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
+  const langRef = useRef<HTMLDivElement>(null);
   const { isDark, toggleTheme, toggleRef } = useTheme();
+  const { lang, setLanguage, t } = useLanguage();
+
+  /* Close language dropdown on outside click */
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (langRef.current && !langRef.current.contains(e.target as Node)) {
+        setLangOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-surface-sand bg-surface-white/80 backdrop-blur-md">
@@ -32,7 +54,7 @@ export default function Navbar() {
                 className="relative font-body text-sm font-medium text-text-secondary transition-colors hover:text-coffee-dark
                   after:absolute after:bottom-[-4px] after:left-0 after:h-[2px] after:w-0 after:bg-coffee-gold after:transition-all after:duration-300 hover:after:w-full"
               >
-                {link.label}
+                {t(link.labelKey)}
               </Link>
             </li>
           ))}
@@ -40,6 +62,39 @@ export default function Navbar() {
 
         {/* ---- Desktop CTA ---- */}
         <div className="hidden items-center gap-3 md:flex">
+          {/* Language Switcher */}
+          <div ref={langRef} className="relative">
+            <button
+              onClick={() => setLangOpen((prev) => !prev)}
+              className="flex h-9 items-center gap-1.5 rounded-full border border-surface-sand px-3 text-coffee-warm transition-colors hover:bg-coffee-gold/20 cursor-pointer"
+              aria-label="Change language"
+            >
+              <HiOutlineTranslate size={18} />
+              <span className="text-xs font-medium uppercase">{lang}</span>
+            </button>
+
+            {langOpen && (
+              <div className="absolute right-0 mt-2 w-36 overflow-hidden rounded-card border border-surface-sand bg-surface-white shadow-lg">
+                {languages.map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => {
+                      setLanguage(l.code);
+                      setLangOpen(false);
+                    }}
+                    className={`flex w-full items-center gap-2 px-4 py-2.5 text-sm transition-colors cursor-pointer ${
+                      lang === l.code
+                        ? "bg-coffee-gold/10 font-medium text-coffee-dark"
+                        : "text-text-secondary hover:bg-surface-cream"
+                    }`}
+                  >
+                    {l.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Theme Toggle */}
           <button
             ref={toggleRef}
@@ -61,18 +116,32 @@ export default function Navbar() {
             href="/login"
             className="rounded-button border-2 border-coffee-warm px-5 py-2 text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
           >
-            Sign In
+            {t("nav.signIn")}
           </Link>
           <Link
             href="/register"
             className="rounded-button bg-coffee-warm px-5 py-2 text-sm font-body font-medium text-text-inverse transition-colors hover:bg-coffee-gold"
           >
-            Get Started
+            {t("nav.getStarted")}
           </Link>
         </div>
 
         {/* ---- Mobile Toggle ---- */}
         <div className="flex items-center gap-3 md:hidden">
+          {/* Mobile Language Switcher */}
+          <button
+            onClick={() => {
+              const codes = languages.map((l) => l.code);
+              const idx = codes.indexOf(lang);
+              setLanguage(codes[(idx + 1) % codes.length]);
+            }}
+            className="flex h-9 items-center gap-1.5 rounded-full border border-surface-sand px-3 text-coffee-warm transition-colors hover:bg-coffee-gold/20 cursor-pointer"
+            aria-label="Change language"
+          >
+            <HiOutlineTranslate size={18} />
+            <span className="text-xs font-medium uppercase">{lang}</span>
+          </button>
+
           {/* Mobile Theme Toggle */}
           <button
             onClick={toggleTheme}
@@ -113,7 +182,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="font-body text-sm font-medium text-text-secondary transition-colors hover:text-coffee-dark"
             >
-              {link.label}
+              {t(link.labelKey)}
             </Link>
           ))}
 
@@ -125,14 +194,14 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="rounded-button border-2 border-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
             >
-              Sign In
+              {t("nav.signIn")}
             </Link>
             <Link
               href="/register"
               onClick={() => setMobileOpen(false)}
               className="rounded-button bg-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-text-inverse transition-colors hover:bg-coffee-gold"
             >
-              Get Started
+              {t("nav.getStarted")}
             </Link>
           </div>
         </div>

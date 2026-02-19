@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/Components/navbar";
 import Footer from "@/Components/footer";
 import { ThemeProvider } from "@/Components/ThemeContext";
+import { LanguageProvider } from "@/Components/LanguageContext";
 
 const playfair = Playfair_Display({
   variable: "--font-heading",
@@ -34,9 +35,11 @@ export default function RootLayout({
     <html lang="en" className={`${playfair.variable} ${inter.variable}`} suppressHydrationWarning>
       <body className="min-h-screen bg-surface-cream font-body text-text-primary antialiased" suppressHydrationWarning>
         <ThemeProvider>
-          <Navbar />
-          <main>{children}</main>
-          <Footer />
+          <LanguageProvider>
+            <Navbar />
+            <main>{children}</main>
+            <Footer />
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

@@ -17,7 +17,7 @@ export default function Logo({
   variant = "default",
 }: LogoProps) {
   const mainColor =
-    variant === "light" ? "!text-text-inverse" : "text-coffee-dark";
+    variant === "light" ? "text-text-inverse!" : "text-coffee-dark";
 
   return (
     <Link href="/" className="inline-block select-none">

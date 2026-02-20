@@ -18,7 +18,6 @@ const navLinks = [
 const languages: { code: Lang; label: string }[] = [
   { code: "en", label: "English" },
   { code: "fr", label: "Français" },
-  { code: "ar", label: "العربية" },
 ];
 
 export default function Navbar() {

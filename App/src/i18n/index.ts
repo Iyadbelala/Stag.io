@@ -1,9 +1,8 @@
 import en from "./en";
 import fr from "./fr";
-import ar from "./ar";
 
-export type Lang = "en" | "fr" | "ar";
+export type Lang = "en" | "fr";
 
-const dictionaries: Record<Lang, Record<string, string>> = { en, fr, ar };
+const dictionaries: Record<Lang, Record<string, string>> = { en, fr };
 
 export default dictionaries;

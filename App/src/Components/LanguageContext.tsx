@@ -31,9 +31,9 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  /* Sync dir attribute + localStorage on change */
+  /* Sync lang attribute + localStorage on change */
   useEffect(() => {
-    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = "ltr";
     document.documentElement.lang = lang;
     localStorage.setItem(STORAGE_KEY, lang);
   }, [lang]);

@@ -17,7 +17,7 @@ interface SlideProps {
 
 export default function Slide({ slides, autoPlayMs = 5000 }: SlideProps) {
   const { lang } = useLanguage();
-  const isRtl = lang === "ar";
+  const isRtl = false;
   const [current, setCurrent] = useState(0);
 
   const next = useCallback(

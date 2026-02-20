@@ -41,7 +41,7 @@ export default function Footer() {
             </span>
             <Link href="/internships" className={linkClass}>{t("footer.internships")}</Link>
             <Link href="/companies" className={linkClass}>{t("footer.companies")}</Link>
-            <Link href="/universities" className={linkClass}>{t("footer.universities")}</Link>
+            
             <Link href="/how-it-works" className={linkClass}>{t("footer.howItWorks")}</Link>
           </nav>
 

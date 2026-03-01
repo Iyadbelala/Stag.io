@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import authRouter from './auth.routes';
+import profileRouter from './profile.routes';
 
 export const router = Router();
 
@@ -20,6 +22,8 @@ router.get('/', (_req, res) => {
   });
 });
 
-// Route imports will go here as you build them:
-// import authRoutes from './auth.routes';
-// router.use('/auth', authRoutes);
+// Auth routes
+router.use('/auth', authRouter);
+
+// Profile routes
+router.use('/profile', profileRouter);

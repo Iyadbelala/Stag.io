@@ -6,6 +6,7 @@ const en: Record<string, string> = {
   "nav.about": "About",
   "nav.signIn": "Sign In",
   "nav.getStarted": "Get Started",
+  "nav.signOut": "Sign Out",
 
   /* ---- Footer ---- */
   "footer.description":
@@ -246,6 +247,12 @@ const en: Record<string, string> = {
   "auth.error.confirmRequired": "Please confirm your password.",
   "auth.error.passwordMismatch": "Passwords do not match.",
   "auth.error.termsRequired": "You must accept the terms.",
+  "auth.firstName": "First Name",
+  "auth.lastName": "Last Name",
+  "auth.firstNamePlaceholder": "Yacine",
+  "auth.lastNamePlaceholder": "Benali",
+  "auth.error.firstNameRequired": "First name is required.",
+  "auth.error.lastNameRequired": "Last name is required.",
 
   /* ---- Auth Brand Panel ---- */
   "brand.title1": "Your Internship",

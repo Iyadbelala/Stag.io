@@ -6,6 +6,7 @@ const fr: Record<string, string> = {
   "nav.about": "À propos",
   "nav.signIn": "Connexion",
   "nav.getStarted": "Commencer",
+  "nav.signOut": "Déconnexion",
 
   /* ---- Footer ---- */
   "footer.description":
@@ -254,6 +255,12 @@ const fr: Record<string, string> = {
   "auth.error.passwordMismatch":
     "Les mots de passe ne correspondent pas.",
   "auth.error.termsRequired": "Vous devez accepter les conditions.",
+  "auth.firstName": "Prénom",
+  "auth.lastName": "Nom",
+  "auth.firstNamePlaceholder": "Yacine",
+  "auth.lastNamePlaceholder": "Benali",
+  "auth.error.firstNameRequired": "Le prénom est requis.",
+  "auth.error.lastNameRequired": "Le nom est requis.",
 
   /* ---- Auth Brand Panel ---- */
   "brand.title1": "Votre stage",

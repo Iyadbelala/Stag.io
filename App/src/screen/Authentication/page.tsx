@@ -2,11 +2,12 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   HiOutlineMail,
   HiOutlineLockClosed,
   HiOutlineAcademicCap,
-  HiOutlineCheckCircle,
+  HiOutlineUser,
 } from "react-icons/hi";
 
 import Logo from "@/Components/Logo";
@@ -15,6 +16,7 @@ import FieldError from "@/Components/FieldError";
 import { FormField, PasswordField } from "@/Components/FormField";
 import AuthBrandPanel from "@/Components/AuthBrandPanel";
 import { useLanguage } from "@/Components/LanguageContext";
+import { useAuth } from "@/Components/AuthContext";
 
 /* ============================================
    Email validation
@@ -26,6 +28,8 @@ const UNIV_EMAIL_REGEX = /^[^\s@]+@univ-[a-zA-Z0-9]+\.dz$/;
    ============================================ */
 export default function AuthenticationPage() {
   const { t } = useLanguage();
+  const router = useRouter();
+  const { login, register } = useAuth();
   const [mode, setMode] = useState<"login" | "register">("login");
 
   /* ---- Shared fields ---- */
@@ -33,13 +37,16 @@ export default function AuthenticationPage() {
   const [password, setPassword] = useState("");
 
   /* ---- Register-only fields ---- */
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [university, setUniversity] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
 
-  /* ---- Errors ---- */
+  /* ---- State ---- */
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   /* ---- Auto-detect university from email ---- */
   const handleEmailChange = useCallback((value: string) => {
@@ -66,6 +73,8 @@ export default function AuthenticationPage() {
       errs.password = t("auth.error.passwordMin");
 
     if (mode === "register") {
+      if (!firstName.trim()) errs.firstName = t("auth.error.firstNameRequired");
+      if (!lastName.trim()) errs.lastName = t("auth.error.lastNameRequired");
       if (!confirmPassword)
         errs.confirmPassword = t("auth.error.confirmRequired");
       else if (confirmPassword !== password)
@@ -75,26 +84,52 @@ export default function AuthenticationPage() {
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
-  }, [email, password, confirmPassword, agreeTerms, mode, t]);
+  }, [email, password, firstName, lastName, confirmPassword, agreeTerms, mode, t]);
+
+  const isLogin = mode === "login";
 
   /* ---- Submit ---- */
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    async (e: React.FormEvent) => {
       e.preventDefault();
+      setApiError(null);
       if (!validate()) return;
-      setSubmitted(true);
+
+      setIsSubmitting(true);
+      try {
+        if (isLogin) {
+          await login(email, password);
+        } else {
+          await register({
+            email,
+            password,
+            firstName: firstName.trim(),
+            lastName: lastName.trim(),
+            university,
+          });
+        }
+        router.push("/student");
+      } catch (err: unknown) {
+        const axiosErr = err as {
+          response?: { data?: { error?: { message?: string } } };
+        };
+        setApiError(
+          axiosErr.response?.data?.error?.message ??
+            "Something went wrong. Please try again."
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
     },
-    [validate]
+    [validate, isLogin, email, password, firstName, lastName, university, login, register, router]
   );
 
   /* ---- Switch mode ---- */
   const switchMode = useCallback(() => {
     setMode((m) => (m === "login" ? "register" : "login"));
     setErrors({});
-    setSubmitted(false);
+    setApiError(null);
   }, []);
-
-  const isLogin = mode === "login";
 
   return (
     <section className="relative flex min-h-[calc(100vh-80px)] overflow-hidden bg-surface-cream">
@@ -124,178 +159,200 @@ export default function AuthenticationPage() {
             </p>
           </div>
 
-          {/* Success state */}
-          {submitted ? (
-            <div className="rounded-card border border-status-success/20 bg-status-success/10 p-8 text-center backdrop-blur-xl">
-              <HiOutlineCheckCircle
-                size={48}
-                className="mx-auto mb-4 text-status-success"
-              />
-              <h2 className="font-heading text-xl font-semibold text-coffee-dark">
-                {isLogin ? t("auth.successSignIn") : t("auth.successRegister")}
-              </h2>
-              <p className="mt-2 text-sm text-text-secondary">
-                {isLogin
-                  ? t("auth.successSignInMsg")
-                  : t("auth.successRegisterMsg")}
-              </p>
-            </div>
-          ) : (
-            <form
-              onSubmit={handleSubmit}
-              noValidate
-              className="rounded-card border border-white/30 bg-surface-white/60 p-8 shadow-xl shadow-coffee-dark/5 backdrop-blur-xl sm:p-10"
-            >
-              {/* Mode tabs */}
-              <div className="mb-8 flex rounded-button bg-surface-cream/80 p-1 backdrop-blur-sm">
-                {(["login", "register"] as const).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => {
-                      if (m !== mode) switchMode();
-                    }}
-                    className={`flex-1 rounded-[6px] py-2.5 text-sm font-medium transition-all cursor-pointer ${
-                      mode === m
-                        ? "bg-surface-white text-coffee-dark shadow-sm"
-                        : "text-text-muted hover:text-text-secondary"
-                    }`}
-                  >
-                    {m === "login" ? t("auth.tabSignIn") : t("auth.tabRegister")}
-                  </button>
-                ))}
-              </div>
-
-              {/* Email */}
-              <FormField
-                id="email"
-                label={t("auth.emailLabel")}
-                type="email"
-                value={email}
-                onChange={handleEmailChange}
-                placeholder={t("auth.emailPlaceholder")}
-                icon={<HiOutlineMail size={18} />}
-                error={errors.email}
-                hint={
-                  <p className="mt-1 text-xs text-text-muted">
-                    {t("auth.emailHint")}
-                    <span className="font-medium text-coffee-warm">
-                      {t("auth.emailHintDomain")}
-                    </span>
-                  </p>
-                }
-              />
-
-              {/* Auto-detected university */}
-              {!isLogin && university && (
-                <div className="mb-5 flex items-center gap-2 rounded-button bg-coffee-gold/10 px-4 py-2.5 text-sm backdrop-blur-sm">
-                  <HiOutlineAcademicCap
-                    size={18}
-                    className="shrink-0 text-coffee-warm"
-                  />
-                  <span className="text-text-secondary">
-                    {t("auth.detected")}
-                    <span className="font-medium text-coffee-dark">
-                      {university}
-                    </span>
-                  </span>
-                </div>
-              )}
-
-              {/* Password */}
-              <PasswordField
-                id="password"
-                label={t("auth.password")}
-                value={password}
-                onChange={setPassword}
-                icon={<HiOutlineLockClosed size={18} />}
-                error={errors.password}
-              />
-
-              {/* Confirm Password (register) */}
-              {!isLogin && (
-                <PasswordField
-                  id="confirmPassword"
-                  label={t("auth.confirmPassword")}
-                  value={confirmPassword}
-                  onChange={setConfirmPassword}
-                  icon={<HiOutlineLockClosed size={18} />}
-                  error={errors.confirmPassword}
-                />
-              )}
-
-              {/* Remember / Forgot (login) */}
-              {isLogin && (
-                <div className="mb-6 flex items-center justify-between">
-                  <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
-                    <input
-                      type="checkbox"
-                      className="h-4 w-4 rounded border-surface-sand accent-coffee-warm"
-                    />
-                    {t("auth.rememberMe")}
-                  </label>
-                  <Link
-                    href="/forgot-password"
-                    className="text-sm font-medium text-coffee-warm transition-colors hover:text-coffee-gold"
-                  >
-                    {t("auth.forgotPassword")}
-                  </Link>
-                </div>
-              )}
-
-              {/* Terms checkbox (register) */}
-              {!isLogin && (
-                <div className="mb-6">
-                  <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={agreeTerms}
-                      onChange={(e) => setAgreeTerms(e.target.checked)}
-                      className="mt-0.5 h-4 w-4 rounded border-surface-sand accent-coffee-warm"
-                    />
-                    <span>
-                      {t("auth.agreePrefix")}
-                      <Link
-                        href="/terms"
-                        className="font-medium text-coffee-warm hover:text-coffee-gold"
-                      >
-                        {t("auth.termsLink")}
-                      </Link>
-                      {t("auth.agreeAnd")}
-                      <Link
-                        href="/privacy"
-                        className="font-medium text-coffee-warm hover:text-coffee-gold"
-                      >
-                        {t("auth.privacyLink")}
-                      </Link>
-                      .
-                    </span>
-                  </label>
-                  <FieldError message={errors.terms} />
-                </div>
-              )}
-
-              {/* Submit */}
-              <button
-                type="submit"
-                className="w-full rounded-button bg-coffee-warm py-3.5 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer"
-              >
-                {isLogin ? t("auth.signInBtn") : t("auth.createAccountBtn")}
-              </button>
-
-              {/* Switch mode text */}
-              <p className="mt-6 text-center text-sm text-text-muted">
-                {isLogin ? t("auth.noAccount") : t("auth.hasAccount")}
+          <form
+            onSubmit={handleSubmit}
+            noValidate
+            className="rounded-card border border-white/30 bg-surface-white/60 p-8 shadow-xl shadow-coffee-dark/5 backdrop-blur-xl sm:p-10"
+          >
+            {/* Mode tabs */}
+            <div className="mb-8 flex rounded-button bg-surface-cream/80 p-1 backdrop-blur-sm">
+              {(["login", "register"] as const).map((m) => (
                 <button
+                  key={m}
                   type="button"
-                  onClick={switchMode}
-                  className="font-medium text-coffee-warm transition-colors hover:text-coffee-gold cursor-pointer"
+                  onClick={() => {
+                    if (m !== mode) switchMode();
+                  }}
+                  className={`flex-1 rounded-[6px] py-2.5 text-sm font-medium transition-all cursor-pointer ${
+                    mode === m
+                      ? "bg-surface-white text-coffee-dark shadow-sm"
+                      : "text-text-muted hover:text-text-secondary"
+                  }`}
                 >
-                  {isLogin ? t("auth.registerLink") : t("auth.signInLink")}
+                  {m === "login" ? t("auth.tabSignIn") : t("auth.tabRegister")}
                 </button>
-              </p>
-            </form>
-          )}
+              ))}
+            </div>
+
+            {/* First Name & Last Name (register only) */}
+            {!isLogin && (
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  id="firstName"
+                  label={t("auth.firstName")}
+                  type="text"
+                  value={firstName}
+                  onChange={setFirstName}
+                  placeholder={t("auth.firstNamePlaceholder")}
+                  icon={<HiOutlineUser size={18} />}
+                  error={errors.firstName}
+                />
+                <FormField
+                  id="lastName"
+                  label={t("auth.lastName")}
+                  type="text"
+                  value={lastName}
+                  onChange={setLastName}
+                  placeholder={t("auth.lastNamePlaceholder")}
+                  icon={<HiOutlineUser size={18} />}
+                  error={errors.lastName}
+                />
+              </div>
+            )}
+
+            {/* Email */}
+            <FormField
+              id="email"
+              label={t("auth.emailLabel")}
+              type="email"
+              value={email}
+              onChange={handleEmailChange}
+              placeholder={t("auth.emailPlaceholder")}
+              icon={<HiOutlineMail size={18} />}
+              error={errors.email}
+              hint={
+                <p className="mt-1 text-xs text-text-muted">
+                  {t("auth.emailHint")}
+                  <span className="font-medium text-coffee-warm">
+                    {t("auth.emailHintDomain")}
+                  </span>
+                </p>
+              }
+            />
+
+            {/* Auto-detected university */}
+            {!isLogin && university && (
+              <div className="mb-5 flex items-center gap-2 rounded-button bg-coffee-gold/10 px-4 py-2.5 text-sm backdrop-blur-sm">
+                <HiOutlineAcademicCap
+                  size={18}
+                  className="shrink-0 text-coffee-warm"
+                />
+                <span className="text-text-secondary">
+                  {t("auth.detected")}
+                  <span className="font-medium text-coffee-dark">
+                    {university}
+                  </span>
+                </span>
+              </div>
+            )}
+
+            {/* Password */}
+            <PasswordField
+              id="password"
+              label={t("auth.password")}
+              value={password}
+              onChange={setPassword}
+              icon={<HiOutlineLockClosed size={18} />}
+              error={errors.password}
+            />
+
+            {/* Confirm Password (register) */}
+            {!isLogin && (
+              <PasswordField
+                id="confirmPassword"
+                label={t("auth.confirmPassword")}
+                value={confirmPassword}
+                onChange={setConfirmPassword}
+                icon={<HiOutlineLockClosed size={18} />}
+                error={errors.confirmPassword}
+              />
+            )}
+
+            {/* Remember / Forgot (login) */}
+            {isLogin && (
+              <div className="mb-6 flex items-center justify-between">
+                <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-surface-sand accent-coffee-warm"
+                  />
+                  {t("auth.rememberMe")}
+                </label>
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-medium text-coffee-warm transition-colors hover:text-coffee-gold"
+                >
+                  {t("auth.forgotPassword")}
+                </Link>
+              </div>
+            )}
+
+            {/* Terms checkbox (register) */}
+            {!isLogin && (
+              <div className="mb-6">
+                <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={agreeTerms}
+                    onChange={(e) => setAgreeTerms(e.target.checked)}
+                    className="mt-0.5 h-4 w-4 rounded border-surface-sand accent-coffee-warm"
+                  />
+                  <span>
+                    {t("auth.agreePrefix")}
+                    <Link
+                      href="/terms"
+                      className="font-medium text-coffee-warm hover:text-coffee-gold"
+                    >
+                      {t("auth.termsLink")}
+                    </Link>
+                    {t("auth.agreeAnd")}
+                    <Link
+                      href="/privacy"
+                      className="font-medium text-coffee-warm hover:text-coffee-gold"
+                    >
+                      {t("auth.privacyLink")}
+                    </Link>
+                    .
+                  </span>
+                </label>
+                <FieldError message={errors.terms} />
+              </div>
+            )}
+
+            {/* API Error */}
+            {apiError && (
+              <div className="mb-4 rounded-button border border-status-error/20 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+                {apiError}
+              </div>
+            )}
+
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full rounded-button bg-coffee-warm py-3.5 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSubmitting
+                ? isLogin
+                  ? "Signing in..."
+                  : "Creating account..."
+                : isLogin
+                  ? t("auth.signInBtn")
+                  : t("auth.createAccountBtn")}
+            </button>
+
+            {/* Switch mode text */}
+            <p className="mt-6 text-center text-sm text-text-muted">
+              {isLogin ? t("auth.noAccount") : t("auth.hasAccount")}
+              <button
+                type="button"
+                onClick={switchMode}
+                className="font-medium text-coffee-warm transition-colors hover:text-coffee-gold cursor-pointer"
+              >
+                {isLogin ? t("auth.registerLink") : t("auth.signInLink")}
+              </button>
+            </p>
+          </form>
 
           {/* Helper note */}
           <p className="mt-5 text-center text-xs text-text-muted lg:text-left">

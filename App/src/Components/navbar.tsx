@@ -2,10 +2,21 @@
 
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import { HiOutlineMenuAlt3, HiX, HiOutlineSun, HiOutlineMoon, HiOutlineTranslate } from "react-icons/hi";
+import { useRouter } from "next/navigation";
+import {
+  HiOutlineMenuAlt3,
+  HiX,
+  HiOutlineSun,
+  HiOutlineMoon,
+  HiOutlineTranslate,
+  HiOutlineUser,
+  HiOutlineViewGrid,
+  HiOutlineLogout,
+} from "react-icons/hi";
 import { useTheme } from "@/Components/ThemeContext";
 import { useLanguage } from "@/Components/LanguageContext";
 import Logo from "@/Components/Logo";
+import { useAuth } from "@/Components/AuthContext";
 import type { Lang } from "@/i18n";
 
 const navLinks = [
@@ -23,20 +34,34 @@ const languages: { code: Lang; label: string }[] = [
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const { isDark, toggleTheme, toggleRef } = useTheme();
   const { lang, setLanguage, t } = useLanguage();
+  const { user, logout } = useAuth();
+  const router = useRouter();
 
-  /* Close language dropdown on outside click */
+  /* Close dropdowns on outside click */
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (langRef.current && !langRef.current.contains(e.target as Node)) {
         setLangOpen(false);
       }
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setUserMenuOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = () => {
+    logout();
+    setUserMenuOpen(false);
+    setMobileOpen(false);
+    router.push("/login");
+  };
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-surface-sand bg-surface-white/80 backdrop-blur-md">
@@ -111,18 +136,73 @@ export default function Navbar() {
             />
           </button>
 
-          <Link
-            href="/login"
-            className="rounded-button border-2 border-coffee-warm px-5 py-2 text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
-          >
-            {t("nav.signIn")}
-          </Link>
-          <Link
-            href="/register"
-            className="rounded-button bg-coffee-warm px-5 py-2 text-sm font-body font-medium text-text-inverse transition-colors hover:bg-coffee-gold"
-          >
-            {t("nav.getStarted")}
-          </Link>
+          {user ? (
+            /* ---- User Dropdown ---- */
+            <div ref={userMenuRef} className="relative">
+              <button
+                onClick={() => setUserMenuOpen((prev) => !prev)}
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-surface-sand text-coffee-warm transition-colors hover:bg-coffee-gold/20 cursor-pointer"
+                aria-label="User menu"
+              >
+                <HiOutlineUser size={20} />
+              </button>
+
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-card border border-surface-sand bg-surface-white shadow-lg">
+                  {/* User info header */}
+                  <div className="border-b border-surface-sand px-4 py-3">
+                    <p className="text-sm font-medium text-coffee-dark truncate">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="text-xs text-text-muted truncate">{user.email}</p>
+                  </div>
+
+                  {/* Menu items */}
+                  <Link
+                    href="/student"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
+                  >
+                    <HiOutlineViewGrid size={16} />
+                    Dashboard
+                  </Link>
+                  <Link
+                    href="/student/profile"
+                    onClick={() => setUserMenuOpen(false)}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
+                  >
+                    <HiOutlineUser size={16} />
+                    Profile
+                  </Link>
+
+                  <div className="border-t border-surface-sand">
+                    <button
+                      onClick={handleLogout}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-status-error transition-colors hover:bg-status-error/5 cursor-pointer"
+                    >
+                      <HiOutlineLogout size={16} />
+                      {t("nav.signOut")}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <>
+              <Link
+                href="/login"
+                className="rounded-button border-2 border-coffee-warm px-5 py-2 text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
+              >
+                {t("nav.signIn")}
+              </Link>
+              <Link
+                href="/register"
+                className="rounded-button bg-coffee-warm px-5 py-2 text-sm font-body font-medium text-text-inverse transition-colors hover:bg-coffee-gold"
+              >
+                {t("nav.getStarted")}
+              </Link>
+            </>
+          )}
         </div>
 
         {/* ---- Mobile Toggle ---- */}
@@ -188,20 +268,47 @@ export default function Navbar() {
           <hr className="border-surface-sand" />
 
           <div className="flex flex-col gap-3">
-            <Link
-              href="/login"
-              onClick={() => setMobileOpen(false)}
-              className="rounded-button border-2 border-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
-            >
-              {t("nav.signIn")}
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMobileOpen(false)}
-              className="rounded-button bg-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-text-inverse transition-colors hover:bg-coffee-gold"
-            >
-              {t("nav.getStarted")}
-            </Link>
+            {user ? (
+              <>
+                {/* Mobile user info */}
+                <div className="px-1 py-1">
+                  <p className="text-sm font-medium text-coffee-dark">
+                    {user.firstName} {user.lastName}
+                  </p>
+                  <p className="text-xs text-text-muted">{user.email}</p>
+                </div>
+                <Link
+                  href="/student"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-button border-2 border-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
+                >
+                  Dashboard
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="rounded-button bg-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer"
+                >
+                  {t("nav.signOut")}
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-button border-2 border-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
+                >
+                  {t("nav.signIn")}
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded-button bg-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-text-inverse transition-colors hover:bg-coffee-gold"
+                >
+                  {t("nav.getStarted")}
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </div>

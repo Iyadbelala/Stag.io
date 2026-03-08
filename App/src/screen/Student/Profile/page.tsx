@@ -68,10 +68,10 @@ export default function StudentProfile() {
         if (user) {
           setForm((f) => ({
             ...f,
-            firstName: user.firstName,
-            lastName: user.lastName,
+            firstName: user.firstName || "",
+            lastName: user.lastName || "",
             email: user.email,
-            university: user.university,
+            university: user.university || "",
           }));
         }
       } finally {
@@ -123,9 +123,9 @@ export default function StudentProfile() {
         id: user!.id,
         email: p.email,
         role: user!.role,
-        firstName: p.firstName,
-        lastName: p.lastName,
-        university: p.university,
+        firstName: p.firstName || undefined,
+        lastName: p.lastName || undefined,
+        university: p.university || undefined,
       });
 
       setSaveStatus("success");

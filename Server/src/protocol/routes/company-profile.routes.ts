@@ -1,14 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth.middleware';
-import { getStudentProfile, updateStudentProfile } from '../../context/profile.service';
-import { getStudentDashboard } from '../../context/student-dashboard.service';
+import { getCompanyProfile, updateCompanyProfile } from '../../context/company-profile.service';
+import { getCompanyDashboard } from '../../context/company-dashboard.service';
 
-const profileRouter = Router();
+const companyProfileRouter = Router();
 
-/* GET /api/profile — get current user's profile */
-profileRouter.get('/', requireAuth, async (req: Request, res: Response) => {
+/* GET /api/company/profile */
+companyProfileRouter.get('/profile', requireAuth, async (req: Request, res: Response) => {
   try {
-    const profile = await getStudentProfile(req.user!.sub);
+    const profile = await getCompanyProfile(req.user!.sub);
     res.json({ success: true, data: profile });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };
@@ -19,16 +19,12 @@ profileRouter.get('/', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-/* PUT /api/profile — update current user's profile */
-profileRouter.put('/', requireAuth, async (req: Request, res: Response) => {
+/* PUT /api/company/profile */
+companyProfileRouter.put('/profile', requireAuth, async (req: Request, res: Response) => {
   try {
-    const { firstName, lastName, department, bio, skills } = req.body;
-    const profile = await updateStudentProfile(req.user!.sub, {
-      firstName,
-      lastName,
-      department,
-      bio,
-      skills,
+    const { companyName, industry, website, description, location, contactPerson } = req.body;
+    const profile = await updateCompanyProfile(req.user!.sub, {
+      companyName, industry, website, description, location, contactPerson,
     });
     res.json({ success: true, data: profile });
   } catch (err: unknown) {
@@ -40,10 +36,10 @@ profileRouter.put('/', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-/* GET /api/profile/dashboard — student dashboard stats */
-profileRouter.get('/dashboard', requireAuth, async (req: Request, res: Response) => {
+/* GET /api/company/dashboard */
+companyProfileRouter.get('/dashboard', requireAuth, async (req: Request, res: Response) => {
   try {
-    const dashboard = await getStudentDashboard(req.user!.sub);
+    const dashboard = await getCompanyDashboard(req.user!.sub);
     res.json({ success: true, data: dashboard });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };
@@ -54,4 +50,4 @@ profileRouter.get('/dashboard', requireAuth, async (req: Request, res: Response)
   }
 });
 
-export default profileRouter;
+export default companyProfileRouter;

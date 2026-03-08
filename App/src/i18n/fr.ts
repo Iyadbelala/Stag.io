@@ -212,7 +212,9 @@ const fr: Record<string, string> = {
   "auth.welcomeBack": "Bon retour",
   "auth.createAccount": "Créer un compte",
   "auth.signInSubtitle":
-    "Connectez-vous avec votre email universitaire pour continuer.",
+    "Connectez-vous à votre compte pour continuer.",
+  "auth.loginEmailLabel": "Email",
+  "auth.loginEmailPlaceholder": "votre@email.com",
   "auth.registerSubtitle":
     "Inscrivez-vous avec votre email universitaire algérien.",
   "auth.tabSignIn": "Connexion",
@@ -261,6 +263,21 @@ const fr: Record<string, string> = {
   "auth.lastNamePlaceholder": "Benali",
   "auth.error.firstNameRequired": "Le prénom est requis.",
   "auth.error.lastNameRequired": "Le nom est requis.",
+  "auth.error.invalidEmailGeneral": "Veuillez entrer une adresse email valide.",
+  "auth.error.companyNameRequired": "Le nom de l'entreprise est requis.",
+  "auth.accountStudent": "Étudiant",
+  "auth.accountCompany": "Entreprise",
+  "auth.companyName": "Nom de l'entreprise",
+  "auth.companyNamePlaceholder": "Acme Corp",
+  "auth.contactPerson": "Personne de contact",
+  "auth.contactPersonPlaceholder": "Nom complet",
+  "auth.industry": "Secteur",
+  "auth.industryPlaceholder": "ex. Technologie",
+  "auth.location": "Localisation",
+  "auth.locationPlaceholder": "ex. Constantine",
+  "auth.companyEmailLabel": "Email professionnel",
+  "auth.companyEmailPlaceholder": "contact@entreprise.com",
+  "auth.companyRegisterSubtitle": "Inscrivez votre entreprise pour publier des stages.",
 
   /* ---- Auth Brand Panel ---- */
   "brand.title1": "Votre stage",

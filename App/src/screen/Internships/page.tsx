@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import {
   HiOutlineSearch,
   HiOutlineLocationMarker,
@@ -12,142 +12,167 @@ import {
   HiOutlineOfficeBuilding,
   HiOutlineShare,
   HiOutlineCalendar,
-  HiOutlineCurrencyDollar,
   HiOutlineChevronLeft,
+  HiOutlineX,
+  HiOutlineDocumentText,
+  HiOutlineLink,
 } from "react-icons/hi";
 import { useLanguage } from "@/Components/LanguageContext";
+import { useAuth } from "@/Components/AuthContext";
+import { api } from "@/lib/api";
 
 /* ============================================
    Types
    ============================================ */
 interface Internship {
-  id: number;
-  titleKey: string;
-  companyKey: string;
-  locationKey: string;
-  typeKey: string;
-  durationKey: string;
-  stipendKey: string;
-  postedKey: string;
-  tags: string[];
-  descriptionKey: string;
-  requirements: string[];
-  settingKey: string;
+  id: string;
+  title: string;
+  description: string;
+  requirements: string;
+  duration: string;
+  location: string;
+  type: string;
+  status: string;
+  companyName: string;
+  companyIndustry: string | null;
+  companyLocation: string | null;
+  applicationCount: number;
+  createdAt: string;
 }
 
 /* ============================================
-   Mock Data (translation keys)
+   Application Form Modal
    ============================================ */
-const internships: Internship[] = [
-  {
-    id: 1,
-    titleKey: "intern.1.title",
-    companyKey: "intern.1.company",
-    locationKey: "intern.1.location",
-    typeKey: "intern.1.type",
-    durationKey: "intern.1.duration",
-    stipendKey: "intern.1.stipend",
-    postedKey: "intern.1.posted",
-    tags: ["intern.tag.remote", "intern.tag.paid"],
-    descriptionKey: "intern.1.desc",
-    requirements: ["intern.1.req.1", "intern.1.req.2", "intern.1.req.3", "intern.1.req.4"],
-    settingKey: "intern.1.setting",
-  },
-  {
-    id: 2,
-    titleKey: "intern.2.title",
-    companyKey: "intern.2.company",
-    locationKey: "intern.2.location",
-    typeKey: "intern.2.type",
-    durationKey: "intern.2.duration",
-    stipendKey: "intern.2.stipend",
-    postedKey: "intern.2.posted",
-    tags: ["intern.tag.onsite", "intern.tag.paid"],
-    descriptionKey: "intern.2.desc",
-    requirements: ["intern.2.req.1", "intern.2.req.2", "intern.2.req.3"],
-    settingKey: "intern.2.setting",
-  },
-  {
-    id: 3,
-    titleKey: "intern.3.title",
-    companyKey: "intern.3.company",
-    locationKey: "intern.3.location",
-    typeKey: "intern.3.type",
-    durationKey: "intern.3.duration",
-    stipendKey: "intern.3.stipend",
-    postedKey: "intern.3.posted",
-    tags: ["intern.tag.hybrid", "intern.tag.paid"],
-    descriptionKey: "intern.3.desc",
-    requirements: ["intern.3.req.1", "intern.3.req.2", "intern.3.req.3"],
-    settingKey: "intern.3.setting",
-  },
-  {
-    id: 4,
-    titleKey: "intern.4.title",
-    companyKey: "intern.4.company",
-    locationKey: "intern.4.location",
-    typeKey: "intern.4.type",
-    durationKey: "intern.4.duration",
-    stipendKey: "intern.4.stipend",
-    postedKey: "intern.4.posted",
-    tags: ["intern.tag.remote", "intern.tag.paid"],
-    descriptionKey: "intern.4.desc",
-    requirements: ["intern.4.req.1", "intern.4.req.2", "intern.4.req.3"],
-    settingKey: "intern.4.setting",
-  },
-  {
-    id: 5,
-    titleKey: "intern.5.title",
-    companyKey: "intern.5.company",
-    locationKey: "intern.5.location",
-    typeKey: "intern.5.type",
-    durationKey: "intern.5.duration",
-    stipendKey: "intern.5.stipend",
-    postedKey: "intern.5.posted",
-    tags: ["intern.tag.onsite", "intern.tag.paid"],
-    descriptionKey: "intern.5.desc",
-    requirements: ["intern.5.req.1", "intern.5.req.2", "intern.5.req.3"],
-    settingKey: "intern.5.setting",
-  },
-  {
-    id: 6,
-    titleKey: "intern.6.title",
-    companyKey: "intern.6.company",
-    locationKey: "intern.6.location",
-    typeKey: "intern.6.type",
-    durationKey: "intern.6.duration",
-    stipendKey: "intern.6.stipend",
-    postedKey: "intern.6.posted",
-    tags: ["intern.tag.hybrid"],
-    descriptionKey: "intern.6.desc",
-    requirements: ["intern.6.req.1", "intern.6.req.2", "intern.6.req.3"],
-    settingKey: "intern.6.setting",
-  },
-];
+interface ApplicationFormModalProps {
+  offerTitle: string;
+  companyName: string;
+  isSubmitting: boolean;
+  onClose: () => void;
+  onSubmit: (coverLetter: string, cvUrl: string) => void;
+}
+
+function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, onSubmit }: ApplicationFormModalProps) {
+  const [coverLetter, setCoverLetter] = useState("");
+  const [cvUrl, setCvUrl] = useState("");
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(coverLetter, cvUrl);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+      <div className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute right-4 top-4 text-text-muted hover:text-coffee-dark cursor-pointer"
+        >
+          <HiOutlineX size={20} />
+        </button>
+
+        <h2 className="mb-1 text-xl font-heading font-bold text-coffee-dark">
+          Apply to {offerTitle}
+        </h2>
+        <p className="mb-6 text-sm text-text-muted">{companyName}</p>
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* CV URL */}
+          <div>
+            <label htmlFor="cvUrl" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-text-primary">
+              <HiOutlineLink size={16} className="text-text-muted" />
+              CV / Resume Link
+            </label>
+            <input
+              id="cvUrl"
+              type="url"
+              value={cvUrl}
+              onChange={(e) => setCvUrl(e.target.value)}
+              placeholder="https://drive.google.com/your-cv or LinkedIn URL"
+              className="w-full rounded-button border border-surface-sand bg-surface-cream/50 px-4 py-3 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted/60 focus:border-coffee-gold/60"
+            />
+            <p className="mt-1 text-xs text-text-muted">
+              Paste a link to your CV (Google Drive, Dropbox, LinkedIn, etc.)
+            </p>
+          </div>
+
+          {/* Cover Letter */}
+          <div>
+            <label htmlFor="coverLetter" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-text-primary">
+              <HiOutlineDocumentText size={16} className="text-text-muted" />
+              Cover Letter
+            </label>
+            <textarea
+              id="coverLetter"
+              rows={6}
+              value={coverLetter}
+              onChange={(e) => setCoverLetter(e.target.value)}
+              placeholder="Tell the company why you're a great fit for this internship..."
+              className="w-full resize-none rounded-button border border-surface-sand bg-surface-cream/50 px-4 py-3 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted/60 focus:border-coffee-gold/60"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full rounded-button bg-coffee-warm py-3.5 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? "Submitting..." : "Submit Application"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
 
 /* ============================================
    Component
    ============================================ */
 export default function InternshipsPage() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const companyParam = searchParams.get("company") ?? "";
-  const [selectedId, setSelectedId] = useState<number | null>(1);
+
+  const [internships, setInternships] = useState<Internship[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState(companyParam);
   const [location, setLocation] = useState("");
   const [committedSearch, setCommittedSearch] = useState(companyParam);
   const [committedLocation, setCommittedLocation] = useState("");
   const [locationOpen, setLocationOpen] = useState(false);
   const locationRef = useRef<HTMLDivElement>(null);
-  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
-  const [animating, setAnimating] = useState(false);
-  const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
+  const [applyingId, setApplyingId] = useState<string | null>(null);
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [applySuccess, setApplySuccess] = useState<string | null>(null);
+  const [applyModalOfferId, setApplyModalOfferId] = useState<string | null>(null);
 
-  // Unique translated locations for suggestions
+  /* ---- Fetch internships from API ---- */
+  useEffect(() => {
+    async function fetchInternships() {
+      try {
+        const { data } = await api.get<{ success: true; data: Internship[] }>("/api/offers");
+        setInternships(data.data);
+        if (data.data.length > 0) {
+          setSelectedId(data.data[0].id);
+        }
+      } catch {
+        setInternships([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchInternships();
+  }, []);
+
+  // Unique locations for suggestions
   const locationSuggestions = useMemo(() => {
-    const all = internships.map((i) => t(i.locationKey));
+    const all = internships.map((i) => i.location).filter(Boolean);
     return [...new Set(all)];
-  }, [t]);
+  }, [internships]);
 
   const filteredLocations = useMemo(() => {
     const loc = location.trim().toLowerCase();
@@ -166,7 +191,7 @@ export default function InternshipsPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const toggleSave = (id: number) => {
+  const toggleSave = (id: string) => {
     setSavedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -176,10 +201,47 @@ export default function InternshipsPage() {
   };
 
   const handleSearch = () => {
-    setAnimating(true);
-    setVisibleCards(new Set());
     setCommittedSearch(search);
     setCommittedLocation(location);
+  };
+
+  const handleApplyClick = (offerId: string) => {
+    // Must be logged in as a student
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    if (user.role !== "student") {
+      setApplyError("Only students can apply to internships.");
+      setTimeout(() => setApplyError(null), 4000);
+      return;
+    }
+    setApplyModalOfferId(offerId);
+  };
+
+  const handleSubmitApplication = async (offerId: string, coverLetter: string, cvUrl: string) => {
+    setApplyingId(offerId);
+    setApplyError(null);
+    setApplySuccess(null);
+
+    try {
+      await api.post("/api/applications", {
+        offerId,
+        coverLetter: coverLetter || undefined,
+        cvUrl: cvUrl || undefined,
+      });
+      setAppliedIds((prev) => new Set(prev).add(offerId));
+      setApplySuccess("Application submitted successfully!");
+      setTimeout(() => setApplySuccess(null), 4000);
+      setApplyModalOfferId(null);
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { error?: { message?: string } } } };
+      const msg = e.response?.data?.error?.message ?? "Failed to submit application.";
+      setApplyError(msg);
+      setTimeout(() => setApplyError(null), 4000);
+    } finally {
+      setApplyingId(null);
+    }
   };
 
   const filtered = useMemo(() => {
@@ -188,30 +250,42 @@ export default function InternshipsPage() {
     return internships.filter((i) => {
       const matchesSearch =
         !q ||
-        t(i.titleKey).toLowerCase().includes(q) ||
-        t(i.companyKey).toLowerCase().includes(q) ||
-        t(i.locationKey).toLowerCase().includes(q);
+        i.title.toLowerCase().includes(q) ||
+        i.companyName.toLowerCase().includes(q) ||
+        i.location.toLowerCase().includes(q);
       const matchesLocation =
-        !loc || t(i.locationKey).toLowerCase().includes(loc);
+        !loc || i.location.toLowerCase().includes(loc);
       return matchesSearch && matchesLocation;
     });
-  }, [committedSearch, committedLocation, t]);
-
-  // Stagger animate cards after filter changes
-  useEffect(() => {
-    if (!animating) return;
-    const ids = filtered.map((i) => i.id);
-    ids.forEach((id, idx) => {
-      setTimeout(() => {
-        setVisibleCards((prev) => new Set([...prev, id]));
-      }, idx * 80);
-    });
-    const total = ids.length * 80 + 300;
-    const timer = setTimeout(() => setAnimating(false), total);
-    return () => clearTimeout(timer);
-  }, [filtered, animating]);
+  }, [committedSearch, committedLocation, internships]);
 
   const selected = internships.find((i) => i.id === selectedId) ?? null;
+
+  const typeLabel = (type: string) => {
+    switch (type) {
+      case "remote": return "Remote";
+      case "hybrid": return "Hybrid";
+      default: return "On-site";
+    }
+  };
+
+  const timeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (days === 0) return "Today";
+    if (days === 1) return "Yesterday";
+    if (days < 7) return `${days} days ago`;
+    if (days < 30) return `${Math.floor(days / 7)} weeks ago`;
+    return `${Math.floor(days / 30)} months ago`;
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-surface-cream">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-coffee-warm border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <section className="min-h-[calc(100vh-80px)] bg-surface-cream">
@@ -227,6 +301,7 @@ export default function InternshipsPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder={t("internships.searchPlaceholder")}
               className="w-full rounded-button border border-surface-sand bg-surface-cream py-2.5 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-coffee-warm focus:outline-none"
             />
@@ -303,7 +378,11 @@ export default function InternshipsPage() {
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <HiOutlineSearch size={40} className="mb-3 text-text-muted/50" />
-              <p className="text-sm text-text-muted">{t("internships.noResults")}</p>
+              <p className="text-sm text-text-muted">
+                {internships.length === 0
+                  ? "No internships posted yet. Check back soon!"
+                  : t("internships.noResults")}
+              </p>
             </div>
           ) : (
             filtered.map((item) => (
@@ -314,12 +393,6 @@ export default function InternshipsPage() {
                   selectedId === item.id
                     ? "border-l-[3px] border-l-coffee-warm bg-coffee-gold/5"
                     : "border-l-[3px] border-l-transparent"
-                } ${
-                  animating
-                    ? visibleCards.has(item.id)
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-3"
-                    : "opacity-100 translate-y-0"
                 }`}
               >
                 {/* Bookmark top-right */}
@@ -347,34 +420,27 @@ export default function InternshipsPage() {
 
                 {/* Posted badge */}
                 <span className="w-fit rounded-full bg-coffee-gold/10 px-2.5 py-0.5 text-[11px] font-medium text-coffee-warm">
-                  {t(item.postedKey)}
+                  {timeAgo(item.createdAt)}
                 </span>
 
                 {/* Title */}
                 <h3 className="pr-8 text-[15px] font-semibold leading-snug text-coffee-dark">
-                  {t(item.titleKey)}
+                  {item.title}
                 </h3>
 
                 {/* Company */}
-                <p className="text-sm text-text-secondary">{t(item.companyKey)}</p>
+                <p className="text-sm text-text-secondary">{item.companyName}</p>
 
                 {/* Location */}
-                <p className="text-[13px] text-text-muted">
-                  {t(item.locationKey)}
-                </p>
+                <p className="text-[13px] text-text-muted">{item.location}</p>
 
                 {/* Tags row */}
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  {item.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded border border-surface-sand bg-surface-cream px-2 py-0.5 text-[11px] text-text-muted"
-                    >
-                      {t(tag)}
-                    </span>
-                  ))}
                   <span className="rounded border border-surface-sand bg-surface-cream px-2 py-0.5 text-[11px] text-text-muted">
-                    {t(item.stipendKey)}
+                    {typeLabel(item.type)}
+                  </span>
+                  <span className="rounded border border-surface-sand bg-surface-cream px-2 py-0.5 text-[11px] text-text-muted">
+                    {item.duration}
                   </span>
                 </div>
               </button>
@@ -402,23 +468,32 @@ export default function InternshipsPage() {
               {/* Header */}
               <div className="mb-4">
                 <h1 className="text-xl font-bold text-coffee-dark sm:text-2xl">
-                  {t(selected.titleKey)}
+                  {selected.title}
                 </h1>
                 <p className="mt-1 text-sm text-text-secondary">
-                  {t(selected.companyKey)}
+                  {selected.companyName}
                 </p>
                 <p className="mt-0.5 text-[13px] text-text-muted">
-                  {t(selected.locationKey)}
-                </p>
-                <p className="mt-0.5 text-[13px] text-text-muted">
-                  {t(selected.stipendKey)}{" · "}{t(selected.typeKey)}
+                  {selected.location}
                 </p>
               </div>
 
               {/* Actions */}
-              <div className="mb-6 flex items-center gap-3">
-                <button className="rounded-button bg-coffee-warm px-6 py-2.5 text-sm font-semibold text-text-inverse shadow-sm transition-all hover:bg-coffee-gold cursor-pointer">
-                  {t("internships.applyNow")}
+              <div className="mb-2 flex items-center gap-3">
+                <button
+                  onClick={() => handleApplyClick(selected.id)}
+                  disabled={applyingId === selected.id || appliedIds.has(selected.id)}
+                  className={`rounded-button px-6 py-2.5 text-sm font-semibold shadow-sm transition-all cursor-pointer ${
+                    appliedIds.has(selected.id)
+                      ? "bg-green-600 text-white cursor-default"
+                      : "bg-coffee-warm text-text-inverse hover:bg-coffee-gold"
+                  } disabled:opacity-60`}
+                >
+                  {applyingId === selected.id
+                    ? "Applying..."
+                    : appliedIds.has(selected.id)
+                    ? "Applied ✓"
+                    : t("internships.applyNow")}
                 </button>
                 <button
                   onClick={() => toggleSave(selected.id)}
@@ -439,6 +514,14 @@ export default function InternshipsPage() {
                 </button>
               </div>
 
+              {/* Apply feedback */}
+              {applyError && (
+                <p className="mb-4 text-sm text-red-500">{applyError}</p>
+              )}
+              {applySuccess && (
+                <p className="mb-4 text-sm text-green-600">{applySuccess}</p>
+              )}
+
               {/* Divider */}
               <hr className="mb-6 border-surface-sand" />
 
@@ -449,31 +532,31 @@ export default function InternshipsPage() {
                 </h2>
                 <div className="flex flex-col gap-3">
                   <div className="flex items-start gap-3">
-                    <HiOutlineCurrencyDollar size={18} className="mt-0.5 shrink-0 text-text-muted" />
-                    <div>
-                      <p className="text-sm font-medium text-coffee-dark">{t("internships.detail.pay")}</p>
-                      <p className="text-[13px] text-text-muted">{t(selected.stipendKey)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
                     <HiOutlineBriefcase size={18} className="mt-0.5 shrink-0 text-text-muted" />
                     <div>
                       <p className="text-sm font-medium text-coffee-dark">{t("internships.detail.type")}</p>
-                      <p className="text-[13px] text-text-muted">{t(selected.typeKey)}</p>
+                      <p className="text-[13px] text-text-muted">{typeLabel(selected.type)}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <HiOutlineOfficeBuilding size={18} className="mt-0.5 shrink-0 text-text-muted" />
                     <div>
-                      <p className="text-sm font-medium text-coffee-dark">{t("internships.detail.setting")}</p>
-                      <p className="text-[13px] text-text-muted">{t(selected.settingKey)}</p>
+                      <p className="text-sm font-medium text-coffee-dark">Company</p>
+                      <p className="text-[13px] text-text-muted">{selected.companyName}{selected.companyIndustry ? ` · ${selected.companyIndustry}` : ""}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <HiOutlineCalendar size={18} className="mt-0.5 shrink-0 text-text-muted" />
                     <div>
                       <p className="text-sm font-medium text-coffee-dark">{t("internships.detail.duration")}</p>
-                      <p className="text-[13px] text-text-muted">{t(selected.durationKey)}</p>
+                      <p className="text-[13px] text-text-muted">{selected.duration}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <HiOutlineClock size={18} className="mt-0.5 shrink-0 text-text-muted" />
+                    <div>
+                      <p className="text-sm font-medium text-coffee-dark">Posted</p>
+                      <p className="text-[13px] text-text-muted">{timeAgo(selected.createdAt)}</p>
                     </div>
                   </div>
                 </div>
@@ -487,8 +570,8 @@ export default function InternshipsPage() {
                 <h2 className="mb-3 text-base font-semibold text-coffee-dark">
                   {t("internships.detail.description")}
                 </h2>
-                <p className="text-sm leading-relaxed text-text-secondary">
-                  {t(selected.descriptionKey)}
+                <p className="text-sm leading-relaxed text-text-secondary whitespace-pre-line">
+                  {selected.description}
                 </p>
               </div>
 
@@ -500,17 +583,9 @@ export default function InternshipsPage() {
                 <h2 className="mb-3 text-base font-semibold text-coffee-dark">
                   {t("internships.detail.requirements")}
                 </h2>
-                <ul className="flex flex-col gap-2">
-                  {selected.requirements.map((reqKey) => (
-                    <li
-                      key={reqKey}
-                      className="flex items-start gap-2 text-sm leading-relaxed text-text-secondary"
-                    >
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-coffee-gold" />
-                      {t(reqKey)}
-                    </li>
-                  ))}
-                </ul>
+                <p className="text-sm leading-relaxed text-text-secondary whitespace-pre-line">
+                  {selected.requirements}
+                </p>
               </div>
             </div>
           ) : (
@@ -523,6 +598,22 @@ export default function InternshipsPage() {
           )}
         </div>
       </div>
+
+      {/* ---- Application Form Modal ---- */}
+      {applyModalOfferId && (() => {
+        const offer = internships.find((i) => i.id === applyModalOfferId);
+        return (
+          <ApplicationFormModal
+            offerTitle={offer?.title ?? ""}
+            companyName={offer?.companyName ?? ""}
+            isSubmitting={applyingId === applyModalOfferId}
+            onClose={() => setApplyModalOfferId(null)}
+            onSubmit={(coverLetter, cvUrl) =>
+              handleSubmitApplication(applyModalOfferId, coverLetter, cvUrl)
+            }
+          />
+        );
+      })()}
     </section>
   );
 }

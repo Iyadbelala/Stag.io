@@ -12,6 +12,15 @@ export interface RegisterInput {
   university: string;
 }
 
+export interface RegisterCompanyInput {
+  email: string;
+  password: string;
+  companyName: string;
+  contactPerson?: string;
+  industry?: string;
+  location?: string;
+}
+
 export interface LoginInput {
   email: string;
   password: string;
@@ -23,9 +32,10 @@ export interface AuthResult {
     id: string;
     email: string;
     role: string;
-    firstName: string;
-    lastName: string;
-    university: string;
+    firstName?: string;
+    lastName?: string;
+    university?: string;
+    companyName?: string;
   };
 }
 
@@ -63,15 +73,58 @@ export async function registerStudent(input: RegisterInput): Promise<AuthResult>
       id: user.id,
       email: user.email,
       role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      university: user.university,
+      firstName: user.firstName ?? undefined,
+      lastName: user.lastName ?? undefined,
+      university: user.university ?? undefined,
+    },
+  };
+}
+
+export async function registerCompany(input: RegisterCompanyInput): Promise<AuthResult> {
+  const existing = await prisma.user.findUnique({ where: { email: input.email } });
+  if (existing) {
+    const err = new Error('Email already registered') as Error & { code: string; status: number };
+    err.code = 'EMAIL_IN_USE';
+    err.status = 409;
+    throw err;
+  }
+
+  const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
+
+  const user = await prisma.user.create({
+    data: {
+      email: input.email,
+      passwordHash,
+      role: 'company',
+      company: {
+        create: {
+          companyName: input.companyName,
+          contactPerson: input.contactPerson,
+          industry: input.industry,
+          location: input.location,
+        },
+      },
+    },
+    include: { company: true },
+  });
+
+  const token = signToken(user.id, user.role);
+  return {
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      companyName: user.company!.companyName,
     },
   };
 }
 
 export async function loginUser(input: LoginInput): Promise<AuthResult> {
-  const user = await prisma.user.findUnique({ where: { email: input.email } });
+  const user = await prisma.user.findUnique({
+    where: { email: input.email },
+    include: { company: true },
+  });
   if (!user) {
     const err = new Error('Invalid credentials') as Error & { code: string; status: number };
     err.code = 'INVALID_CREDENTIALS';
@@ -94,9 +147,10 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
       id: user.id,
       email: user.email,
       role: user.role,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      university: user.university,
+      firstName: user.firstName ?? undefined,
+      lastName: user.lastName ?? undefined,
+      university: user.university ?? undefined,
+      companyName: user.company?.companyName ?? undefined,
     },
   };
 }

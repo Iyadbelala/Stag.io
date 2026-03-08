@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "stagio": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["tsx", "src/mcp.ts"],
+      "cwd": "${workspaceFolder}/Server",
+      "env": {}
+    }
+  }
+}

@@ -152,28 +152,30 @@ export default function Navbar() {
                   {/* User info header */}
                   <div className="border-b border-surface-sand px-4 py-3">
                     <p className="text-sm font-medium text-coffee-dark truncate">
-                      {user.firstName} {user.lastName}
+                      {user.role === "company" ? user.companyName : `${user.firstName} ${user.lastName}`}
                     </p>
                     <p className="text-xs text-text-muted truncate">{user.email}</p>
                   </div>
 
                   {/* Menu items */}
                   <Link
-                    href="/student"
+                    href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : "/student"}
                     onClick={() => setUserMenuOpen(false)}
                     className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
                   >
                     <HiOutlineViewGrid size={16} />
                     Dashboard
                   </Link>
-                  <Link
-                    href="/student/profile"
-                    onClick={() => setUserMenuOpen(false)}
-                    className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
-                  >
-                    <HiOutlineUser size={16} />
-                    Profile
-                  </Link>
+                  {user.role !== "admin" && (
+                    <Link
+                      href={user.role === "company" ? "/company/profile" : "/student/profile"}
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
+                    >
+                      <HiOutlineUser size={16} />
+                      Profile
+                    </Link>
+                  )}
 
                   <div className="border-t border-surface-sand">
                     <button
@@ -273,12 +275,12 @@ export default function Navbar() {
                 {/* Mobile user info */}
                 <div className="px-1 py-1">
                   <p className="text-sm font-medium text-coffee-dark">
-                    {user.firstName} {user.lastName}
+                    {user.role === "company" ? user.companyName : `${user.firstName} ${user.lastName}`}
                   </p>
                   <p className="text-xs text-text-muted">{user.email}</p>
                 </div>
                 <Link
-                  href="/student"
+                  href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : "/student"}
                   onClick={() => setMobileOpen(false)}
                   className="rounded-button border-2 border-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
                 >

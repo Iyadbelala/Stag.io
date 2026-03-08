@@ -14,9 +14,10 @@ export interface AuthUser {
   id: string;
   email: string;
   role: "student" | "company" | "admin";
-  firstName: string;
-  lastName: string;
-  university: string;
+  firstName?: string;
+  lastName?: string;
+  university?: string;
+  companyName?: string;
 }
 
 interface RegisterData {
@@ -27,12 +28,22 @@ interface RegisterData {
   university: string;
 }
 
+interface RegisterCompanyData {
+  email: string;
+  password: string;
+  companyName: string;
+  contactPerson?: string;
+  industry?: string;
+  location?: string;
+}
+
 interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthUser>;
+  register: (data: RegisterData) => Promise<AuthUser>;
+  registerCompany: (data: RegisterCompanyData) => Promise<AuthUser>;
   logout: () => void;
   updateUser: (updatedUser: AuthUser) => void;
 }
@@ -65,20 +76,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(newUser);
   };
 
-  const login = useCallback(async (email: string, password: string) => {
+  const login = useCallback(async (email: string, password: string): Promise<AuthUser> => {
     const { data } = await api.post<{
       success: true;
       data: { token: string; user: AuthUser };
     }>("/api/auth/login", { email, password });
     persist(data.data.token, data.data.user);
+    return data.data.user;
   }, []);
 
-  const register = useCallback(async (payload: RegisterData) => {
+  const register = useCallback(async (payload: RegisterData): Promise<AuthUser> => {
     const { data } = await api.post<{
       success: true;
       data: { token: string; user: AuthUser };
     }>("/api/auth/register", payload);
     persist(data.data.token, data.data.user);
+    return data.data.user;
+  }, []);
+
+  const registerCompany = useCallback(async (payload: RegisterCompanyData): Promise<AuthUser> => {
+    const { data } = await api.post<{
+      success: true;
+      data: { token: string; user: AuthUser };
+    }>("/api/auth/register/company", payload);
+    persist(data.data.token, data.data.user);
+    return data.data.user;
   }, []);
 
   const updateUser = useCallback((updatedUser: AuthUser) => {
@@ -94,7 +116,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, registerCompany, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

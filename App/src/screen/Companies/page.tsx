@@ -8,136 +8,70 @@ import {
   HiBookmark,
   HiOutlineOfficeBuilding,
   HiOutlineShare,
-  HiOutlineUserGroup,
   HiOutlineGlobe,
-  HiOutlineCalendar,
   HiOutlineBriefcase,
   HiOutlineChevronLeft,
 } from "react-icons/hi";
 import { useLanguage } from "@/Components/LanguageContext";
+import { api } from "@/lib/api";
 
 /* ============================================
    Types
    ============================================ */
 interface Company {
-  id: number;
-  nameKey: string;
-  industryKey: string;
-  locationKey: string;
-  sizeKey: string;
-  descriptionKey: string;
+  id: string;
+  companyName: string;
+  industry: string | null;
+  location: string | null;
+  website: string | null;
+  description: string | null;
+  logoUrl: string | null;
+  contactPerson: string | null;
   openPositions: number;
-  foundedKey: string;
-  websiteKey: string;
-  tags: string[];
-  perks: string[];
+  createdAt: string;
 }
-
-/* ============================================
-   Mock Data (translation keys)
-   ============================================ */
-const companies: Company[] = [
-  {
-    id: 1,
-    nameKey: "company.1.name",
-    industryKey: "company.1.industry",
-    locationKey: "company.1.location",
-    sizeKey: "company.1.size",
-    descriptionKey: "company.1.desc",
-    openPositions: 2,
-    foundedKey: "company.1.founded",
-    websiteKey: "company.1.website",
-    tags: ["company.tag.remote", "company.tag.verified"],
-    perks: ["company.1.perk.1", "company.1.perk.2", "company.1.perk.3", "company.1.perk.4"],
-  },
-  {
-    id: 2,
-    nameKey: "company.2.name",
-    industryKey: "company.2.industry",
-    locationKey: "company.2.location",
-    sizeKey: "company.2.size",
-    descriptionKey: "company.2.desc",
-    openPositions: 1,
-    foundedKey: "company.2.founded",
-    websiteKey: "company.2.website",
-    tags: ["company.tag.verified"],
-    perks: ["company.2.perk.1", "company.2.perk.2", "company.2.perk.3"],
-  },
-  {
-    id: 3,
-    nameKey: "company.3.name",
-    industryKey: "company.3.industry",
-    locationKey: "company.3.location",
-    sizeKey: "company.3.size",
-    descriptionKey: "company.3.desc",
-    openPositions: 1,
-    foundedKey: "company.3.founded",
-    websiteKey: "company.3.website",
-    tags: ["company.tag.paid", "company.tag.verified"],
-    perks: ["company.3.perk.1", "company.3.perk.2", "company.3.perk.3"],
-  },
-  {
-    id: 4,
-    nameKey: "company.4.name",
-    industryKey: "company.4.industry",
-    locationKey: "company.4.location",
-    sizeKey: "company.4.size",
-    descriptionKey: "company.4.desc",
-    openPositions: 1,
-    foundedKey: "company.4.founded",
-    websiteKey: "company.4.website",
-    tags: ["company.tag.remote"],
-    perks: ["company.4.perk.1", "company.4.perk.2", "company.4.perk.3"],
-  },
-  {
-    id: 5,
-    nameKey: "company.5.name",
-    industryKey: "company.5.industry",
-    locationKey: "company.5.location",
-    sizeKey: "company.5.size",
-    descriptionKey: "company.5.desc",
-    openPositions: 2,
-    foundedKey: "company.5.founded",
-    websiteKey: "company.5.website",
-    tags: ["company.tag.verified", "company.tag.paid"],
-    perks: ["company.5.perk.1", "company.5.perk.2", "company.5.perk.3", "company.5.perk.4"],
-  },
-  {
-    id: 6,
-    nameKey: "company.6.name",
-    industryKey: "company.6.industry",
-    locationKey: "company.6.location",
-    sizeKey: "company.6.size",
-    descriptionKey: "company.6.desc",
-    openPositions: 1,
-    foundedKey: "company.6.founded",
-    websiteKey: "company.6.website",
-    tags: ["company.tag.public"],
-    perks: ["company.6.perk.1", "company.6.perk.2", "company.6.perk.3"],
-  },
-];
 
 /* ============================================
    Component
    ============================================ */
 export default function CompaniesPage() {
   const { t } = useLanguage();
-  const [selectedId, setSelectedId] = useState<number | null>(1);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
   const [committedSearch, setCommittedSearch] = useState("");
   const [committedLocation, setCommittedLocation] = useState("");
   const [locationOpen, setLocationOpen] = useState(false);
   const locationRef = useRef<HTMLDivElement>(null);
-  const [savedIds, setSavedIds] = useState<Set<number>>(new Set());
-  const [animating, setAnimating] = useState(false);
-  const [visibleCards, setVisibleCards] = useState<Set<number>>(new Set());
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
-  // Unique translated locations for suggestions
+  /* ---- Fetch companies from API ---- */
+  useEffect(() => {
+    async function fetchCompanies() {
+      try {
+        const { data } = await api.get<{ success: true; data: Company[] }>("/api/companies");
+        setCompanies(data.data);
+        if (data.data.length > 0) {
+          setSelectedId(data.data[0].id);
+        }
+      } catch {
+        setCompanies([]);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchCompanies();
+  }, []);
+
+  // Unique locations for suggestions
   const locationSuggestions = useMemo(() => {
-    const all = companies.map((c) => t(c.locationKey));
+    const all = companies
+      .map((c) => c.location)
+      .filter((l): l is string => !!l);
     return [...new Set(all)];
-  }, [t]);
+  }, [companies]);
 
   const filteredLocations = useMemo(() => {
     const loc = location.trim().toLowerCase();
@@ -156,7 +90,7 @@ export default function CompaniesPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const toggleSave = (id: number) => {
+  const toggleSave = (id: string) => {
     setSavedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
@@ -166,8 +100,6 @@ export default function CompaniesPage() {
   };
 
   const handleSearch = () => {
-    setAnimating(true);
-    setVisibleCards(new Set());
     setCommittedSearch(search);
     setCommittedLocation(location);
   };
@@ -178,30 +110,24 @@ export default function CompaniesPage() {
     return companies.filter((c) => {
       const matchesSearch =
         !q ||
-        t(c.nameKey).toLowerCase().includes(q) ||
-        t(c.industryKey).toLowerCase().includes(q) ||
-        t(c.locationKey).toLowerCase().includes(q);
+        c.companyName.toLowerCase().includes(q) ||
+        (c.industry?.toLowerCase().includes(q) ?? false) ||
+        (c.location?.toLowerCase().includes(q) ?? false);
       const matchesLocation =
-        !loc || t(c.locationKey).toLowerCase().includes(loc);
+        !loc || (c.location?.toLowerCase().includes(loc) ?? false);
       return matchesSearch && matchesLocation;
     });
-  }, [committedSearch, committedLocation, t]);
-
-  // Stagger animate cards after filter changes
-  useEffect(() => {
-    if (!animating) return;
-    const ids = filtered.map((c) => c.id);
-    ids.forEach((id, idx) => {
-      setTimeout(() => {
-        setVisibleCards((prev) => new Set([...prev, id]));
-      }, idx * 80);
-    });
-    const total = ids.length * 80 + 300;
-    const timer = setTimeout(() => setAnimating(false), total);
-    return () => clearTimeout(timer);
-  }, [filtered, animating]);
+  }, [committedSearch, committedLocation, companies]);
 
   const selected = companies.find((c) => c.id === selectedId) ?? null;
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-surface-cream">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-coffee-warm border-t-transparent" />
+      </div>
+    );
+  }
 
   return (
     <section className="min-h-[calc(100vh-80px)] bg-surface-cream">
@@ -217,6 +143,7 @@ export default function CompaniesPage() {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               placeholder={t("companies.searchPlaceholder")}
               className="w-full rounded-button border border-surface-sand bg-surface-cream py-2.5 pl-10 pr-4 text-sm text-text-primary placeholder:text-text-muted focus:border-coffee-warm focus:outline-none"
             />
@@ -293,7 +220,11 @@ export default function CompaniesPage() {
           {filtered.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-center">
               <HiOutlineSearch size={40} className="mb-3 text-text-muted/50" />
-              <p className="text-sm text-text-muted">{t("companies.noResults")}</p>
+              <p className="text-sm text-text-muted">
+                {companies.length === 0
+                  ? "No companies have registered yet."
+                  : t("companies.noResults")}
+              </p>
             </div>
           ) : (
             filtered.map((item) => (
@@ -304,12 +235,6 @@ export default function CompaniesPage() {
                   selectedId === item.id
                     ? "border-l-[3px] border-l-coffee-warm bg-coffee-gold/5"
                     : "border-l-[3px] border-l-transparent"
-                } ${
-                  animating
-                    ? visibleCards.has(item.id)
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-3"
-                    : "opacity-100 translate-y-0"
                 }`}
               >
                 {/* Bookmark top-right */}
@@ -342,32 +267,28 @@ export default function CompaniesPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     {/* Industry badge */}
-                    <span className="inline-block w-fit rounded-full bg-coffee-gold/10 px-2.5 py-0.5 text-[11px] font-medium text-coffee-warm">
-                      {t(item.industryKey)}
-                    </span>
+                    {item.industry && (
+                      <span className="inline-block w-fit rounded-full bg-coffee-gold/10 px-2.5 py-0.5 text-[11px] font-medium text-coffee-warm">
+                        {item.industry}
+                      </span>
+                    )}
 
                     {/* Company name */}
                     <h3 className="pr-8 text-[15px] font-semibold leading-snug text-coffee-dark">
-                      {t(item.nameKey)}
+                      {item.companyName}
                     </h3>
 
                     {/* Location */}
-                    <p className="text-[13px] text-text-muted">
-                      {t(item.locationKey)}
-                    </p>
+                    {item.location && (
+                      <p className="text-[13px] text-text-muted">
+                        {item.location}
+                      </p>
+                    )}
                   </div>
                 </div>
 
                 {/* Tags row */}
                 <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                  {item.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded border border-surface-sand bg-surface-cream px-2 py-0.5 text-[11px] text-text-muted"
-                    >
-                      {t(tag)}
-                    </span>
-                  ))}
                   <span className="rounded border border-surface-sand bg-surface-cream px-2 py-0.5 text-[11px] text-text-muted">
                     {item.openPositions} {t("companies.detail.openPositions")}
                   </span>
@@ -401,21 +322,25 @@ export default function CompaniesPage() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-coffee-dark sm:text-2xl">
-                    {t(selected.nameKey)}
+                    {selected.companyName}
                   </h1>
-                  <p className="mt-1 text-sm text-text-secondary">
-                    {t(selected.industryKey)}
-                  </p>
-                  <p className="mt-0.5 text-[13px] text-text-muted">
-                    {t(selected.locationKey)}
-                  </p>
+                  {selected.industry && (
+                    <p className="mt-1 text-sm text-text-secondary">
+                      {selected.industry}
+                    </p>
+                  )}
+                  {selected.location && (
+                    <p className="mt-0.5 text-[13px] text-text-muted">
+                      {selected.location}
+                    </p>
+                  )}
                 </div>
               </div>
 
               {/* Actions */}
               <div className="mb-6 flex items-center gap-3">
                 <a
-                  href={`/internships?company=${encodeURIComponent(t(selected.nameKey))}`}
+                  href={`/internships?company=${encodeURIComponent(selected.companyName)}`}
                   className="rounded-button bg-coffee-warm px-6 py-2.5 text-sm font-semibold text-text-inverse shadow-sm transition-all hover:bg-coffee-gold cursor-pointer"
                 >
                   {t("companies.viewInternships")}
@@ -448,36 +373,51 @@ export default function CompaniesPage() {
                   {t("companies.detail.overview")}
                 </h2>
                 <div className="flex flex-col gap-3">
+                  {selected.industry && (
+                    <div className="flex items-start gap-3">
+                      <HiOutlineBriefcase size={18} className="mt-0.5 shrink-0 text-text-muted" />
+                      <div>
+                        <p className="text-sm font-medium text-coffee-dark">{t("companies.detail.industry")}</p>
+                        <p className="text-[13px] text-text-muted">{selected.industry}</p>
+                      </div>
+                    </div>
+                  )}
+                  {selected.location && (
+                    <div className="flex items-start gap-3">
+                      <HiOutlineLocationMarker size={18} className="mt-0.5 shrink-0 text-text-muted" />
+                      <div>
+                        <p className="text-sm font-medium text-coffee-dark">Location</p>
+                        <p className="text-[13px] text-text-muted">{selected.location}</p>
+                      </div>
+                    </div>
+                  )}
+                  {selected.website && (
+                    <div className="flex items-start gap-3">
+                      <HiOutlineGlobe size={18} className="mt-0.5 shrink-0 text-text-muted" />
+                      <div>
+                        <p className="text-sm font-medium text-coffee-dark">{t("companies.detail.website")}</p>
+                        <a
+                          href={selected.website.startsWith("http") ? selected.website : `https://${selected.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[13px] text-coffee-warm hover:text-coffee-gold"
+                        >
+                          {selected.website}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {selected.contactPerson && (
+                    <div className="flex items-start gap-3">
+                      <HiOutlineOfficeBuilding size={18} className="mt-0.5 shrink-0 text-text-muted" />
+                      <div>
+                        <p className="text-sm font-medium text-coffee-dark">Contact Person</p>
+                        <p className="text-[13px] text-text-muted">{selected.contactPerson}</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex items-start gap-3">
                     <HiOutlineBriefcase size={18} className="mt-0.5 shrink-0 text-text-muted" />
-                    <div>
-                      <p className="text-sm font-medium text-coffee-dark">{t("companies.detail.industry")}</p>
-                      <p className="text-[13px] text-text-muted">{t(selected.industryKey)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <HiOutlineUserGroup size={18} className="mt-0.5 shrink-0 text-text-muted" />
-                    <div>
-                      <p className="text-sm font-medium text-coffee-dark">{t("companies.detail.size")}</p>
-                      <p className="text-[13px] text-text-muted">{t(selected.sizeKey)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <HiOutlineCalendar size={18} className="mt-0.5 shrink-0 text-text-muted" />
-                    <div>
-                      <p className="text-sm font-medium text-coffee-dark">{t("companies.detail.founded")}</p>
-                      <p className="text-[13px] text-text-muted">{t(selected.foundedKey)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <HiOutlineGlobe size={18} className="mt-0.5 shrink-0 text-text-muted" />
-                    <div>
-                      <p className="text-sm font-medium text-coffee-dark">{t("companies.detail.website")}</p>
-                      <p className="text-[13px] text-text-muted">{t(selected.websiteKey)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-3">
-                    <HiOutlineOfficeBuilding size={18} className="mt-0.5 shrink-0 text-text-muted" />
                     <div>
                       <p className="text-sm font-medium text-coffee-dark">{t("companies.detail.openPositions")}</p>
                       <p className="text-[13px] text-text-muted">{selected.openPositions}</p>
@@ -486,39 +426,20 @@ export default function CompaniesPage() {
                 </div>
               </div>
 
-              {/* Divider */}
-              <hr className="mb-6 border-surface-sand" />
-
               {/* Description */}
-              <div className="mb-6">
-                <h2 className="mb-3 text-base font-semibold text-coffee-dark">
-                  {t("companies.detail.about")}
-                </h2>
-                <p className="text-sm leading-relaxed text-text-secondary">
-                  {t(selected.descriptionKey)}
-                </p>
-              </div>
-
-              {/* Divider */}
-              <hr className="mb-6 border-surface-sand" />
-
-              {/* Perks */}
-              <div>
-                <h2 className="mb-3 text-base font-semibold text-coffee-dark">
-                  {t("companies.detail.perks")}
-                </h2>
-                <ul className="flex flex-col gap-2">
-                  {selected.perks.map((perkKey) => (
-                    <li
-                      key={perkKey}
-                      className="flex items-start gap-2 text-sm leading-relaxed text-text-secondary"
-                    >
-                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-coffee-gold" />
-                      {t(perkKey)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              {selected.description && (
+                <>
+                  <hr className="mb-6 border-surface-sand" />
+                  <div className="mb-6">
+                    <h2 className="mb-3 text-base font-semibold text-coffee-dark">
+                      {t("companies.detail.about")}
+                    </h2>
+                    <p className="text-sm leading-relaxed text-text-secondary whitespace-pre-line">
+                      {selected.description}
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-20 text-center">

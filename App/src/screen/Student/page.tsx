@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import {
   HiOutlineBriefcase,
   HiOutlineClipboardList,
@@ -7,10 +8,36 @@ import {
   HiOutlineClock,
   HiOutlineLogout,
   HiOutlineUser,
+  HiOutlineXCircle,
 } from "react-icons/hi";
 import { useAuth } from "@/Components/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { api } from "@/lib/api";
+
+/* ============================================
+   Types
+   ============================================ */
+interface DashboardStats {
+  applicationsSent: number;
+  acceptedApplications: number;
+  pendingResponses: number;
+  rejectedApplications: number;
+}
+
+interface RecentApplication {
+  id: string;
+  title: string;
+  company: string;
+  status: "pending" | "accepted" | "rejected" | "withdrawn" | "validated";
+  appliedAt: string;
+}
+
+interface DashboardData {
+  stats: DashboardStats;
+  recentApplications: RecentApplication[];
+  profileCompletion: number;
+}
 
 /* ============================================
    Stat Card
@@ -41,30 +68,36 @@ function StatCard({ icon, label, value, color }: StatCardProps) {
 /* ============================================
    Activity Row
    ============================================ */
-interface ActivityRowProps {
-  title: string;
-  company: string;
-  status: "pending" | "accepted" | "rejected";
-  date: string;
-}
-
-const statusConfig = {
+const statusConfig: Record<string, { label: string; classes: string }> = {
   pending: {
     label: "Pending",
     classes: "bg-status-warning/10 text-status-warning",
   },
   accepted: {
     label: "Accepted",
-    classes: "bg-status-success/10 text-status-success",
+    classes: "bg-blue-100 text-blue-700",
   },
   rejected: {
     label: "Rejected",
     classes: "bg-status-error/10 text-status-error",
   },
+  withdrawn: {
+    label: "Withdrawn",
+    classes: "bg-text-muted/10 text-text-muted",
+  },
+  validated: {
+    label: "Validated",
+    classes: "bg-status-success/10 text-status-success",
+  },
 };
 
-function ActivityRow({ title, company, status, date }: ActivityRowProps) {
+function ActivityRow({ title, company, status, appliedAt }: RecentApplication) {
   const s = statusConfig[status];
+  const dateStr = new Date(appliedAt).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
+
   return (
     <div className="flex items-center justify-between gap-4 border-b border-surface-sand py-4 last:border-0">
       <div className="min-w-0">
@@ -77,7 +110,7 @@ function ActivityRow({ title, company, status, date }: ActivityRowProps) {
         >
           {s.label}
         </span>
-        <span className="text-xs text-text-muted hidden sm:block">{date}</span>
+        <span className="text-xs text-text-muted hidden sm:block">{dateStr}</span>
       </div>
     </div>
   );
@@ -89,32 +122,48 @@ function ActivityRow({ title, company, status, date }: ActivityRowProps) {
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user?.role === "admin") {
+      router.replace("/admin");
+      return;
+    }
+    async function fetchDashboard() {
+      try {
+        const res = await api.get<{ success: true; data: DashboardData }>("/api/profile/dashboard");
+        setData(res.data.data);
+      } catch {
+        // Fallback to empty state
+        setData({
+          stats: { applicationsSent: 0, acceptedApplications: 0, pendingResponses: 0, rejectedApplications: 0 },
+          recentApplications: [],
+          profileCompletion: 0,
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchDashboard();
+  }, []);
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
-  const recentActivity: ActivityRowProps[] = [
-    {
-      title: "Frontend Developer Intern",
-      company: "TechVision Algeria",
-      status: "pending",
-      date: "Feb 20",
-    },
-    {
-      title: "UI/UX Design Intern",
-      company: "DesignLab DZ",
-      status: "accepted",
-      date: "Feb 18",
-    },
-    {
-      title: "Data Analyst Intern",
-      company: "DataFlow Solutions",
-      status: "rejected",
-      date: "Feb 15",
-    },
-  ];
+  if (isLoading) {
+    return (
+      <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-surface-cream">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-coffee-warm border-t-transparent" />
+      </div>
+    );
+  }
+
+  const stats = data?.stats ?? { applicationsSent: 0, acceptedApplications: 0, pendingResponses: 0, rejectedApplications: 0 };
+  const recentApplications = data?.recentApplications ?? [];
+  const profileCompletion = data?.profileCompletion ?? 0;
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-6 py-10">
@@ -154,7 +203,7 @@ export default function StudentDashboard() {
               <HiOutlineBriefcase size={22} className="text-coffee-warm" />
             }
             label="Applications Sent"
-            value={3}
+            value={stats.applicationsSent}
             color="bg-coffee-warm/10"
           />
           <StatCard
@@ -164,57 +213,59 @@ export default function StudentDashboard() {
                 className="text-status-success"
               />
             }
-            label="Interviews Scheduled"
-            value={1}
+            label="Accepted"
+            value={stats.acceptedApplications}
             color="bg-status-success/10"
-          />
-          <StatCard
-            icon={
-              <HiOutlineClipboardList
-                size={22}
-                className="text-status-info"
-              />
-            }
-            label="Saved Offers"
-            value={7}
-            color="bg-status-info/10"
           />
           <StatCard
             icon={
               <HiOutlineClock size={22} className="text-status-warning" />
             }
             label="Pending Responses"
-            value={2}
+            value={stats.pendingResponses}
             color="bg-status-warning/10"
+          />
+          <StatCard
+            icon={
+              <HiOutlineXCircle size={22} className="text-status-error" />
+            }
+            label="Rejected"
+            value={stats.rejectedApplications}
+            color="bg-status-error/10"
           />
         </div>
 
         {/* ---- Profile Completion Banner ---- */}
-        <div className="rounded-card border border-coffee-gold/30 bg-coffee-gold/5 px-6 py-5">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="font-medium text-coffee-dark">
-                Complete your profile to stand out
-              </p>
-              <p className="mt-0.5 text-sm text-text-muted">
-                Add your CV, skills, and bio to increase your visibility to
-                companies.
-              </p>
+        {profileCompletion < 100 && (
+          <div className="rounded-card border border-coffee-gold/30 bg-coffee-gold/5 px-6 py-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="font-medium text-coffee-dark">
+                  Complete your profile to stand out
+                </p>
+                <p className="mt-0.5 text-sm text-text-muted">
+                  Add your CV, skills, and bio to increase your visibility to
+                  companies.
+                </p>
+              </div>
+              <Link
+                href="/student/profile"
+                className="shrink-0 rounded-button bg-coffee-warm px-5 py-2.5 text-sm font-semibold text-text-inverse transition-colors hover:bg-coffee-gold"
+              >
+                Complete Profile
+              </Link>
             </div>
-            <Link
-              href="/student/profile"
-              className="shrink-0 rounded-button bg-coffee-warm px-5 py-2.5 text-sm font-semibold text-text-inverse transition-colors hover:bg-coffee-gold"
-            >
-              Complete Profile
-            </Link>
+            <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-surface-sand">
+              <div
+                className="h-full rounded-full bg-coffee-gold transition-all"
+                style={{ width: `${profileCompletion}%` }}
+              />
+            </div>
+            <p className="mt-1 text-right text-xs text-text-muted">
+              {profileCompletion}% complete
+            </p>
           </div>
-          <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-surface-sand">
-            <div className="h-full w-1/3 rounded-full bg-coffee-gold transition-all" />
-          </div>
-          <p className="mt-1 text-right text-xs text-text-muted">
-            33% complete
-          </p>
-        </div>
+        )}
 
         {/* ---- Recent Activity ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
@@ -225,13 +276,23 @@ export default function StudentDashboard() {
             Your latest internship application activity.
           </p>
 
-          {recentActivity.map((item, i) => (
-            <ActivityRow key={i} {...item} />
-          ))}
-
-          <button className="mt-6 w-full rounded-button border border-surface-sand py-2.5 text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm cursor-pointer">
-            View All Applications
-          </button>
+          {recentApplications.length === 0 ? (
+            <div className="py-8 text-center">
+              <HiOutlineClipboardList size={40} className="mx-auto mb-3 text-text-muted/40" />
+              <p className="text-sm text-text-muted">
+                No applications yet. Browse internships and start applying!
+              </p>
+            </div>
+          ) : (
+            <>
+              {recentApplications.map((item) => (
+                <ActivityRow key={item.id} {...item} />
+              ))}
+              <button className="mt-6 w-full rounded-button border border-surface-sand py-2.5 text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm cursor-pointer">
+                View All Applications
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

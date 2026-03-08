@@ -1,6 +1,11 @@
 import { Router } from 'express';
 import authRouter from './auth.routes';
 import profileRouter from './profile.routes';
+import companyProfileRouter from './company-profile.routes';
+import companiesRouter from './companies.routes';
+import offersRouter from './offers.routes';
+import applicationsRouter from './applications.routes';
+import adminRouter from './admin.routes';
 
 export const router = Router();
 
@@ -27,3 +32,18 @@ router.use('/auth', authRouter);
 
 // Profile routes
 router.use('/profile', profileRouter);
+
+// Company routes (authenticated)
+router.use('/company', companyProfileRouter);
+
+// Public companies listing
+router.use('/companies', companiesRouter);
+
+// Internship offers
+router.use('/offers', offersRouter);
+
+// Applications
+router.use('/applications', applicationsRouter);
+
+// Admin
+router.use('/admin', adminRouter);

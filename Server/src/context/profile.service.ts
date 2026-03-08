@@ -4,9 +4,9 @@ export interface StudentProfile {
   id: string;
   email: string;
   role: string;
-  firstName: string;
-  lastName: string;
-  university: string;
+  firstName: string | null;
+  lastName: string | null;
+  university: string | null;
   department: string | null;
   bio: string | null;
   skills: string[];

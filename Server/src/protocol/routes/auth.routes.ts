@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { registerStudent, loginUser } from '../../context/auth.service';
+import { registerStudent, registerCompany, loginUser } from '../../context/auth.service';
 
 const authRouter = Router();
 
@@ -42,6 +42,30 @@ authRouter.post('/login', async (req: Request, res: Response) => {
   try {
     const result = await loginUser({ email, password });
     res.status(200).json({ success: true, data: result });
+  } catch (err: unknown) {
+    const e = err as { code?: string; status?: number; message: string };
+    res.status(e.status ?? 500).json({
+      success: false,
+      error: { code: e.code ?? 'INTERNAL_ERROR', message: e.message },
+    });
+  }
+});
+
+/* POST /api/auth/register/company */
+authRouter.post('/register/company', async (req: Request, res: Response) => {
+  const { email, password, companyName, contactPerson, industry, location } = req.body;
+
+  if (!email || !password || !companyName) {
+    res.status(400).json({
+      success: false,
+      error: { code: 'MISSING_FIELDS', message: 'Email, password, and company name are required' },
+    });
+    return;
+  }
+
+  try {
+    const result = await registerCompany({ email, password, companyName, contactPerson, industry, location });
+    res.status(201).json({ success: true, data: result });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };
     res.status(e.status ?? 500).json({

@@ -63,7 +63,7 @@ const en: Record<string, string> = {
   "features.title": "Why Stag.io?",
   "features.subtitle":
     "Built from the ground up to solve real internship management challenges for every stakeholder.",
-  "features.1.title": "Smart Matching",
+  "features.1.title": "SmartMatch®",
   "features.1.desc":
     "Our algorithm matches students with internships based on skills, location, and academic requirements.",
   "features.2.title": "Progress Tracking",
@@ -301,6 +301,7 @@ const en: Record<string, string> = {
   "brand.copyright": "Stag.io — All rights reserved.",
 
   /* ---- Internships Page ---- */
+  "internships.title": "Internships",
   "internships.searchPlaceholder": "Search internships, companies...",
   "internships.locationPlaceholder": "City or region",
   "internships.searchBtn": "Search",
@@ -406,7 +407,9 @@ const en: Record<string, string> = {
   "intern.6.req.3": "Proficiency in Microsoft Office suite",
 
   /* ---- Companies Page ---- */
-  "companies.searchPlaceholder": "Search companies, industries...",
+  "companies.title": "Companies",
+  "companies.noCompaniesYet": "No companies have registered yet.",
+  "companies.searchPlaceholder": "Search companies, people...",
   "companies.locationPlaceholder": "City or region",
   "companies.searchBtn": "Search",
   "companies.sortBy": "Sort by:",
@@ -695,6 +698,18 @@ const en: Record<string, string> = {
   "internships.coverLetter": "Cover Letter",
   "internships.company": "Company",
   "internships.posted": "Posted",
+  "internships.tabAll": "All Internships",
+  "internships.tabMatches": "AI Matches",
+  "internships.matchScore": "Match",
+  "internships.matchedSkills": "Matched Skills",
+  "internships.loadingMatches": "Finding your best matches...",
+  "internships.matchError": "Could not load AI matches.",
+  "internships.noMatches": "No matches found. Complete your profile to get better results.",
+  "internships.loginForMatches": "Log in as a student to see AI-powered matches.",
+  "internships.topMatch": "Top Match",
+  "internships.greatFit": "Great Fit",
+  "internships.goodMatch": "Good Match",
+  "internships.retryMatches": "Retry",
 
   /* ---- Student Profile ---- */
   "studentProfile.title": "My Profile",

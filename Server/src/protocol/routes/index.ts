@@ -8,6 +8,8 @@ import applicationsRouter from './applications.routes';
 import adminRouter from './admin.routes';
 import superadminRouter from './superadmin.routes';
 import universityRouter from './university.routes';
+import matchingRouter from './matching.routes';
+import searchRouter from './search.routes';
 
 export const router = Router();
 
@@ -55,3 +57,9 @@ router.use('/superadmin', superadminRouter);
 
 // University
 router.use('/university', universityRouter);
+
+// AI Smart Matching
+router.use('/matching', matchingRouter);
+
+// Public search
+router.use('/search', searchRouter);

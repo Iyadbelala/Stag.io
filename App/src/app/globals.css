@@ -162,3 +162,154 @@ html.dark .dark-section {
     transform: translate(15px, 35px) scale(1.05);
   }
 }
+
+/* ============================================
+   Internships Page — Card & Tab Animations
+   ============================================ */
+
+@keyframes card-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes tab-underline {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes score-fill {
+  from { width: 0; }
+}
+
+.animate-card-slide-in {
+  animation: card-slide-in 0.4s ease-out both;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.35s ease-out both;
+}
+
+.animate-tab-underline {
+  animation: tab-underline 0.25s ease-out both;
+}
+
+.animate-score-fill {
+  animation: score-fill 0.8s ease-out both;
+}
+
+/* ============================================
+   Score Ring SVG Animation
+   ============================================ */
+
+@keyframes score-ring-draw {
+  from { stroke-dashoffset: var(--ring-circ, 120); }
+}
+
+.animate-score-ring {
+  animation: score-ring-draw 1s ease-out both;
+}
+
+/* ============================================
+   Modal Enter Animation
+   ============================================ */
+
+@keyframes modal-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-enter {
+  animation: modal-enter 0.25s ease-out both;
+}
+
+/* ============================================
+   Smart Matching Overlay Animations
+   ============================================ */
+
+@keyframes matching-ring {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes matching-ring-reverse {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+@keyframes matching-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.6; transform: scale(1.15); }
+}
+
+@keyframes matching-dot {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40%           { opacity: 1; transform: scale(1.2); }
+}
+
+.animate-matching-ring {
+  animation: matching-ring 2.5s linear infinite;
+}
+
+.animate-matching-ring-reverse {
+  animation: matching-ring-reverse 3s linear infinite;
+}
+
+.animate-matching-pulse {
+  animation: matching-pulse 1.8s ease-in-out infinite;
+}
+
+.animate-matching-dot {
+  animation: matching-dot 1.4s ease-in-out infinite;
+}
+
+/* ---- Smart Match Toggle animations ---- */
+@keyframes switch-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(122, 78, 58, 0); }
+  50%      { box-shadow: 0 0 8px 2px rgba(122, 78, 58, 0.15); }
+}
+
+@keyframes switch-particle {
+  0%   { opacity: 0; transform: translateY(0) scale(0); }
+  30%  { opacity: 1; transform: translateY(-4px) scale(1); }
+  100% { opacity: 0; transform: translateY(-12px) scale(0.5); }
+}
+
+.animate-switch-glow {
+  animation: switch-glow 2s ease-in-out infinite;
+}
+
+.animate-switch-particle {
+  animation: switch-particle 1.5s ease-out infinite;
+}
+
+/* ---- Logo Breathing ---- */
+@keyframes logo-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50%      { transform: scale(1.08); opacity: 1; }
+}
+
+.animate-logo-breathe {
+  display: inline-block;
+  animation: logo-breathe 2s ease-in-out infinite;
+}

@@ -64,7 +64,7 @@ const fr: Record<string, string> = {
   "features.title": "Pourquoi Stag.io ?",
   "features.subtitle":
     "Conçu de zéro pour résoudre les vrais défis de la gestion des stages pour chaque partie prenante.",
-  "features.1.title": "Matching intelligent",
+  "features.1.title": "SmartMatch®",
   "features.1.desc":
     "Notre algorithme associe les étudiants aux stages en fonction des compétences, de la localisation et des exigences académiques.",
   "features.2.title": "Suivi de progression",
@@ -311,6 +311,7 @@ const fr: Record<string, string> = {
   "brand.copyright": "Stag.io — Tous droits réservés.",
 
   /* ---- Internships Page ---- */
+  "internships.title": "Stages",
   "internships.searchPlaceholder": "Rechercher des stages, entreprises...",
   "internships.locationPlaceholder": "Ville ou région",
   "internships.searchBtn": "Rechercher",
@@ -416,7 +417,9 @@ const fr: Record<string, string> = {
   "intern.6.req.3": "Maîtrise de la suite Microsoft Office",
 
   /* ---- Companies Page ---- */
-  "companies.searchPlaceholder": "Rechercher des entreprises, secteurs...",
+  "companies.title": "Entreprises",
+  "companies.noCompaniesYet": "Aucune entreprise n'est encore inscrite.",
+  "companies.searchPlaceholder": "Rechercher des entreprises, personnes...",
   "companies.locationPlaceholder": "Ville ou région",
   "companies.searchBtn": "Rechercher",
   "companies.sortBy": "Trier par :",
@@ -705,6 +708,18 @@ const fr: Record<string, string> = {
   "internships.coverLetter": "Lettre de motivation",
   "internships.company": "Entreprise",
   "internships.posted": "Publié",
+  "internships.tabAll": "Tous les stages",
+  "internships.tabMatches": "Correspondances IA",
+  "internships.matchScore": "Compatibilité",
+  "internships.matchedSkills": "Compétences correspondantes",
+  "internships.loadingMatches": "Recherche de vos meilleures correspondances...",
+  "internships.matchError": "Impossible de charger les correspondances IA.",
+  "internships.noMatches": "Aucune correspondance trouvée. Complétez votre profil pour de meilleurs résultats.",
+  "internships.loginForMatches": "Connectez-vous en tant qu'étudiant pour voir les correspondances IA.",
+  "internships.topMatch": "Meilleure correspondance",
+  "internships.greatFit": "Excellent choix",
+  "internships.goodMatch": "Bon choix",
+  "internships.retryMatches": "Réessayer",
 
   /* ---- Student Profile ---- */
   "studentProfile.title": "Mon profil",

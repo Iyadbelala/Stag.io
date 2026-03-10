@@ -19,6 +19,7 @@ import { useAuth } from "@/Components/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { useLanguage } from "@/Components/LanguageContext";
 
 /* ============================================
    Types
@@ -78,15 +79,15 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
 /* ============================================
    Activity Row
    ============================================ */
-const statusConfig = {
-  pending: { label: "Pending", classes: "bg-status-warning/10 text-status-warning" },
-  accepted: { label: "Accepted", classes: "bg-blue-100 text-blue-700" },
-  rejected: { label: "Rejected", classes: "bg-status-error/10 text-status-error" },
-  withdrawn: { label: "Withdrawn", classes: "bg-text-muted/10 text-text-muted" },
-  validated: { label: "Validated", classes: "bg-status-success/10 text-status-success" },
-};
+function ActivityRow({ id, applicantName, position, status, appliedAt, coverLetter, cvUrl, email, onStatusChange, t }: RecentApplicant & { onStatusChange?: (id: string, status: "accepted" | "rejected") => void; t: (key: string) => string }) {
+  const statusConfig = {
+    pending: { label: t("status.pending"), classes: "bg-status-warning/10 text-status-warning" },
+    accepted: { label: t("status.accepted"), classes: "bg-blue-100 text-blue-700" },
+    rejected: { label: t("status.rejected"), classes: "bg-status-error/10 text-status-error" },
+    withdrawn: { label: t("status.withdrawn"), classes: "bg-text-muted/10 text-text-muted" },
+    validated: { label: t("status.validated"), classes: "bg-status-success/10 text-status-success" },
+  };
 
-function ActivityRow({ id, applicantName, position, status, appliedAt, coverLetter, cvUrl, email, onStatusChange }: RecentApplicant & { onStatusChange?: (id: string, status: "accepted" | "rejected") => void }) {
   const s = statusConfig[status];
   const dateStr = new Date(appliedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const isPending = status === "pending";
@@ -108,13 +109,13 @@ function ActivityRow({ id, applicantName, position, status, appliedAt, coverLett
                 onClick={(e) => { e.stopPropagation(); onStatusChange(id, "accepted"); }}
                 className="rounded-full bg-status-success/10 px-3 py-1 text-xs font-medium text-status-success transition-colors hover:bg-status-success/20 cursor-pointer"
               >
-                Accept
+                {t("companyDash.accept")}
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); onStatusChange(id, "rejected"); }}
                 className="rounded-full bg-status-error/10 px-3 py-1 text-xs font-medium text-status-error transition-colors hover:bg-status-error/20 cursor-pointer"
               >
-                Reject
+                {t("companyDash.reject")}
               </button>
             </>
           ) : (
@@ -130,30 +131,30 @@ function ActivityRow({ id, applicantName, position, status, appliedAt, coverLett
           <div className="rounded-card border border-surface-sand bg-surface-cream/30 p-4 space-y-3">
             {/* Email */}
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">Email</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">{t("companyDash.email")}</p>
               <a href={`mailto:${email}`} className="text-sm text-coffee-warm hover:text-coffee-gold underline">{email}</a>
             </div>
 
             {/* CV Link */}
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">CV / Resume</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">{t("companyDash.cvResume")}</p>
               {cvUrl ? (
                 <a href={cvUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:text-coffee-gold underline">
                   <HiOutlineClipboardList size={14} />
-                  View CV
+                  {t("companyDash.viewCV")}
                 </a>
               ) : (
-                <p className="text-sm text-text-muted italic">No CV provided</p>
+                <p className="text-sm text-text-muted italic">{t("companyDash.noCVProvided")}</p>
               )}
             </div>
 
             {/* Cover Letter */}
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">Cover Letter</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">{t("companyDash.coverLetter")}</p>
               {coverLetter ? (
                 <p className="text-sm text-text-secondary whitespace-pre-line">{coverLetter}</p>
               ) : (
-                <p className="text-sm text-text-muted italic">No cover letter provided</p>
+                <p className="text-sm text-text-muted italic">{t("companyDash.noCoverLetter")}</p>
               )}
             </div>
           </div>
@@ -169,9 +170,10 @@ function ActivityRow({ id, applicantName, position, status, appliedAt, coverLett
 interface CreateOfferModalProps {
   onClose: () => void;
   onCreated: (offer: Offer) => void;
+  t: (key: string) => string;
 }
 
-function CreateOfferModal({ onClose, onCreated }: CreateOfferModalProps) {
+function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -186,7 +188,7 @@ function CreateOfferModal({ onClose, onCreated }: CreateOfferModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.description || !form.requirements || !form.duration || !form.location) {
-      setError("All fields are required.");
+      setError(t("companyDash.allFieldsRequired"));
       return;
     }
     setIsSubmitting(true);
@@ -195,7 +197,7 @@ function CreateOfferModal({ onClose, onCreated }: CreateOfferModalProps) {
       const { data } = await api.post<{ success: true; data: Offer }>("/api/offers", form);
       onCreated(data.data);
     } catch {
-      setError("Failed to create offer. Please try again.");
+      setError(t("companyDash.createFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -211,19 +213,20 @@ function CreateOfferModal({ onClose, onCreated }: CreateOfferModalProps) {
       <div className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
+          aria-label={t("companyDash.postNewInternship")}
           className="absolute right-4 top-4 text-text-muted hover:text-coffee-dark cursor-pointer"
         >
           <HiOutlineX size={20} />
         </button>
 
         <h2 className="mb-6 text-xl font-heading font-bold text-coffee-dark">
-          Post New Internship
+          {t("companyDash.postNewInternship")}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div>
-            <label htmlFor="title" className="mb-1.5 block text-sm font-medium text-text-primary">Position Title</label>
+            <label htmlFor="title" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.positionTitle")}</label>
             <input
               id="title"
               type="text"
@@ -237,20 +240,20 @@ function CreateOfferModal({ onClose, onCreated }: CreateOfferModalProps) {
           {/* Type & Duration */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="type" className="mb-1.5 block text-sm font-medium text-text-primary">Type</label>
+              <label htmlFor="type" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.type")}</label>
               <select
                 id="type"
                 value={form.type}
                 onChange={(e) => update("type", e.target.value)}
                 className="w-full rounded-button border border-surface-sand bg-surface-cream/50 px-4 py-3 text-sm text-text-primary outline-none transition-colors focus:border-coffee-gold/60"
               >
-                <option value="onsite">On-site</option>
-                <option value="remote">Remote</option>
-                <option value="hybrid">Hybrid</option>
+                <option value="onsite">{t("companyDash.onsite")}</option>
+                <option value="remote">{t("companyDash.remote")}</option>
+                <option value="hybrid">{t("companyDash.hybrid")}</option>
               </select>
             </div>
             <div>
-              <label htmlFor="duration" className="mb-1.5 block text-sm font-medium text-text-primary">Duration</label>
+              <label htmlFor="duration" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.duration")}</label>
               <input
                 id="duration"
                 type="text"
@@ -264,7 +267,7 @@ function CreateOfferModal({ onClose, onCreated }: CreateOfferModalProps) {
 
           {/* Location */}
           <div>
-            <label htmlFor="location" className="mb-1.5 block text-sm font-medium text-text-primary">Location</label>
+            <label htmlFor="location" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.location")}</label>
             <input
               id="location"
               type="text"
@@ -277,7 +280,7 @@ function CreateOfferModal({ onClose, onCreated }: CreateOfferModalProps) {
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="mb-1.5 block text-sm font-medium text-text-primary">Description</label>
+            <label htmlFor="description" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.description")}</label>
             <textarea
               id="description"
               rows={3}
@@ -290,7 +293,7 @@ function CreateOfferModal({ onClose, onCreated }: CreateOfferModalProps) {
 
           {/* Requirements */}
           <div>
-            <label htmlFor="requirements" className="mb-1.5 block text-sm font-medium text-text-primary">Requirements</label>
+            <label htmlFor="requirements" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.requirements")}</label>
             <textarea
               id="requirements"
               rows={3}
@@ -312,7 +315,7 @@ function CreateOfferModal({ onClose, onCreated }: CreateOfferModalProps) {
             disabled={isSubmitting}
             className="w-full rounded-button bg-coffee-warm py-3.5 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Publishing..." : "Publish Internship"}
+            {isSubmitting ? t("common.publishing") : t("companyDash.publishInternship")}
           </button>
         </form>
       </div>
@@ -327,9 +330,10 @@ interface EditOfferModalProps {
   offer: Offer;
   onClose: () => void;
   onUpdated: (offer: Offer) => void;
+  t: (key: string) => string;
 }
 
-function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
+function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
   const [form, setForm] = useState({
     title: offer.title,
     description: offer.description,
@@ -344,7 +348,7 @@ function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.title || !form.description || !form.requirements || !form.duration || !form.location) {
-      setError("All fields are required.");
+      setError(t("companyDash.allFieldsRequired"));
       return;
     }
     setIsSubmitting(true);
@@ -353,7 +357,7 @@ function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
       const { data } = await api.put<{ success: true; data: Offer }>(`/api/offers/${offer.id}`, form);
       onUpdated(data.data);
     } catch {
-      setError("Failed to update offer. Please try again.");
+      setError(t("companyDash.updateFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -369,19 +373,20 @@ function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
       <div className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
+          aria-label={t("companyDash.editInternship")}
           className="absolute right-4 top-4 text-text-muted hover:text-coffee-dark cursor-pointer"
         >
           <HiOutlineX size={20} />
         </button>
 
         <h2 className="mb-6 text-xl font-heading font-bold text-coffee-dark">
-          Edit Internship
+          {t("companyDash.editInternship")}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title */}
           <div>
-            <label htmlFor="edit-title" className="mb-1.5 block text-sm font-medium text-text-primary">Position Title</label>
+            <label htmlFor="edit-title" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.positionTitle")}</label>
             <input
               id="edit-title"
               type="text"
@@ -395,20 +400,20 @@ function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
           {/* Type & Duration */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label htmlFor="edit-type" className="mb-1.5 block text-sm font-medium text-text-primary">Type</label>
+              <label htmlFor="edit-type" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.type")}</label>
               <select
                 id="edit-type"
                 value={form.type}
                 onChange={(e) => update("type", e.target.value)}
                 className="w-full rounded-button border border-surface-sand bg-surface-cream/50 px-4 py-3 text-sm text-text-primary outline-none transition-colors focus:border-coffee-gold/60"
               >
-                <option value="onsite">On-site</option>
-                <option value="remote">Remote</option>
-                <option value="hybrid">Hybrid</option>
+                <option value="onsite">{t("companyDash.onsite")}</option>
+                <option value="remote">{t("companyDash.remote")}</option>
+                <option value="hybrid">{t("companyDash.hybrid")}</option>
               </select>
             </div>
             <div>
-              <label htmlFor="edit-duration" className="mb-1.5 block text-sm font-medium text-text-primary">Duration</label>
+              <label htmlFor="edit-duration" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.duration")}</label>
               <input
                 id="edit-duration"
                 type="text"
@@ -422,7 +427,7 @@ function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
 
           {/* Location */}
           <div>
-            <label htmlFor="edit-location" className="mb-1.5 block text-sm font-medium text-text-primary">Location</label>
+            <label htmlFor="edit-location" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.location")}</label>
             <input
               id="edit-location"
               type="text"
@@ -435,7 +440,7 @@ function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
 
           {/* Description */}
           <div>
-            <label htmlFor="edit-description" className="mb-1.5 block text-sm font-medium text-text-primary">Description</label>
+            <label htmlFor="edit-description" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.description")}</label>
             <textarea
               id="edit-description"
               rows={3}
@@ -448,7 +453,7 @@ function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
 
           {/* Requirements */}
           <div>
-            <label htmlFor="edit-requirements" className="mb-1.5 block text-sm font-medium text-text-primary">Requirements</label>
+            <label htmlFor="edit-requirements" className="mb-1.5 block text-sm font-medium text-text-primary">{t("companyDash.requirements")}</label>
             <textarea
               id="edit-requirements"
               rows={3}
@@ -470,7 +475,7 @@ function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
             disabled={isSubmitting}
             className="w-full rounded-button bg-coffee-warm py-3.5 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Saving..." : "Save Changes"}
+            {isSubmitting ? t("common.saving") : t("common.saveChanges")}
           </button>
         </form>
       </div>
@@ -483,12 +488,15 @@ function EditOfferModal({ offer, onClose, onUpdated }: EditOfferModalProps) {
    ============================================ */
 export default function CompanyDashboard() {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -521,7 +529,6 @@ export default function CompanyDashboard() {
   const handleOfferCreated = useCallback((offer: Offer) => {
     setOffers((prev) => [offer, ...prev]);
     setShowCreateModal(false);
-    // Update stats
     setData((prev) => prev ? {
       ...prev,
       stats: {
@@ -538,6 +545,7 @@ export default function CompanyDashboard() {
   }, []);
 
   const handleDeleteOffer = useCallback(async (offerId: string) => {
+    setActionError(null);
     try {
       await api.delete(`/api/offers/${offerId}`);
       setOffers((prev) => prev.filter((o) => o.id !== offerId));
@@ -549,15 +557,17 @@ export default function CompanyDashboard() {
           totalOffers: Math.max(0, prev.stats.totalOffers - 1),
         },
       } : prev);
+      setConfirmDeleteId(null);
     } catch {
-      // silently fail
+      setActionError(t("common.deleteFailed"));
+      setTimeout(() => setActionError(null), 4000);
     }
-  }, []);
+  }, [t]);
 
   const handleStatusChange = useCallback(async (applicationId: string, newStatus: "accepted" | "rejected") => {
+    setActionError(null);
     try {
       await api.patch(`/api/applications/${applicationId}/status`, { status: newStatus });
-      // Update the applicant status in local state
       setData((prev) => {
         if (!prev) return prev;
         return {
@@ -574,9 +584,10 @@ export default function CompanyDashboard() {
         };
       });
     } catch {
-      // silently fail
+      setActionError(t("common.statusChangeFailed"));
+      setTimeout(() => setActionError(null), 4000);
     }
-  }, []);
+  }, [t]);
 
   if (isLoading) {
     return (
@@ -593,13 +604,20 @@ export default function CompanyDashboard() {
   return (
     <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-6 py-10">
       <div className="mx-auto max-w-5xl space-y-10">
+        {/* ---- Action error toast ---- */}
+        {actionError && (
+          <div className="rounded-button border border-status-error/20 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+            {actionError}
+          </div>
+        )}
+
         {/* ---- Welcome Header ---- */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-heading font-bold text-coffee-dark sm:text-3xl">
-              Welcome back, {user?.companyName || user?.email}
+              {t("companyDash.welcomeBack").replace("{name}", user?.companyName || user?.email || "")}
             </h1>
-            <p className="mt-1 text-sm text-text-muted">Company Dashboard</p>
+            <p className="mt-1 text-sm text-text-muted">{t("companyDash.dashboard")}</p>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -607,31 +625,31 @@ export default function CompanyDashboard() {
               className="flex items-center gap-2 rounded-button bg-coffee-warm px-4 py-2 text-sm font-medium text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer"
             >
               <HiOutlinePlus size={16} />
-              Post Internship
+              {t("companyDash.postInternship")}
             </button>
             <Link
               href="/company/profile"
               className="flex items-center gap-2 rounded-button border border-surface-sand bg-surface-white px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm"
             >
               <HiOutlineUser size={16} />
-              Edit Profile
+              {t("common.editProfile")}
             </Link>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 rounded-button border border-surface-sand bg-surface-white px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-status-error hover:text-status-error cursor-pointer"
             >
               <HiOutlineLogout size={16} />
-              Sign Out
+              {t("common.signOut")}
             </button>
           </div>
         </div>
 
         {/* ---- Stats Cards ---- */}
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-          <StatCard icon={<HiOutlineClipboardList size={22} className="text-coffee-warm" />} label="Active Listings" value={stats.activeListings} color="bg-coffee-warm/10" />
-          <StatCard icon={<HiOutlineUsers size={22} className="text-status-info" />} label="Applications Received" value={stats.applicationsReceived} color="bg-status-info/10" />
-          <StatCard icon={<HiOutlineCheckCircle size={22} className="text-status-success" />} label="Accepted Applications" value={stats.acceptedApplications} color="bg-status-success/10" />
-          <StatCard icon={<HiOutlineBriefcase size={22} className="text-status-warning" />} label="Total Offers" value={stats.totalOffers} color="bg-status-warning/10" />
+          <StatCard icon={<HiOutlineClipboardList size={22} className="text-coffee-warm" />} label={t("companyDash.activeListings")} value={stats.activeListings} color="bg-coffee-warm/10" />
+          <StatCard icon={<HiOutlineUsers size={22} className="text-status-info" />} label={t("companyDash.applicationsReceived")} value={stats.applicationsReceived} color="bg-status-info/10" />
+          <StatCard icon={<HiOutlineCheckCircle size={22} className="text-status-success" />} label={t("companyDash.acceptedApplications")} value={stats.acceptedApplications} color="bg-status-success/10" />
+          <StatCard icon={<HiOutlineBriefcase size={22} className="text-status-warning" />} label={t("companyDash.totalOffers")} value={stats.totalOffers} color="bg-status-warning/10" />
         </div>
 
         {/* ---- Profile Completion Banner ---- */}
@@ -639,17 +657,17 @@ export default function CompanyDashboard() {
           <div className="rounded-card border border-coffee-gold/30 bg-coffee-gold/5 px-6 py-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-medium text-coffee-dark">Complete your company profile</p>
-                <p className="mt-0.5 text-sm text-text-muted">Add your description, website, and industry to attract the best candidates.</p>
+                <p className="font-medium text-coffee-dark">{t("companyDash.completeProfile")}</p>
+                <p className="mt-0.5 text-sm text-text-muted">{t("companyDash.completeProfileDesc")}</p>
               </div>
               <Link href="/company/profile" className="shrink-0 rounded-button bg-coffee-warm px-5 py-2.5 text-sm font-semibold text-text-inverse transition-colors hover:bg-coffee-gold">
-                Complete Profile
+                {t("companyDash.completeProfileBtn")}
               </Link>
             </div>
             <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-surface-sand">
               <div className="h-full rounded-full bg-coffee-gold transition-all" style={{ width: `${profileCompletion}%` }} />
             </div>
-            <p className="mt-1 text-right text-xs text-text-muted">{profileCompletion}% complete</p>
+            <p className="mt-1 text-right text-xs text-text-muted">{profileCompletion}% {t("companyDash.complete")}</p>
           </div>
         )}
 
@@ -657,27 +675,27 @@ export default function CompanyDashboard() {
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="mb-1 font-heading text-lg font-semibold text-coffee-dark">My Internship Listings</h2>
-              <p className="text-sm text-text-muted">Manage your internship offers.</p>
+              <h2 className="mb-1 font-heading text-lg font-semibold text-coffee-dark">{t("companyDash.myListings")}</h2>
+              <p className="text-sm text-text-muted">{t("companyDash.myListingsDesc")}</p>
             </div>
             <button
               onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-1.5 rounded-button border border-surface-sand px-3 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm cursor-pointer"
             >
               <HiOutlinePlus size={14} />
-              New
+              {t("companyDash.new")}
             </button>
           </div>
 
           {offers.length === 0 ? (
             <div className="py-8 text-center">
               <HiOutlineBriefcase size={40} className="mx-auto mb-3 text-text-muted/40" />
-              <p className="text-sm text-text-muted">No internships posted yet.</p>
+              <p className="text-sm text-text-muted">{t("companyDash.noListings")}</p>
               <button
                 onClick={() => setShowCreateModal(true)}
                 className="mt-3 rounded-button bg-coffee-warm px-5 py-2.5 text-sm font-semibold text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer"
               >
-                Post Your First Internship
+                {t("companyDash.postFirst")}
               </button>
             </div>
           ) : (
@@ -699,7 +717,7 @@ export default function CompanyDashboard() {
                         {offer.type}
                       </span>
                       <span className="text-text-muted">
-                        {offer.applicationCount} application{offer.applicationCount !== 1 ? "s" : ""}
+                        {offer.applicationCount} {offer.applicationCount !== 1 ? t("companyDash.applications") : t("companyDash.application")}
                       </span>
                     </div>
                   </div>
@@ -707,14 +725,16 @@ export default function CompanyDashboard() {
                     <button
                       onClick={() => setEditingOffer(offer)}
                       className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-coffee-gold/10 hover:text-coffee-warm cursor-pointer"
-                      title="Edit offer"
+                      title={t("companyDash.editOffer")}
+                      aria-label={t("companyDash.editOffer")}
                     >
                       <HiOutlinePencil size={16} />
                     </button>
                     <button
-                      onClick={() => handleDeleteOffer(offer.id)}
+                      onClick={() => setConfirmDeleteId(offer.id)}
                       className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-status-error/10 hover:text-status-error cursor-pointer"
-                      title="Delete offer"
+                      title={t("companyDash.deleteOffer")}
+                      aria-label={t("companyDash.deleteOffer")}
                     >
                       <HiOutlineTrash size={16} />
                     </button>
@@ -727,18 +747,18 @@ export default function CompanyDashboard() {
 
         {/* ---- Recent Applicants ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-1 font-heading text-lg font-semibold text-coffee-dark">Recent Applicants</h2>
-          <p className="mb-6 text-sm text-text-muted">Latest applications to your internship listings.</p>
+          <h2 className="mb-1 font-heading text-lg font-semibold text-coffee-dark">{t("companyDash.recentApplicants")}</h2>
+          <p className="mb-6 text-sm text-text-muted">{t("companyDash.recentApplicantsDesc")}</p>
 
           {recentApplicants.length === 0 ? (
             <div className="py-8 text-center">
               <HiOutlineUsers size={40} className="mx-auto mb-3 text-text-muted/40" />
-              <p className="text-sm text-text-muted">No applications yet. Post an internship to start receiving applicants.</p>
+              <p className="text-sm text-text-muted">{t("companyDash.noApplicants")}</p>
             </div>
           ) : (
             <>
               {recentApplicants.map((item) => (
-                <ActivityRow key={item.id} {...item} onStatusChange={handleStatusChange} />
+                <ActivityRow key={item.id} {...item} onStatusChange={handleStatusChange} t={t} />
               ))}
             </>
           )}
@@ -750,6 +770,7 @@ export default function CompanyDashboard() {
         <CreateOfferModal
           onClose={() => setShowCreateModal(false)}
           onCreated={handleOfferCreated}
+          t={t}
         />
       )}
 
@@ -759,7 +780,31 @@ export default function CompanyDashboard() {
           offer={editingOffer}
           onClose={() => setEditingOffer(null)}
           onUpdated={handleOfferUpdated}
+          t={t}
         />
+      )}
+
+      {/* ---- Delete Confirmation Modal ---- */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="w-full max-w-sm rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl">
+            <p className="mb-6 text-sm text-text-primary">{t("common.deleteConfirm")}</p>
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="rounded-button border border-surface-sand px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteOffer(confirmDeleteId)}
+                className="rounded-button bg-status-error px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-status-error/90 cursor-pointer"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

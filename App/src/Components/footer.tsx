@@ -82,16 +82,13 @@ export default function Footer() {
               { icon: FaGithub, label: "GitHub" },
               { icon: FaInstagram, label: "Instagram" },
             ].map(({ icon: Icon, label }) => (
-              <a
+              <span
                 key={label}
-                href="#"
-                target="_blank"
-                rel="noopener noreferrer"
                 aria-label={label}
-                className="rounded-full border border-text-inverse/15 p-2 text-text-inverse/40 transition-colors hover:border-coffee-gold hover:text-coffee-gold"
+                className="rounded-full border border-text-inverse/15 p-2 text-text-inverse/40 transition-colors hover:border-coffee-gold hover:text-coffee-gold cursor-pointer"
               >
                 <Icon size={13} />
-              </a>
+              </span>
             ))}
           </div>
         </div>

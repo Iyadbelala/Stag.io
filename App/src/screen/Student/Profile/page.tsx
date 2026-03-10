@@ -14,6 +14,7 @@ import {
 } from "react-icons/hi";
 import { useAuth } from "@/Components/AuthContext";
 import { api } from "@/lib/api";
+import { useLanguage } from "@/Components/LanguageContext";
 
 /* ============================================
    Profile data shape from the API
@@ -33,6 +34,7 @@ interface ProfileData {
    ============================================ */
 export default function StudentProfile() {
   const { user, updateUser } = useAuth();
+  const { t } = useLanguage();
 
   const [form, setForm] = useState<ProfileData>({
     firstName: "",
@@ -159,10 +161,10 @@ export default function StudentProfile() {
             </Link>
             <div>
               <h1 className="text-2xl font-heading font-bold text-coffee-dark">
-                My Profile
+                {t("studentProfile.title")}
               </h1>
               <p className="text-sm text-text-muted">
-                Manage your personal information and preferences
+                {t("studentProfile.subtitle")}
               </p>
             </div>
           </div>
@@ -172,14 +174,14 @@ export default function StudentProfile() {
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <h2 className="mb-6 flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
             <HiOutlineUser size={20} className="text-coffee-warm" />
-            Personal Information
+            {t("studentProfile.personalInfo")}
           </h2>
 
           <div className="grid gap-5 sm:grid-cols-2">
             {/* First Name */}
             <div>
               <label htmlFor="firstName" className="mb-1.5 block text-sm font-medium text-text-primary">
-                First Name
+                {t("studentProfile.firstName")}
               </label>
               <input
                 id="firstName"
@@ -193,7 +195,7 @@ export default function StudentProfile() {
             {/* Last Name */}
             <div>
               <label htmlFor="lastName" className="mb-1.5 block text-sm font-medium text-text-primary">
-                Last Name
+                {t("studentProfile.lastName")}
               </label>
               <input
                 id="lastName"
@@ -207,7 +209,7 @@ export default function StudentProfile() {
             {/* Email (read-only) */}
             <div>
               <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-text-primary">
-                Email
+                {t("studentProfile.email")}
               </label>
               <div className="flex items-center gap-3 rounded-button border border-surface-sand bg-surface-sand/30 px-4 py-3 text-sm text-text-muted">
                 <HiOutlineMail size={16} className="shrink-0" />
@@ -218,7 +220,7 @@ export default function StudentProfile() {
             {/* University (read-only) */}
             <div>
               <label htmlFor="university" className="mb-1.5 block text-sm font-medium text-text-primary">
-                University
+                {t("studentProfile.university")}
               </label>
               <div className="flex items-center gap-3 rounded-button border border-surface-sand bg-surface-sand/30 px-4 py-3 text-sm text-text-muted">
                 <HiOutlineAcademicCap size={16} className="shrink-0" />
@@ -232,12 +234,12 @@ export default function StudentProfile() {
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <h2 className="mb-6 flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
             <HiOutlineBookOpen size={20} className="text-coffee-warm" />
-            Academic Information
+            {t("studentProfile.academicInfo")}
           </h2>
 
           <div>
             <label htmlFor="department" className="mb-1.5 block text-sm font-medium text-text-primary">
-              Department
+              {t("studentProfile.department")}
             </label>
             <input
               id="department"
@@ -253,12 +255,12 @@ export default function StudentProfile() {
         {/* ---- About Me ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <h2 className="mb-6 font-heading text-lg font-semibold text-coffee-dark">
-            About Me
+            {t("studentProfile.aboutMe")}
           </h2>
 
           <div>
             <label htmlFor="bio" className="mb-1.5 block text-sm font-medium text-text-primary">
-              Bio
+              {t("studentProfile.bio")}
             </label>
             <textarea
               id="bio"
@@ -277,13 +279,13 @@ export default function StudentProfile() {
         {/* ---- Skills ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <h2 className="mb-6 font-heading text-lg font-semibold text-coffee-dark">
-            Skills
+            {t("studentProfile.skills")}
           </h2>
 
           {/* Existing skills */}
           <div className="mb-4 flex flex-wrap gap-2">
             {form.skills.length === 0 && (
-              <p className="text-sm text-text-muted">No skills added yet.</p>
+              <p className="text-sm text-text-muted">{t("studentProfile.noSkills")}</p>
             )}
             {form.skills.map((skill) => (
               <span
@@ -323,7 +325,7 @@ export default function StudentProfile() {
               className="flex items-center gap-1.5 rounded-button bg-coffee-warm px-4 py-2.5 text-sm font-medium text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer"
             >
               <HiOutlinePlus size={16} />
-              Add
+              {t("studentProfile.addSkill")}
             </button>
           </div>
         </div>
@@ -333,12 +335,12 @@ export default function StudentProfile() {
           {saveStatus === "success" && (
             <span className="flex items-center gap-1.5 text-sm font-medium text-status-success">
               <HiOutlineCheck size={16} />
-              Profile saved successfully
+              {t("common.profileSaved")}
             </span>
           )}
           {saveStatus === "error" && (
             <span className="text-sm font-medium text-status-error">
-              Failed to save. Please try again.
+              {t("common.saveFailed")}
             </span>
           )}
           <button
@@ -346,7 +348,7 @@ export default function StudentProfile() {
             disabled={isSaving}
             className="rounded-button bg-coffee-warm px-8 py-3 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isSaving ? "Saving..." : "Save Changes"}
+            {isSaving ? t("common.saving") : t("common.saveChanges")}
           </button>
         </div>
       </div>

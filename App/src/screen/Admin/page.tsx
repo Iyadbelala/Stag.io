@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/Components/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
+import { useLanguage } from "@/Components/LanguageContext";
 
 /* ============================================
    Types
@@ -53,20 +54,22 @@ function ApplicationRow({
   app,
   onValidate,
   onDownloadPdf,
+  t,
 }: {
   app: AdminApplication;
   onValidate: (id: string) => void;
   onDownloadPdf: (id: string) => void;
+  t: (key: string) => string;
 }) {
   const [expanded, setExpanded] = useState(false);
   const dateStr = new Date(app.appliedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 
   const statusConfig: Record<string, { label: string; classes: string }> = {
-    pending: { label: "Pending", classes: "bg-status-warning/10 text-status-warning" },
-    accepted: { label: "Accepted", classes: "bg-blue-100 text-blue-700" },
-    validated: { label: "Validated", classes: "bg-status-success/10 text-status-success" },
-    rejected: { label: "Rejected", classes: "bg-status-error/10 text-status-error" },
-    withdrawn: { label: "Withdrawn", classes: "bg-text-muted/10 text-text-muted" },
+    pending: { label: t("status.pending"), classes: "bg-status-warning/10 text-status-warning" },
+    accepted: { label: t("status.accepted"), classes: "bg-blue-100 text-blue-700" },
+    validated: { label: t("status.validated"), classes: "bg-status-success/10 text-status-success" },
+    rejected: { label: t("status.rejected"), classes: "bg-status-error/10 text-status-error" },
+    withdrawn: { label: t("status.withdrawn"), classes: "bg-text-muted/10 text-text-muted" },
   };
 
   const s = statusConfig[app.status] ?? statusConfig.pending;
@@ -89,10 +92,11 @@ function ApplicationRow({
             <button
               onClick={(e) => { e.stopPropagation(); onValidate(app.id); }}
               className="rounded-full bg-status-success/10 px-3 py-1.5 text-xs font-medium text-status-success transition-colors hover:bg-status-success/20 cursor-pointer flex items-center gap-1"
-              title="Validate application"
+              title={t("admin.validate")}
+              aria-label={t("admin.validate")}
             >
               <HiOutlineShieldCheck size={14} />
-              Validate
+              {t("admin.validate")}
             </button>
           )}
 
@@ -100,10 +104,11 @@ function ApplicationRow({
             <button
               onClick={(e) => { e.stopPropagation(); onDownloadPdf(app.id); }}
               className="rounded-full bg-coffee-gold/10 px-3 py-1.5 text-xs font-medium text-coffee-dark transition-colors hover:bg-coffee-gold/20 cursor-pointer flex items-center gap-1"
-              title="Download PDF"
+              title={t("admin.pdf")}
+              aria-label={t("admin.pdf")}
             >
               <HiOutlineDocumentDownload size={14} />
-              PDF
+              {t("admin.pdf")}
             </button>
           )}
 
@@ -117,28 +122,28 @@ function ApplicationRow({
         <div className="pb-4 pl-2 pr-2 space-y-3">
           <div className="rounded-card border border-surface-sand bg-surface-cream/30 p-4 space-y-3">
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">Email</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">{t("companyDash.email")}</p>
               <a href={`mailto:${app.studentEmail}`} className="text-sm text-coffee-warm hover:text-coffee-gold underline">{app.studentEmail}</a>
             </div>
 
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">CV / Resume</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">{t("companyDash.cvResume")}</p>
               {app.cvUrl ? (
                 <a href={app.cvUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:text-coffee-gold underline">
                   <HiOutlineClipboardList size={14} />
-                  View CV
+                  {t("companyDash.viewCV")}
                 </a>
               ) : (
-                <p className="text-sm text-text-muted italic">No CV provided</p>
+                <p className="text-sm text-text-muted italic">{t("companyDash.noCVProvided")}</p>
               )}
             </div>
 
             <div>
-              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">Cover Letter</p>
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">{t("companyDash.coverLetter")}</p>
               {app.coverLetter ? (
                 <p className="text-sm text-text-secondary whitespace-pre-line">{app.coverLetter}</p>
               ) : (
-                <p className="text-sm text-text-muted italic">No cover letter provided</p>
+                <p className="text-sm text-text-muted italic">{t("companyDash.noCoverLetter")}</p>
               )}
             </div>
           </div>
@@ -155,12 +160,14 @@ type TabKey = "pending-validation" | "all";
 
 export default function AdminDashboard() {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
 
   const [activeTab, setActiveTab] = useState<TabKey>("pending-validation");
   const [acceptedApps, setAcceptedApps] = useState<AdminApplication[]>([]);
   const [allApps, setAllApps] = useState<AdminApplication[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   /* ---- Redirect non-admin ---- */
   useEffect(() => {
@@ -192,18 +199,20 @@ export default function AdminDashboard() {
 
   /* ---- Validate ---- */
   const handleValidate = async (id: string) => {
+    setActionError(null);
     try {
       await api.patch(`/api/admin/applications/${id}/validate`);
-      // Optimistic update
       setAcceptedApps((prev) => prev.filter((a) => a.id !== id));
       setAllApps((prev) => prev.map((a) => (a.id === id ? { ...a, status: "validated" } : a)));
     } catch {
-      alert("Failed to validate application.");
+      setActionError(t("admin.validateFailed"));
+      setTimeout(() => setActionError(null), 4000);
     }
   };
 
   /* ---- Download PDF ---- */
   const handleDownloadPdf = async (id: string) => {
+    setActionError(null);
     try {
       const res = await api.get(`/api/admin/applications/${id}/pdf`, { responseType: "blob" });
       const url = window.URL.createObjectURL(new Blob([res.data]));
@@ -215,7 +224,8 @@ export default function AdminDashboard() {
       link.remove();
       window.URL.revokeObjectURL(url);
     } catch {
-      alert("Failed to download PDF.");
+      setActionError(t("admin.downloadFailed"));
+      setTimeout(() => setActionError(null), 4000);
     }
   };
 
@@ -223,7 +233,7 @@ export default function AdminDashboard() {
   if (!user || user.role !== "admin") {
     return (
       <section className="flex min-h-[60vh] items-center justify-center">
-        <p className="text-text-muted">Access restricted to administrators.</p>
+        <p className="text-text-muted">{t("admin.accessRestricted")}</p>
       </section>
     );
   }
@@ -235,8 +245,8 @@ export default function AdminDashboard() {
   const totalPending = allApps.filter((a) => a.status === "pending").length;
 
   const tabs: { key: TabKey; label: string; count: number }[] = [
-    { key: "pending-validation", label: "Awaiting Validation", count: acceptedApps.length },
-    { key: "all", label: "All Applications", count: totalAll },
+    { key: "pending-validation", label: t("admin.awaitingValidationTab"), count: acceptedApps.length },
+    { key: "all", label: t("admin.allApplications"), count: totalAll },
   ];
 
   const displayedApps = activeTab === "pending-validation" ? acceptedApps : allApps;
@@ -247,8 +257,8 @@ export default function AdminDashboard() {
       <div className="border-b border-surface-sand bg-surface-white">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
           <div>
-            <h1 className="text-2xl font-heading font-bold text-coffee-dark">Admin Dashboard</h1>
-            <p className="mt-1 text-sm text-text-muted">Manage applications & generate agreements</p>
+            <h1 className="text-2xl font-heading font-bold text-coffee-dark">{t("admin.dashboard")}</h1>
+            <p className="mt-1 text-sm text-text-muted">{t("admin.dashboardDesc")}</p>
           </div>
           <div className="flex items-center gap-4">
             <button
@@ -256,19 +266,26 @@ export default function AdminDashboard() {
               className="flex items-center gap-2 rounded-button border border-surface-sand px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
             >
               <HiOutlineLogout size={16} />
-              Sign Out
+              {t("common.signOut")}
             </button>
           </div>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-6 py-8">
+        {/* ---- Action error toast ---- */}
+        {actionError && (
+          <div className="mb-6 rounded-button border border-status-error/20 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+            {actionError}
+          </div>
+        )}
+
         {/* ---- Stats ---- */}
         <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={<HiOutlineClipboardList size={22} className="text-coffee-warm" />} label="Total Applications" value={totalAll} color="bg-coffee-gold/10" />
-          <StatCard icon={<HiOutlineUsers size={22} className="text-blue-600" />} label="Pending Review" value={totalPending} color="bg-blue-50" />
-          <StatCard icon={<HiOutlineBriefcase size={22} className="text-amber-600" />} label="Awaiting Validation" value={totalAccepted} color="bg-amber-50" />
-          <StatCard icon={<HiOutlineCheckCircle size={22} className="text-status-success" />} label="Validated" value={totalValidated} color="bg-status-success/10" />
+          <StatCard icon={<HiOutlineClipboardList size={22} className="text-coffee-warm" />} label={t("admin.totalApplications")} value={totalAll} color="bg-coffee-gold/10" />
+          <StatCard icon={<HiOutlineUsers size={22} className="text-blue-600" />} label={t("admin.pendingReview")} value={totalPending} color="bg-blue-50" />
+          <StatCard icon={<HiOutlineBriefcase size={22} className="text-amber-600" />} label={t("admin.awaitingValidation")} value={totalAccepted} color="bg-amber-50" />
+          <StatCard icon={<HiOutlineCheckCircle size={22} className="text-status-success" />} label={t("admin.validated")} value={totalValidated} color="bg-status-success/10" />
         </div>
 
         {/* ---- Tabs ---- */}
@@ -299,8 +316,8 @@ export default function AdminDashboard() {
               <HiOutlineShieldCheck size={48} className="mx-auto mb-4 text-text-muted/30" />
               <p className="text-text-muted">
                 {activeTab === "pending-validation"
-                  ? "No applications awaiting validation."
-                  : "No applications found."}
+                  ? t("admin.noAwaitingValidation")
+                  : t("admin.noApplications")}
               </p>
             </div>
           ) : (
@@ -310,6 +327,7 @@ export default function AdminDashboard() {
                 app={app}
                 onValidate={handleValidate}
                 onDownloadPdf={handleDownloadPdf}
+                t={t}
               />
             ))
           )}

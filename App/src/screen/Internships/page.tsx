@@ -49,9 +49,10 @@ interface ApplicationFormModalProps {
   isSubmitting: boolean;
   onClose: () => void;
   onSubmit: (coverLetter: string, cvUrl: string) => void;
+  t: (key: string) => string;
 }
 
-function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, onSubmit }: ApplicationFormModalProps) {
+function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, onSubmit, t }: ApplicationFormModalProps) {
   const [coverLetter, setCoverLetter] = useState("");
   const [cvUrl, setCvUrl] = useState("");
 
@@ -71,7 +72,7 @@ function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, 
         </button>
 
         <h2 className="mb-1 text-xl font-heading font-bold text-coffee-dark">
-          Apply to {offerTitle}
+          {offerTitle}
         </h2>
         <p className="mb-6 text-sm text-text-muted">{companyName}</p>
 
@@ -80,7 +81,7 @@ function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, 
           <div>
             <label htmlFor="cvUrl" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-text-primary">
               <HiOutlineLink size={16} className="text-text-muted" />
-              CV / Resume Link
+              {t("internships.cvResumeLink")}
             </label>
             <input
               id="cvUrl"
@@ -91,7 +92,7 @@ function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, 
               className="w-full rounded-button border border-surface-sand bg-surface-cream/50 px-4 py-3 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted/60 focus:border-coffee-gold/60"
             />
             <p className="mt-1 text-xs text-text-muted">
-              Paste a link to your CV (Google Drive, Dropbox, LinkedIn, etc.)
+              {t("internships.cvHint")}
             </p>
           </div>
 
@@ -99,7 +100,7 @@ function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, 
           <div>
             <label htmlFor="coverLetter" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-text-primary">
               <HiOutlineDocumentText size={16} className="text-text-muted" />
-              Cover Letter
+              {t("internships.coverLetter")}
             </label>
             <textarea
               id="coverLetter"
@@ -116,7 +117,7 @@ function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, 
             disabled={isSubmitting}
             className="w-full rounded-button bg-coffee-warm py-3.5 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isSubmitting ? "Submitting..." : "Submit Application"}
+            {isSubmitting ? t("common.submitting") : t("common.submitApplication")}
           </button>
         </form>
       </div>
@@ -212,7 +213,7 @@ export default function InternshipsPage() {
       return;
     }
     if (user.role !== "student") {
-      setApplyError("Only students can apply to internships.");
+      setApplyError(t("internships.onlyStudents"));
       setTimeout(() => setApplyError(null), 4000);
       return;
     }
@@ -231,12 +232,12 @@ export default function InternshipsPage() {
         cvUrl: cvUrl || undefined,
       });
       setAppliedIds((prev) => new Set(prev).add(offerId));
-      setApplySuccess("Application submitted successfully!");
+      setApplySuccess(t("internships.applicationSuccess"));
       setTimeout(() => setApplySuccess(null), 4000);
       setApplyModalOfferId(null);
     } catch (err: unknown) {
       const e = err as { response?: { data?: { error?: { message?: string } } } };
-      const msg = e.response?.data?.error?.message ?? "Failed to submit application.";
+      const msg = e.response?.data?.error?.message ?? t("internships.applicationFailed");
       setApplyError(msg);
       setTimeout(() => setApplyError(null), 4000);
     } finally {
@@ -380,7 +381,7 @@ export default function InternshipsPage() {
               <HiOutlineSearch size={40} className="mb-3 text-text-muted/50" />
               <p className="text-sm text-text-muted">
                 {internships.length === 0
-                  ? "No internships posted yet. Check back soon!"
+                  ? t("internships.noInternshipsYet")
                   : t("internships.noResults")}
               </p>
             </div>
@@ -490,9 +491,9 @@ export default function InternshipsPage() {
                   } disabled:opacity-60`}
                 >
                   {applyingId === selected.id
-                    ? "Applying..."
+                    ? t("common.applying")
                     : appliedIds.has(selected.id)
-                    ? "Applied ✓"
+                    ? `${t("common.applied")} ✓`
                     : t("internships.applyNow")}
                 </button>
                 <button
@@ -541,7 +542,7 @@ export default function InternshipsPage() {
                   <div className="flex items-start gap-3">
                     <HiOutlineOfficeBuilding size={18} className="mt-0.5 shrink-0 text-text-muted" />
                     <div>
-                      <p className="text-sm font-medium text-coffee-dark">Company</p>
+                      <p className="text-sm font-medium text-coffee-dark">{t("internships.company")}</p>
                       <p className="text-[13px] text-text-muted">{selected.companyName}{selected.companyIndustry ? ` · ${selected.companyIndustry}` : ""}</p>
                     </div>
                   </div>
@@ -555,7 +556,7 @@ export default function InternshipsPage() {
                   <div className="flex items-start gap-3">
                     <HiOutlineClock size={18} className="mt-0.5 shrink-0 text-text-muted" />
                     <div>
-                      <p className="text-sm font-medium text-coffee-dark">Posted</p>
+                      <p className="text-sm font-medium text-coffee-dark">{t("internships.posted")}</p>
                       <p className="text-[13px] text-text-muted">{timeAgo(selected.createdAt)}</p>
                     </div>
                   </div>
@@ -611,6 +612,7 @@ export default function InternshipsPage() {
             onSubmit={(coverLetter, cvUrl) =>
               handleSubmitApplication(applyModalOfferId, coverLetter, cvUrl)
             }
+            t={t}
           />
         );
       })()}

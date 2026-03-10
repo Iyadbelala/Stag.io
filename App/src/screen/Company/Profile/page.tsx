@@ -11,6 +11,7 @@ import {
 } from "react-icons/hi";
 import { useAuth } from "@/Components/AuthContext";
 import { api } from "@/lib/api";
+import { useLanguage } from "@/Components/LanguageContext";
 
 /* ============================================
    Profile data shape from the API
@@ -30,6 +31,7 @@ interface CompanyProfileData {
    ============================================ */
 export default function CompanyProfile() {
   const { user, updateUser } = useAuth();
+  const { t } = useLanguage();
 
   const [form, setForm] = useState<CompanyProfileData>({
     companyName: "",
@@ -135,10 +137,10 @@ export default function CompanyProfile() {
             </Link>
             <div>
               <h1 className="text-2xl font-heading font-bold text-coffee-dark">
-                Company Profile
+                {t("companyProfile.title")}
               </h1>
               <p className="text-sm text-text-muted">
-                Manage your company information
+                {t("companyProfile.subtitle")}
               </p>
             </div>
           </div>
@@ -148,14 +150,14 @@ export default function CompanyProfile() {
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <h2 className="mb-6 flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
             <HiOutlineOfficeBuilding size={20} className="text-coffee-warm" />
-            Company Information
+            {t("companyProfile.companyInfo")}
           </h2>
 
           <div className="grid gap-5 sm:grid-cols-2">
             {/* Company Name */}
             <div>
               <label htmlFor="companyName" className="mb-1.5 block text-sm font-medium text-text-primary">
-                Company Name
+                {t("companyProfile.companyName")}
               </label>
               <input
                 id="companyName"
@@ -169,7 +171,7 @@ export default function CompanyProfile() {
             {/* Contact Person */}
             <div>
               <label htmlFor="contactPerson" className="mb-1.5 block text-sm font-medium text-text-primary">
-                Contact Person
+                {t("companyProfile.contactPerson")}
               </label>
               <input
                 id="contactPerson"
@@ -184,7 +186,7 @@ export default function CompanyProfile() {
             {/* Email (read-only) */}
             <div>
               <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-text-primary">
-                Email
+                {t("companyProfile.email")}
               </label>
               <div className="flex items-center gap-3 rounded-button border border-surface-sand bg-surface-sand/30 px-4 py-3 text-sm text-text-muted">
                 <HiOutlineMail size={16} className="shrink-0" />
@@ -195,7 +197,7 @@ export default function CompanyProfile() {
             {/* Industry */}
             <div>
               <label htmlFor="industry" className="mb-1.5 block text-sm font-medium text-text-primary">
-                Industry
+                {t("companyProfile.industry")}
               </label>
               <input
                 id="industry"
@@ -210,7 +212,7 @@ export default function CompanyProfile() {
             {/* Location */}
             <div>
               <label htmlFor="location" className="mb-1.5 block text-sm font-medium text-text-primary">
-                Location
+                {t("companyProfile.location")}
               </label>
               <input
                 id="location"
@@ -225,7 +227,7 @@ export default function CompanyProfile() {
             {/* Website */}
             <div>
               <label htmlFor="website" className="mb-1.5 block text-sm font-medium text-text-primary">
-                Website
+                {t("companyProfile.website")}
               </label>
               <div className="flex items-center gap-0">
                 <span className="flex items-center gap-1.5 rounded-l-button border border-r-0 border-surface-sand bg-surface-sand/30 px-3 py-3 text-sm text-text-muted">
@@ -247,12 +249,12 @@ export default function CompanyProfile() {
         {/* ---- About the Company ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <h2 className="mb-6 font-heading text-lg font-semibold text-coffee-dark">
-            About the Company
+            {t("companyProfile.aboutCompany")}
           </h2>
 
           <div>
             <label htmlFor="description" className="mb-1.5 block text-sm font-medium text-text-primary">
-              Description
+              {t("companyProfile.description")}
             </label>
             <textarea
               id="description"
@@ -273,12 +275,12 @@ export default function CompanyProfile() {
           {saveStatus === "success" && (
             <span className="flex items-center gap-1.5 text-sm font-medium text-status-success">
               <HiOutlineCheck size={16} />
-              Profile saved successfully
+              {t("common.profileSaved")}
             </span>
           )}
           {saveStatus === "error" && (
             <span className="text-sm font-medium text-status-error">
-              Failed to save. Please try again.
+              {t("common.saveFailed")}
             </span>
           )}
           <button
@@ -286,7 +288,7 @@ export default function CompanyProfile() {
             disabled={isSaving}
             className="rounded-button bg-coffee-warm px-8 py-3 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            {isSaving ? "Saving..." : "Save Changes"}
+            {isSaving ? t("common.saving") : t("common.saveChanges")}
           </button>
         </div>
       </div>

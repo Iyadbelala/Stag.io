@@ -14,6 +14,7 @@ import { useAuth } from "@/Components/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
+import { useLanguage } from "@/Components/LanguageContext";
 
 /* ============================================
    Types
@@ -68,30 +69,30 @@ function StatCard({ icon, label, value, color }: StatCardProps) {
 /* ============================================
    Activity Row
    ============================================ */
-const statusConfig: Record<string, { label: string; classes: string }> = {
-  pending: {
-    label: "Pending",
-    classes: "bg-status-warning/10 text-status-warning",
-  },
-  accepted: {
-    label: "Accepted",
-    classes: "bg-blue-100 text-blue-700",
-  },
-  rejected: {
-    label: "Rejected",
-    classes: "bg-status-error/10 text-status-error",
-  },
-  withdrawn: {
-    label: "Withdrawn",
-    classes: "bg-text-muted/10 text-text-muted",
-  },
-  validated: {
-    label: "Validated",
-    classes: "bg-status-success/10 text-status-success",
-  },
-};
+function ActivityRow({ title, company, status, appliedAt, t }: RecentApplication & { t: (key: string) => string }) {
+  const statusConfig: Record<string, { label: string; classes: string }> = {
+    pending: {
+      label: t("status.pending"),
+      classes: "bg-status-warning/10 text-status-warning",
+    },
+    accepted: {
+      label: t("status.accepted"),
+      classes: "bg-blue-100 text-blue-700",
+    },
+    rejected: {
+      label: t("status.rejected"),
+      classes: "bg-status-error/10 text-status-error",
+    },
+    withdrawn: {
+      label: t("status.withdrawn"),
+      classes: "bg-text-muted/10 text-text-muted",
+    },
+    validated: {
+      label: t("status.validated"),
+      classes: "bg-status-success/10 text-status-success",
+    },
+  };
 
-function ActivityRow({ title, company, status, appliedAt }: RecentApplication) {
   const s = statusConfig[status];
   const dateStr = new Date(appliedAt).toLocaleDateString("en-US", {
     month: "short",
@@ -121,6 +122,7 @@ function ActivityRow({ title, company, status, appliedAt }: RecentApplication) {
    ============================================ */
 export default function StudentDashboard() {
   const { user, logout } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -172,10 +174,10 @@ export default function StudentDashboard() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-2xl font-heading font-bold text-coffee-dark sm:text-3xl">
-              Welcome back, {user?.firstName || user?.email}
+              {t("student.welcomeBack").replace("{name}", user?.firstName || user?.email || "")}
             </h1>
             <p className="mt-1 text-sm text-text-muted">
-              {user?.university} &middot; Student Dashboard
+              {user?.university} &middot; {t("student.dashboard")}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -184,14 +186,14 @@ export default function StudentDashboard() {
               className="flex items-center gap-2 rounded-button border border-surface-sand bg-surface-white px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm"
             >
               <HiOutlineUser size={16} />
-              Edit Profile
+              {t("common.editProfile")}
             </Link>
             <button
               onClick={handleLogout}
               className="flex items-center gap-2 rounded-button border border-surface-sand bg-surface-white px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-status-error hover:text-status-error cursor-pointer"
             >
               <HiOutlineLogout size={16} />
-              Sign Out
+              {t("common.signOut")}
             </button>
           </div>
         </div>
@@ -202,7 +204,7 @@ export default function StudentDashboard() {
             icon={
               <HiOutlineBriefcase size={22} className="text-coffee-warm" />
             }
-            label="Applications Sent"
+            label={t("student.applicationsSent")}
             value={stats.applicationsSent}
             color="bg-coffee-warm/10"
           />
@@ -213,7 +215,7 @@ export default function StudentDashboard() {
                 className="text-status-success"
               />
             }
-            label="Accepted"
+            label={t("student.accepted")}
             value={stats.acceptedApplications}
             color="bg-status-success/10"
           />
@@ -221,7 +223,7 @@ export default function StudentDashboard() {
             icon={
               <HiOutlineClock size={22} className="text-status-warning" />
             }
-            label="Pending Responses"
+            label={t("student.pendingResponses")}
             value={stats.pendingResponses}
             color="bg-status-warning/10"
           />
@@ -229,7 +231,7 @@ export default function StudentDashboard() {
             icon={
               <HiOutlineXCircle size={22} className="text-status-error" />
             }
-            label="Rejected"
+            label={t("student.rejected")}
             value={stats.rejectedApplications}
             color="bg-status-error/10"
           />
@@ -241,18 +243,17 @@ export default function StudentDashboard() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="font-medium text-coffee-dark">
-                  Complete your profile to stand out
+                  {t("student.completeProfile")}
                 </p>
                 <p className="mt-0.5 text-sm text-text-muted">
-                  Add your CV, skills, and bio to increase your visibility to
-                  companies.
+                  {t("student.completeProfileDesc")}
                 </p>
               </div>
               <Link
                 href="/student/profile"
                 className="shrink-0 rounded-button bg-coffee-warm px-5 py-2.5 text-sm font-semibold text-text-inverse transition-colors hover:bg-coffee-gold"
               >
-                Complete Profile
+                {t("student.completeProfileBtn")}
               </Link>
             </div>
             <div className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-surface-sand">
@@ -262,7 +263,7 @@ export default function StudentDashboard() {
               />
             </div>
             <p className="mt-1 text-right text-xs text-text-muted">
-              {profileCompletion}% complete
+              {profileCompletion}% {t("student.complete")}
             </p>
           </div>
         )}
@@ -270,26 +271,26 @@ export default function StudentDashboard() {
         {/* ---- Recent Activity ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <h2 className="mb-1 font-heading text-lg font-semibold text-coffee-dark">
-            Recent Applications
+            {t("student.recentApplications")}
           </h2>
           <p className="mb-6 text-sm text-text-muted">
-            Your latest internship application activity.
+            {t("student.recentApplicationsDesc")}
           </p>
 
           {recentApplications.length === 0 ? (
             <div className="py-8 text-center">
               <HiOutlineClipboardList size={40} className="mx-auto mb-3 text-text-muted/40" />
               <p className="text-sm text-text-muted">
-                No applications yet. Browse internships and start applying!
+                {t("student.noApplications")}
               </p>
             </div>
           ) : (
             <>
               {recentApplications.map((item) => (
-                <ActivityRow key={item.id} {...item} />
+                <ActivityRow key={item.id} {...item} t={t} />
               ))}
               <button className="mt-6 w-full rounded-button border border-surface-sand py-2.5 text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm cursor-pointer">
-                View All Applications
+                {t("student.viewAllApplications")}
               </button>
             </>
           )}

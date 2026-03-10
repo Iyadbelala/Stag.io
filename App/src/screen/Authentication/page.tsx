@@ -457,8 +457,8 @@ export default function AuthenticationPage() {
             >
               {isSubmitting
                 ? isLogin
-                  ? "Signing in..."
-                  : "Creating account..."
+                  ? t("common.signingIn")
+                  : t("common.creatingAccount")
                 : isLogin
                   ? t("auth.signInBtn")
                   : t("auth.createAccountBtn")}

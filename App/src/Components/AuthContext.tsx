@@ -13,7 +13,7 @@ import { api } from "@/lib/api";
 export interface AuthUser {
   id: string;
   email: string;
-  role: "student" | "company" | "admin";
+  role: "student" | "company" | "admin" | "superadmin";
   firstName?: string;
   lastName?: string;
   university?: string;
@@ -35,6 +35,7 @@ interface RegisterCompanyData {
   contactPerson?: string;
   industry?: string;
   location?: string;
+  verificationDocument?: File;
 }
 
 interface AuthContextValue {
@@ -95,10 +96,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const registerCompany = useCallback(async (payload: RegisterCompanyData): Promise<AuthUser> => {
+    const formData = new FormData();
+    formData.append("email", payload.email);
+    formData.append("password", payload.password);
+    formData.append("companyName", payload.companyName);
+    if (payload.contactPerson) formData.append("contactPerson", payload.contactPerson);
+    if (payload.industry) formData.append("industry", payload.industry);
+    if (payload.location) formData.append("location", payload.location);
+    if (payload.verificationDocument) formData.append("verificationDocument", payload.verificationDocument);
+
     const { data } = await api.post<{
       success: true;
       data: { token: string; user: AuthUser };
-    }>("/api/auth/register/company", payload);
+    }>("/api/auth/register/company", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
     persist(data.data.token, data.data.user);
     return data.data.user;
   }, []);

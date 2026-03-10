@@ -39,6 +39,13 @@ export async function createOffer(userId: string, input: CreateOfferInput): Prom
     throw err;
   }
 
+  if (!user.company.isValidated) {
+    const err = new Error('Your company must be validated by an admin before posting offers') as Error & { code: string; status: number };
+    err.code = 'NOT_VALIDATED';
+    err.status = 403;
+    throw err;
+  }
+
   const offer = await prisma.internshipOffer.create({
     data: {
       companyId: user.company.id,
@@ -204,7 +211,7 @@ export async function deleteOffer(userId: string, offerId: string): Promise<void
 
 export async function listPublicOffers(): Promise<OfferResult[]> {
   const offers = await prisma.internshipOffer.findMany({
-    where: { status: 'active' },
+    where: { status: 'active', company: { isValidated: true } },
     orderBy: { createdAt: 'desc' },
     include: {
       company: { select: { companyName: true, industry: true, location: true } },

@@ -58,7 +58,7 @@ applicationsRouter.patch('/:id/status', requireAuth, async (req: Request, res: R
   }
 
   try {
-    const result = await updateApplicationStatus(req.user!.sub, req.params.id, status);
+    const result = await updateApplicationStatus(req.user!.sub, req.params.id as string, status);
     res.json({ success: true, data: result });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };

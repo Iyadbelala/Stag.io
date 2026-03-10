@@ -14,6 +14,7 @@ import {
   HiOutlineLocationMarker,
   HiOutlineClock,
   HiOutlinePencil,
+  HiOutlineExclamationCircle,
 } from "react-icons/hi";
 import { useAuth } from "@/Components/AuthContext";
 import { useRouter } from "next/navigation";
@@ -46,6 +47,7 @@ interface DashboardData {
   stats: DashboardStats;
   recentApplicants: RecentApplicant[];
   profileCompletion: number;
+  isValidated: boolean;
 }
 
 interface Offer {
@@ -512,6 +514,7 @@ export default function CompanyDashboard() {
           stats: { activeListings: 0, applicationsReceived: 0, acceptedApplications: 0, totalOffers: 0 },
           recentApplicants: [],
           profileCompletion: 0,
+          isValidated: false,
         });
         setOffers([]);
       } finally {
@@ -600,6 +603,7 @@ export default function CompanyDashboard() {
   const stats = data?.stats ?? { activeListings: 0, applicationsReceived: 0, acceptedApplications: 0, totalOffers: 0 };
   const recentApplicants = data?.recentApplicants ?? [];
   const profileCompletion = data?.profileCompletion ?? 0;
+  const isValidated = data?.isValidated ?? false;
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-6 py-10">
@@ -622,7 +626,9 @@ export default function CompanyDashboard() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 rounded-button bg-coffee-warm px-4 py-2 text-sm font-medium text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer"
+              disabled={!isValidated}
+              className="flex items-center gap-2 rounded-button bg-coffee-warm px-4 py-2 text-sm font-medium text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              title={!isValidated ? t("companyDash.pendingValidation") : undefined}
             >
               <HiOutlinePlus size={16} />
               {t("companyDash.postInternship")}
@@ -651,6 +657,19 @@ export default function CompanyDashboard() {
           <StatCard icon={<HiOutlineCheckCircle size={22} className="text-status-success" />} label={t("companyDash.acceptedApplications")} value={stats.acceptedApplications} color="bg-status-success/10" />
           <StatCard icon={<HiOutlineBriefcase size={22} className="text-status-warning" />} label={t("companyDash.totalOffers")} value={stats.totalOffers} color="bg-status-warning/10" />
         </div>
+
+        {/* ---- Pending Validation Banner ---- */}
+        {!isValidated && (
+          <div className="rounded-card border border-status-warning/30 bg-status-warning/5 px-6 py-5">
+            <div className="flex items-start gap-4">
+              <HiOutlineExclamationCircle size={24} className="shrink-0 text-status-warning mt-0.5" />
+              <div>
+                <p className="font-medium text-coffee-dark">{t("companyDash.pendingValidation")}</p>
+                <p className="mt-0.5 text-sm text-text-muted">{t("companyDash.pendingValidationDesc")}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ---- Profile Completion Banner ---- */}
         {profileCompletion < 100 && (

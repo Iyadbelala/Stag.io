@@ -270,6 +270,9 @@ const en: Record<string, string> = {
   "auth.companyEmailLabel": "Business Email",
   "auth.companyEmailPlaceholder": "contact@company.com",
   "auth.companyRegisterSubtitle": "Register your company to post internships.",
+  "auth.verificationDocument": "Verification Document",
+  "auth.verificationDocumentPlaceholder": "Upload a document (PDF, PNG, JPG)",
+  "auth.verificationDocumentHint": "Upload a business registration or official document for verification (PDF, PNG, JPG — max 5MB).",
 
   /* ---- Auth Brand Panel ---- */
   "brand.title1": "Your Internship",
@@ -565,6 +568,8 @@ const en: Record<string, string> = {
   "companyDash.noCVProvided": "No CV provided",
   "companyDash.coverLetter": "Cover Letter",
   "companyDash.noCoverLetter": "No cover letter provided",
+  "companyDash.pendingValidation": "Account Pending Validation",
+  "companyDash.pendingValidationDesc": "Your company account is being reviewed by an administrator. You will be able to post internships once your account is validated.",
 
   /* ---- Status Labels ---- */
   "status.pending": "Pending",
@@ -589,6 +594,24 @@ const en: Record<string, string> = {
   "admin.validateFailed": "Failed to validate application. Please try again.",
   "admin.downloadFailed": "Failed to download PDF. Please try again.",
   "admin.accessRestricted": "Access restricted to administrators.",
+  /* ---- Super Admin Dashboard ---- */
+  "superadmin.dashboard": "Super Admin Dashboard",
+  "superadmin.dashboardDesc": "Platform overview & company management",
+  "superadmin.pendingCompanies": "Pending Companies",
+  "superadmin.pendingCompaniesTitle": "Companies Awaiting Validation",
+  "superadmin.noPendingCompanies": "No companies awaiting validation.",
+  "superadmin.approve": "Approve",
+  "superadmin.reject": "Reject",
+  "superadmin.contact": "Contact",
+  "superadmin.viewDocument": "View Document",
+  "superadmin.validateCompanyFailed": "Failed to validate company. Please try again.",
+  "superadmin.rejectCompanyFailed": "Failed to reject company. Please try again.",
+  "superadmin.accessRestricted": "Access restricted to super administrators.",
+  "superadmin.totalUsers": "Total Users",
+  "superadmin.totalStudents": "Total Students",
+  "superadmin.totalCompanies": "Total Companies",
+  "superadmin.totalOffers": "Total Offers",
+  "superadmin.totalApplications": "Total Applications",
 
   /* ---- Internships Hardcoded ---- */
   "internships.onlyStudents": "Only students can apply to internships.",

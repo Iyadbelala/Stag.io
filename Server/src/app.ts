@@ -1,5 +1,6 @@
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { router } from './protocol/routes';
 
 const app = express();
@@ -10,6 +11,9 @@ app.use(cors({
   credentials: true,
 }));
 app.use(express.json());
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api', router);

@@ -2,6 +2,81 @@ import { prisma } from '../model/prisma';
 import PDFDocument from 'pdfkit';
 
 /* ──────────────────────────────────────────────
+   Company validation types & functions
+   ────────────────────────────────────────────── */
+export interface PendingCompany {
+  id: string;
+  companyName: string;
+  industry: string | null;
+  location: string | null;
+  contactPerson: string | null;
+  email: string;
+  verificationDocumentUrl: string | null;
+  createdAt: string;
+}
+
+export async function getPendingCompanies(): Promise<PendingCompany[]> {
+  const companies = await prisma.company.findMany({
+    where: { isValidated: false },
+    include: { user: { select: { email: true } } },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return companies.map((c) => ({
+    id: c.id,
+    companyName: c.companyName,
+    industry: c.industry,
+    location: c.location,
+    contactPerson: c.contactPerson,
+    email: c.user.email,
+    verificationDocumentUrl: c.verificationDocumentUrl,
+    createdAt: c.createdAt.toISOString(),
+  }));
+}
+
+export async function validateCompany(companyId: string): Promise<{ id: string; isValidated: boolean }> {
+  const company = await prisma.company.findUnique({ where: { id: companyId } });
+
+  if (!company) {
+    const err = new Error('Company not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  if (company.isValidated) {
+    const err = new Error('Company is already validated') as Error & { code: string; status: number };
+    err.code = 'ALREADY_VALIDATED';
+    err.status = 400;
+    throw err;
+  }
+
+  const updated = await prisma.company.update({
+    where: { id: companyId },
+    data: { isValidated: true },
+  });
+
+  return { id: updated.id, isValidated: updated.isValidated };
+}
+
+export async function rejectCompany(companyId: string): Promise<void> {
+  const company = await prisma.company.findUnique({
+    where: { id: companyId },
+    include: { user: true },
+  });
+
+  if (!company) {
+    const err = new Error('Company not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  // Delete the user (cascades to company)
+  await prisma.user.delete({ where: { id: company.userId } });
+}
+
+/* ──────────────────────────────────────────────
    Types
    ────────────────────────────────────────────── */
 export interface AdminApplication {

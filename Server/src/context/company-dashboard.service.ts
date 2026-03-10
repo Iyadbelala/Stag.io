@@ -22,6 +22,7 @@ export interface CompanyDashboardData {
   stats: DashboardStats;
   recentApplicants: RecentApplicant[];
   profileCompletion: number;
+  isValidated: boolean;
 }
 
 export async function getCompanyDashboard(userId: string): Promise<CompanyDashboardData> {
@@ -106,5 +107,6 @@ export async function getCompanyDashboard(userId: string): Promise<CompanyDashbo
     },
     recentApplicants,
     profileCompletion,
+    isValidated: company.isValidated,
   };
 }

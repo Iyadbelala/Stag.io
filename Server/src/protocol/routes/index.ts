@@ -6,6 +6,7 @@ import companiesRouter from './companies.routes';
 import offersRouter from './offers.routes';
 import applicationsRouter from './applications.routes';
 import adminRouter from './admin.routes';
+import superadminRouter from './superadmin.routes';
 
 export const router = Router();
 
@@ -47,3 +48,6 @@ router.use('/applications', applicationsRouter);
 
 // Admin
 router.use('/admin', adminRouter);
+
+// Super Admin
+router.use('/superadmin', superadminRouter);

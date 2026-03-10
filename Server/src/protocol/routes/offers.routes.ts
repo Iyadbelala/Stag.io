@@ -62,7 +62,7 @@ offersRouter.post('/', requireAuth, async (req: Request, res: Response) => {
 /* PUT /api/offers/:id — update an offer */
 offersRouter.put('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
-    const offer = await updateOffer(req.user!.sub, req.params.id, req.body);
+    const offer = await updateOffer(req.user!.sub, req.params.id as string, req.body);
     res.json({ success: true, data: offer });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };
@@ -76,7 +76,7 @@ offersRouter.put('/:id', requireAuth, async (req: Request, res: Response) => {
 /* DELETE /api/offers/:id — delete an offer */
 offersRouter.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
-    await deleteOffer(req.user!.sub, req.params.id);
+    await deleteOffer(req.user!.sub, req.params.id as string);
     res.json({ success: true, message: 'Offer deleted' });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };

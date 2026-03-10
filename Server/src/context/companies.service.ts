@@ -15,6 +15,7 @@ export interface PublicCompany {
 
 export async function listPublicCompanies(): Promise<PublicCompany[]> {
   const companies = await prisma.company.findMany({
+    where: { isValidated: true },
     orderBy: { createdAt: 'desc' },
     include: {
       _count: {

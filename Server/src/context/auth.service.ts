@@ -19,6 +19,7 @@ export interface RegisterCompanyInput {
   contactPerson?: string;
   industry?: string;
   location?: string;
+  verificationDocumentUrl?: string;
 }
 
 export interface LoginInput {
@@ -102,6 +103,7 @@ export async function registerCompany(input: RegisterCompanyInput): Promise<Auth
           contactPerson: input.contactPerson,
           industry: input.industry,
           location: input.location,
+          verificationDocumentUrl: input.verificationDocumentUrl,
         },
       },
     },

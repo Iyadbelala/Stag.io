@@ -67,8 +67,32 @@ const companiesToSeed = [
   },
 ];
 
+async function seedSuperAdmin() {
+  const email = 'superadmin@stag.io';
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    console.log('  ⏭ Super admin already exists, skipping.');
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash('superadmin123', SALT_ROUNDS);
+  await prisma.user.create({
+    data: {
+      email,
+      passwordHash,
+      role: 'superadmin',
+      firstName: 'Super',
+      lastName: 'Admin',
+    },
+  });
+  console.log('  ✅ Super admin created (superadmin@stag.io / superadmin123)');
+}
+
 async function main() {
-  console.log('Seeding companies...\n');
+  console.log('Seeding super admin...\n');
+  await seedSuperAdmin();
+
+  console.log('\nSeeding companies...\n');
 
   for (const company of companiesToSeed) {
     const existing = await prisma.user.findUnique({ where: { email: company.email } });
@@ -92,6 +116,7 @@ async function main() {
             website: company.website,
             description: company.description,
             contactPerson: company.contactPerson,
+            isValidated: true,
           },
         },
       },

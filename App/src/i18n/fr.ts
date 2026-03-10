@@ -278,6 +278,9 @@ const fr: Record<string, string> = {
   "auth.companyEmailLabel": "Email professionnel",
   "auth.companyEmailPlaceholder": "contact@entreprise.com",
   "auth.companyRegisterSubtitle": "Inscrivez votre entreprise pour publier des stages.",
+  "auth.verificationDocument": "Document de vérification",
+  "auth.verificationDocumentPlaceholder": "Télécharger un document (PDF, PNG, JPG)",
+  "auth.verificationDocumentHint": "Téléchargez un registre de commerce ou un document officiel pour vérification (PDF, PNG, JPG — max 5 Mo).",
 
   /* ---- Auth Brand Panel ---- */
   "brand.title1": "Votre stage",
@@ -575,6 +578,8 @@ const fr: Record<string, string> = {
   "companyDash.noCVProvided": "Aucun CV fourni",
   "companyDash.coverLetter": "Lettre de motivation",
   "companyDash.noCoverLetter": "Aucune lettre de motivation fournie",
+  "companyDash.pendingValidation": "Compte en attente de validation",
+  "companyDash.pendingValidationDesc": "Votre compte entreprise est en cours de vérification par un administrateur. Vous pourrez publier des stages une fois votre compte validé.",
 
   /* ---- Status Labels ---- */
   "status.pending": "En attente",
@@ -599,6 +604,24 @@ const fr: Record<string, string> = {
   "admin.validateFailed": "Échec de la validation de la candidature. Veuillez réessayer.",
   "admin.downloadFailed": "Échec du téléchargement du PDF. Veuillez réessayer.",
   "admin.accessRestricted": "Accès réservé aux administrateurs.",
+  /* ---- Super Admin Dashboard ---- */
+  "superadmin.dashboard": "Tableau de bord super administrateur",
+  "superadmin.dashboardDesc": "Vue d'ensemble de la plateforme et gestion des entreprises",
+  "superadmin.pendingCompanies": "Entreprises en attente",
+  "superadmin.pendingCompaniesTitle": "Entreprises en attente de validation",
+  "superadmin.noPendingCompanies": "Aucune entreprise en attente de validation.",
+  "superadmin.approve": "Approuver",
+  "superadmin.reject": "Rejeter",
+  "superadmin.contact": "Contact",
+  "superadmin.viewDocument": "Voir le document",
+  "superadmin.validateCompanyFailed": "Échec de la validation de l'entreprise. Veuillez réessayer.",
+  "superadmin.rejectCompanyFailed": "Échec du rejet de l'entreprise. Veuillez réessayer.",
+  "superadmin.accessRestricted": "Accès réservé aux super administrateurs.",
+  "superadmin.totalUsers": "Utilisateurs totaux",
+  "superadmin.totalStudents": "Étudiants totaux",
+  "superadmin.totalCompanies": "Entreprises totales",
+  "superadmin.totalOffers": "Offres totales",
+  "superadmin.totalApplications": "Candidatures totales",
 
   /* ---- Internships Hardcoded ---- */
   "internships.onlyStudents": "Seuls les étudiants peuvent postuler aux stages.",

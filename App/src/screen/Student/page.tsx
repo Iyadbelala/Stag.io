@@ -132,6 +132,14 @@ export default function StudentDashboard() {
       router.replace("/admin");
       return;
     }
+    if (user?.role === "superadmin") {
+      router.replace("/superadmin");
+      return;
+    }
+    if (user?.role === "company") {
+      router.replace("/company");
+      return;
+    }
     async function fetchDashboard() {
       try {
         const res = await api.get<{ success: true; data: DashboardData }>("/api/profile/dashboard");

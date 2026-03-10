@@ -159,14 +159,14 @@ export default function Navbar() {
 
                   {/* Menu items */}
                   <Link
-                    href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : "/student"}
+                    href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : user.role === "superadmin" ? "/superadmin" : "/student"}
                     onClick={() => setUserMenuOpen(false)}
                     className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
                   >
                     <HiOutlineViewGrid size={16} />
                     Dashboard
                   </Link>
-                  {user.role !== "admin" && (
+                  {user.role !== "admin" && user.role !== "superadmin" && (
                     <Link
                       href={user.role === "company" ? "/company/profile" : "/student/profile"}
                       onClick={() => setUserMenuOpen(false)}
@@ -280,7 +280,7 @@ export default function Navbar() {
                   <p className="text-xs text-text-muted">{user.email}</p>
                 </div>
                 <Link
-                  href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : "/student"}
+                  href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : user.role === "superadmin" ? "/superadmin" : "/student"}
                   onClick={() => setMobileOpen(false)}
                   className="rounded-button border-2 border-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
                 >

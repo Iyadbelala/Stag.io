@@ -33,9 +33,5 @@
     "node_modules",
     "App",
     "Server"
-  ],
-  "references": [
-    { "path": "./App" },
-    { "path": "./Server" }
   ]
 }

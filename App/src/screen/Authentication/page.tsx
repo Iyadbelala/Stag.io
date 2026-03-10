@@ -11,6 +11,7 @@ import {
   HiOutlineOfficeBuilding,
   HiOutlineLocationMarker,
   HiOutlineBriefcase,
+  HiOutlineDocumentAdd,
 } from "react-icons/hi";
 
 import Logo from "@/Components/Logo";
@@ -38,7 +39,12 @@ export default function AuthenticationPage() {
   /* ---- Redirect if already logged in ---- */
   useEffect(() => {
     if (!isLoading && user) {
-      router.replace(user.role === "company" ? "/company" : "/student");
+      router.replace(
+        user.role === "company" ? "/company"
+          : user.role === "admin" ? "/admin"
+            : user.role === "superadmin" ? "/superadmin"
+              : "/student"
+      );
     }
   }, [user, isLoading, router]);
   const [mode, setMode] = useState<"login" | "register">("login");
@@ -60,6 +66,7 @@ export default function AuthenticationPage() {
   const [contactPerson, setContactPerson] = useState("");
   const [industry, setIndustry] = useState("");
   const [location, setLocation] = useState("");
+  const [verificationDocument, setVerificationDocument] = useState<File | null>(null);
 
   /* ---- State ---- */
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -138,6 +145,7 @@ export default function AuthenticationPage() {
             contactPerson: contactPerson.trim() || undefined,
             industry: industry.trim() || undefined,
             location: location.trim() || undefined,
+            verificationDocument: verificationDocument || undefined,
           });
         } else {
           resultUser = await register({
@@ -153,7 +161,9 @@ export default function AuthenticationPage() {
             ? "/company"
             : resultUser.role === "admin"
               ? "/admin"
-              : "/student"
+              : resultUser.role === "superadmin"
+                ? "/superadmin"
+                : "/student"
         );
       } catch (err: unknown) {
         const axiosErr = err as {
@@ -167,7 +177,7 @@ export default function AuthenticationPage() {
         setIsSubmitting(false);
       }
     },
-    [validate, isLogin, isCompany, email, password, firstName, lastName, university, companyName, contactPerson, industry, location, login, register, registerCompany, router]
+    [validate, isLogin, isCompany, email, password, firstName, lastName, university, companyName, contactPerson, industry, location, verificationDocument, login, register, registerCompany, router]
   );
 
   /* ---- Switch mode ---- */
@@ -327,6 +337,32 @@ export default function AuthenticationPage() {
                     placeholder={t("auth.locationPlaceholder")}
                     icon={<HiOutlineLocationMarker size={18} />}
                   />
+                </div>
+
+                {/* Verification document upload */}
+                <div className="mb-5">
+                  <label htmlFor="verificationDocument" className="mb-1.5 block text-sm font-medium text-text-primary">
+                    {t("auth.verificationDocument")}
+                  </label>
+                  <div className="relative">
+                    <label
+                      htmlFor="verificationDocument"
+                      className="flex items-center gap-3 rounded-button border border-surface-sand bg-surface-cream/50 px-4 py-3 text-sm cursor-pointer transition-colors hover:border-coffee-gold/60"
+                    >
+                      <HiOutlineDocumentAdd size={18} className="shrink-0 text-text-muted" />
+                      <span className={verificationDocument ? "text-text-primary" : "text-text-muted/60"}>
+                        {verificationDocument ? verificationDocument.name : t("auth.verificationDocumentPlaceholder")}
+                      </span>
+                    </label>
+                    <input
+                      id="verificationDocument"
+                      type="file"
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      className="hidden"
+                      onChange={(e) => setVerificationDocument(e.target.files?.[0] || null)}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-text-muted">{t("auth.verificationDocumentHint")}</p>
                 </div>
               </>
             )}

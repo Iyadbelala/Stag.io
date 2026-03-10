@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { registerStudent, registerCompany, loginUser } from '../../context/auth.service';
+import { uploadDocument } from '../middleware/upload.middleware';
 
 const authRouter = Router();
 
@@ -52,7 +53,7 @@ authRouter.post('/login', async (req: Request, res: Response) => {
 });
 
 /* POST /api/auth/register/company */
-authRouter.post('/register/company', async (req: Request, res: Response) => {
+authRouter.post('/register/company', uploadDocument.single('verificationDocument'), async (req: Request, res: Response) => {
   const { email, password, companyName, contactPerson, industry, location } = req.body;
 
   if (!email || !password || !companyName) {
@@ -63,8 +64,12 @@ authRouter.post('/register/company', async (req: Request, res: Response) => {
     return;
   }
 
+  const verificationDocumentUrl = req.file
+    ? `/uploads/${req.file.filename}`
+    : undefined;
+
   try {
-    const result = await registerCompany({ email, password, companyName, contactPerson, industry, location });
+    const result = await registerCompany({ email, password, companyName, contactPerson, industry, location, verificationDocumentUrl });
     res.status(201).json({ success: true, data: result });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };

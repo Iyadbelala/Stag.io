@@ -169,12 +169,12 @@ SmartMatch® doesn't auto-activate — students opt in via an animated toggle sw
   │   2. Flips the ⚡ SmartMatch® toggle                             │
   │   3. Branded breathing overlay appears:                          │
   │                                                                  │
-  │              ╭──────────────────────╮                             │
-  │              │                      │                             │
+  │              ╭──────────────────────╮                            │
+  │              │                      │                            │
   │              │    SmartMatch®       │  ← breathing animation     │
-  │              │  Analyzing offers... │                             │
-  │              │                      │                             │
-  │              ╰──────────────────────╯                             │
+  │              │  Analyzing offers... │                            │
+  │              │                      │                            │
+  │              ╰──────────────────────╯                            │
   │                                                                  │
   │   4. Offers re-sort by match score (highest first)               │
   │   5. Each card shows:                                            │
@@ -217,20 +217,6 @@ SmartMatch® doesn't auto-activate — students opt in via an animated toggle sw
   │    matchedSkills[] } │
   └──────────────────────┘
 ```
-
-### Why Not AI?
-
-We initially prototyped SmartMatch® with **Google Gemini embeddings** (vector similarity between student profiles and offer descriptions). We switched to a pure algorithmic approach because:
-
-| | AI Embeddings | SmartMatch® Algorithm |
-|:---|:---:|:---:|
-| **Latency** | ~800 ms (API round-trip) | ~50 ms (in-process) |
-| **Cost** | Per-request API billing | Free — zero external calls |
-| **Transparency** | Black-box similarity score | Explainable dimension breakdown |
-| **Offline** | ❌ Requires network | ✅ Works without internet |
-| **Matched skills** | Not provided | Returns exact skill matches |
-| **Tuning** | Re-embed entire corpus | Adjust weights instantly |
-
 The algorithmic approach gives us **full control**, **instant tuning**, and **explainable results** — students can see *why* an offer scored high, not just *that* it did.
 
 ## 🛠️ Tech Stack

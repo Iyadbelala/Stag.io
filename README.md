@@ -1,145 +1,254 @@
 <div align="center">
 
+<img src="https://img.shields.io/badge/☕-Stag.io-4B2E2B?style=for-the-badge&labelColor=F5EFE6" alt="Stag.io" height="40"/>
+
 # Stag.io
 
-### Internship Management Platform
+**The modern internship management platform that connects students, companies & universities.**
 
-*Connecting Students, Companies & Universities*
+[![Next.js](https://img.shields.io/badge/Next.js_16-000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express_5-000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://neon.tech/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-C8A96A?style=flat-square)](LICENSE)
 
-[![Next.js](https://img.shields.io/badge/Next.js-000?logo=nextdotjs&logoColor=white)](https://nextjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?logo=postgresql&logoColor=white)](https://neon.tech/)
-[![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-C8A96A.svg)](LICENSE)
+<br/>
+
+[Features](#-features) · [Tech Stack](#-tech-stack) · [Getting Started](#-getting-started) · [Architecture](#-architecture) · [Contributing](#-contributing) · [Team](#-team)
 
 </div>
 
----
+<br/>
 
-## About
+## 📋 Overview
 
-**Stag.io** is a modern web platform that digitizes the entire internship lifecycle — from discovery and application to administrative validation and tracking. Built as a graduation project (Atelier TI 2025-2026), it connects three key actors in a seamless experience:
+**Stag.io** (_stage_ is French for _internship_) is a full-stack web platform that digitizes the entire internship lifecycle — from opportunity discovery and application to administrative validation and agreement tracking.
 
-| Actor | Role |
-|-------|------|
-| **Students** | Browse offers, apply, track applications |
-| **Companies** | Post internships, manage applicants |
-| **Administration** | Validate agreements, oversee the process |
+Built as a graduation capstone project (Atelier TI 2025–2026), it provides a unified experience for every stakeholder in the internship process:
 
-## Tech Stack
+<div align="center">
 
-| Layer | Technology |
-|-------|------------|
-| Framework | **Next.js** (App Router) |
-| UI | **React** |
-| Language | **TypeScript** (strict mode) |
-| Backend | **Express.js** |
-| Database | **PostgreSQL** on **Neon** |
-| Architecture | **MCP** (Model-Context-Protocol) |
-| Styling | **Tailwind CSS** |
+| 🎓 Students | 🏢 Companies | 🏛️ Universities | 🔑 Admins |
+|:---:|:---:|:---:|:---:|
+| Browse & filter offers | Post internship offers | Validate agreements | Oversee platform |
+| Apply with one click | Manage applicants | Monitor student progress | Manage users & roles |
+| Track applications | Company dashboard | University dashboard | Super admin panel |
+| Build profile & CV | Upload verification docs | Domain-based auth | System-wide controls |
 
-## Design
+</div>
 
-Stag.io features a warm **coffee-inspired** design language:
+## ✨ Features
 
-- **Playfair Display** for headings — elegance and trust
-- **Inter** for body text — clean readability
-- **Color palette:** Dark Coffee `#4B2E2B` · Warm Brown `#7A4E3A` · Soft Gold `#C8A96A` · Cream Beige `#F5EFE6`
+<table>
+<tr>
+<td width="50%">
 
-> See [skills.md](skills.md) for the complete design system specification.
+**Frontend**
+- 🏠 Hero section with animated stats & carousel
+- 🔐 Glassmorphism auth with split-layout design
+- 🌙 Dark mode with explosion animation (View Transitions API)
+- 🌐 Bilingual support (English / French)
+- 📱 Fully responsive — mobile-first design
+- 🎨 Coffee-inspired design system
+- ♿ Accessible form components with validation
 
-## Getting Started
+</td>
+<td width="50%">
+
+**Backend**
+- 🔒 JWT authentication with role-based access
+- 📄 RESTful API with Express 5
+- 🗄️ PostgreSQL via Drizzle ORM on Neon
+- ☁️ Cloudinary integration for file uploads
+- 📑 PDF generation (internship agreements)
+- 🤖 MCP (Model-Context-Protocol) server
+- ✅ Zod schema validation
+
+</td>
+</tr>
+</table>
+
+## 🛠️ Tech Stack
+
+<div align="center">
+
+| Layer | Technology | Purpose |
+|:---|:---|:---|
+| **Frontend** | Next.js 16 · React 19 | App Router, SSR, file-based routing |
+| **Styling** | Tailwind CSS 4 | Utility-first, dark mode, custom theme |
+| **Language** | TypeScript (strict) | End-to-end type safety |
+| **Backend** | Express 5 | REST API, middleware pipeline |
+| **Database** | PostgreSQL (Neon) | Serverless Postgres with Drizzle ORM |
+| **Auth** | JWT + bcrypt | Secure token-based authentication |
+| **Storage** | Cloudinary | Cloud image & document hosting |
+| **Validation** | Zod | Runtime schema validation |
+| **AI** | MCP SDK | Model-Context-Protocol integration |
+| **Monorepo** | npm Workspaces | Shared types & constants |
+
+</div>
+
+## 🎨 Design System
+
+Stag.io features a warm **coffee-inspired** design language that evokes professionalism and approachability:
+
+```
+ ┌──────────────────────────────────────────────────────────┐
+ │  Dark Coffee    Warm Brown    Soft Gold     Cream Beige  │
+ │   #4B2E2B        #7A4E3A      #C8A96A       #F5EFE6     │
+ │   ███████        ███████      ███████       ███████      │
+ └──────────────────────────────────────────────────────────┘
+```
+
+| Element | Choice | Rationale |
+|:---|:---|:---|
+| Headings | **Playfair Display** | Elegance & editorial trust |
+| Body text | **Inter** | Clean, modern readability |
+| Accent | Soft Gold `#C8A96A` | Warmth without harshness |
+| Surfaces | Glassmorphism + subtle gradients | Depth & layering |
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js** ≥ 18
+- **npm** ≥ 9
+- **PostgreSQL** instance (or a free [Neon](https://neon.tech) account)
+
+### Installation
 
 ```bash
-# Clone the repository
+# 1. Clone the repository
 git clone https://github.com/Iyadbelala/Stag.io.git
 cd Stag.io
 
-# Install dependencies
+# 2. Install all dependencies (monorepo-aware)
 npm install
 
-# Set up environment variables
-cp .env.example .env.local
+# 3. Configure environment variables
+#    Copy the example and fill in your credentials
+cp Server/.env.example Server/.env
 
-# Run development server
+# 4. Start both frontend & backend in dev mode
 npm run dev
 ```
 
-## Project Structure
+The frontend will be available at **`http://localhost:3000`** and the API at **`http://localhost:3001/api`**.
+
+### Available Scripts
+
+| Command | Description |
+|:---|:---|
+| `npm run dev` | Start frontend + backend concurrently |
+| `npm run dev:app` | Start Next.js frontend only |
+| `npm run dev:server` | Start Express backend only |
+| `npm run build` | Build shared → frontend → backend |
+
+## 🏗️ Architecture
 
 ```
-Stag.io/
-├── App/                        # Next.js frontend (monorepo workspace)
+Stag.io/                         # Monorepo root (npm workspaces)
+│
+├── App/                          # 🖥️  Next.js 16 Frontend
 │   └── src/
-│       ├── app/                # App Router — route pages
-│       │   ├── layout.tsx      # Root layout (ThemeProvider, Navbar, Footer)
-│       │   ├── page.tsx        # Landing / Homepage
-│       │   ├── globals.css     # Tailwind v4 theme + dark mode overrides
-│       │   ├── about/          # About page
-│       │   ├── login/          # Sign-in route
-│       │   ├── register/       # Register route
-│       │   ├── blog/ contact/ cookies/ faqs/ help/ privacy/ terms/
+│       ├── app/                  #     App Router — page routes
+│       │   ├── layout.tsx        #     Root layout (theme, nav, footer)
+│       │   ├── student/          #     Student dashboard & profile
+│       │   ├── company/          #     Company dashboard & profile
+│       │   ├── admin/            #     Admin panel
+│       │   ├── university/       #     University dashboard
+│       │   ├── internships/      #     Browse & filter offers
+│       │   ├── login/ register/  #     Authentication pages
+│       │   └── ...               #     About, Blog, FAQs, etc.
+│       ├── Components/           #     Reusable UI (Navbar, Footer, Forms…)
+│       ├── screen/               #     Full-page screen compositions
+│       ├── i18n/                 #     Internationalization (EN / FR)
+│       └── lib/                  #     API client & utilities
+│
+├── Server/                       # ⚙️  Express 5 Backend
+│   └── src/
+│       ├── app.ts                #     Express app setup
+│       ├── index.ts              #     Server entry point
+│       ├── mcp.ts                #     MCP protocol server
+│       ├── context/              #     Service layer (business logic)
+│       │   ├── auth.service.ts
+│       │   ├── offers.service.ts
+│       │   ├── applications.service.ts
+│       │   ├── companies.service.ts
+│       │   ├── profile.service.ts
 │       │   └── ...
-│       ├── Components/         # Reusable UI components
-│       │   ├── Logo.tsx        # Brand mark (size / variant props)
-│       │   ├── navbar.tsx      # Sticky navbar + dark mode toggle
-│       │   ├── footer.tsx      # Site footer
-│       │   ├── ThemeContext.tsx # Dark mode provider (View Transitions API)
-│       │   ├── FloatingOrbs.tsx # Animated background shapes
-│       │   ├── FormField.tsx   # Glass-style form input + PasswordField
-│       │   ├── FieldError.tsx  # Inline validation error
-│       │   ├── AuthBrandPanel.tsx # Auth left sidebar
-│       │   └── slide.tsx       # Carousel / slider
-│       └── screen/             # Full-page screen components
-│           ├── Homepage/
-│           ├── About/
-│           ├── Authentication/
-│           └── Footer/         # Blog, Contact, Cookies, FAQs, etc.
-├── Server/                     # Express.js backend (monorepo workspace)
-│   └── src/
-│       ├── app.ts
-│       ├── index.ts
-│       └── protocol/routes/
-├── shared/                     # Shared types & constants
-│   └── src/
-│       ├── constants/
-│       └── types/
-└── package.json                # Monorepo root (npm workspaces)
+│       ├── model/                #     Database schema (Drizzle ORM)
+│       ├── lib/                  #     Cloudinary, helpers
+│       └── protocol/
+│           ├── middleware/       #     Auth & upload middleware
+│           └── routes/           #     REST API route handlers
+│
+└── shared/                       # 📦  Shared Package
+    └── src/
+        ├── types/                #     TypeScript interfaces
+        └── constants/            #     Roles, statuses, enums
 ```
 
-> See [`.claude/skills.md`](.claude/skills.md) for the complete design system, architecture details, and knowledge base.
+## 🗄️ Database Schema
 
-## Team
+The PostgreSQL database is managed with **Drizzle ORM** and includes:
 
-| Name | Role |
-|------|------|
-| **Iyed Belala** | Developer |
-| **Ouael Bensouici** | Developer |
-| **Charaf Eddin Zerouki** | Developer |
+| Table | Description |
+|:---|:---|
+| `users` | All platform users with role-based access (student, company, admin, university, superadmin) |
+| `students` | Student profiles — department, CV, skills, portfolio |
+| `companies` | Company profiles — industry, logo, verification docs |
+| `universities` | University profiles — domain-based authentication |
+| `internship_offers` | Job postings with type (remote / onsite / hybrid) and status |
+| `applications` | Student applications with status tracking |
 
-## Features Implemented
+## 🗺️ API Routes
 
-- **Homepage** — Hero section, stats, feature highlights, carousel slides, CTA
-- **About Page** — Mission pillars, timeline, "Who We Serve" section
-- **Authentication** — Sign-in / Register with split-layout glassmorphism design, university email validation (`@univ-xxxx.dz`), auto-detected university, password visibility toggle
-- **Dark Mode** — Explosion animation from toggle switch (View Transitions API with fallback), system preference detection, localStorage persistence
-- **Responsive Navbar** — Desktop + mobile layouts, theme toggle always visible
-- **Footer** — Multi-column nav, social links, dark-section styling
-- **Component Architecture** — Extracted reusable components (Logo, FloatingOrbs, FormField, PasswordField, FieldError, AuthBrandPanel)
+| Endpoint | Description |
+|:---|:---|
+| `/api/auth/*` | Registration, login, session management |
+| `/api/offers/*` | CRUD operations for internship offers |
+| `/api/applications/*` | Application submission & status management |
+| `/api/companies/*` | Company listing & details |
+| `/api/profile/*` | User profile management |
+| `/api/admin/*` | Admin panel operations |
+| `/api/university/*` | University dashboard & validation |
+| `/api/superadmin/*` | Platform-wide administration |
 
-## Contributing
+## 🤝 Contributing
 
-1. Read [`.claude/skills.md`](.claude/skills.md) for the knowledge base and design system
-2. Create a branch: `feature/your-feature-name`
-3. Use Conventional Commits: `feat:`, `fix:`, `docs:`, etc.
-4. Submit a Pull Request
+We welcome contributions! Here's how to get started:
 
-## License
+1. **Fork** the repository
+2. **Create** a feature branch: `git checkout -b feature/your-feature`
+3. **Commit** using [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, etc.
+4. **Push** to your fork and open a **Pull Request**
+
+## 👥 Team
+
+<div align="center">
+
+| <img src="https://github.com/Iyadbelala.png" width="80" style="border-radius:50%"/> | <img src="https://github.com/oualb.png" width="80" style="border-radius:50%"/> | <img src="https://github.com/charafeddine-zerouki.png" width="80" style="border-radius:50%"/> |
+|:---:|:---:|:---:|
+| **Iyed Belala** | **Ouael Bensouici** | **Charaf Eddin Zerouki** |
+| Developer | Developer | Developer |
+| [![GitHub](https://img.shields.io/badge/-Iyadbelala-181717?style=flat-square&logo=github)](https://github.com/Iyadbelala) | [![GitHub](https://img.shields.io/badge/-oualb-181717?style=flat-square&logo=github)](https://github.com/oualb) | [![GitHub](https://img.shields.io/badge/-charafeddine--zerouki-181717?style=flat-square&logo=github)](https://github.com/charafeddine-zerouki) |
+
+</div>
+
+## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
 
 ---
 
 <div align="center">
-<sub>Built with ☕ by the Stag.io team — 2026</sub>
+
+<img src="https://img.shields.io/badge/☕-Built_with_coffee-4B2E2B?style=for-the-badge&labelColor=F5EFE6" alt="Built with coffee"/>
+
+<br/><br/>
+
+<sub>Made with ❤️ by the <strong>Stag.io</strong> team — Atelier TI 2025–2026</sub>
+
 </div>

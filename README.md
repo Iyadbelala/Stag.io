@@ -53,6 +53,7 @@ Built as a graduation capstone project (Atelier TI 2025–2026), it provides a u
 - 📱 Fully responsive — mobile-first design
 - 🎨 Coffee-inspired design system
 - ♿ Accessible form components with validation
+- ⚡ SmartMatch® — intelligent internship matching
 
 </td>
 <td width="50%">
@@ -65,10 +66,172 @@ Built as a graduation capstone project (Atelier TI 2025–2026), it provides a u
 - 📑 PDF generation (internship agreements)
 - 🤖 MCP (Model-Context-Protocol) server
 - ✅ Zod schema validation
+- ⚡ SmartMatch® algorithmic scoring engine
 
 </td>
 </tr>
 </table>
+
+## ⚡ SmartMatch®
+
+> *"Stop scrolling through hundreds of offers. Let the right ones find you."*
+
+**SmartMatch®** is Stag.io's proprietary internship matching engine — a zero-dependency, purely algorithmic system that scores and ranks every available internship offer against a student's profile in real time. No AI API keys, no cloud ML services, no third-party costs. The entire engine runs server-side in **< 100 ms** per request.
+
+### The Problem
+
+Traditional internship platforms dump students into a chronological list of offers with basic keyword search. Students waste time scrolling through irrelevant postings, and companies receive applications from mismatched candidates. Both sides lose.
+
+### The Solution
+
+SmartMatch® flips the experience: instead of students searching for offers, **offers compete for students**. Each offer receives a composite score (0–100) based on how well it aligns with the student's unique profile — skills, academic department, geographic location, and career relevance.
+
+### How It Works — The 4-Dimension Scoring Engine
+
+```
+  ┌───────────────────────────────────────────────────────────────┐
+  │                    SmartMatch® Score (0–100)                  │
+  │                                                               │
+  │   ┌─────────────────────────────────────────────────────┐     │
+  │   │  Skills Match          ████████████████████   50 %  │     │
+  │   │  Department Relevance  ██████████             25 %  │     │
+  │   │  Location Proximity    ██████                 15 %  │     │
+  │   │  Title Relevance       ████                   10 %  │     │
+  │   └─────────────────────────────────────────────────────┘     │
+  │                                                               │
+  │   Final Score = Σ (dimension_score × weight) × 100            │
+  └───────────────────────────────────────────────────────────────┘
+```
+
+<table>
+<tr>
+<td width="50%">
+
+#### 🎯 Skills Match — 50 %
+
+The heaviest signal. SmartMatch® tokenizes both the student's skills array and the offer's requirements/description into normalized terms, then computes overlap:
+
+- **Exact match**: full skill name found in offer text → weight 1.0
+- **Partial match**: ≥ 50 % of multi-word skill tokens found → weight 0.7 × ratio
+- **Normalization**: score is divided by `min(required skills, student skills)` so students aren't penalized for having broad skillsets
+
+*Example:* A student with `["React", "TypeScript", "Node.js"]` applying to an offer requiring `"React, TypeScript, Express"` would match 2/3 exactly, yielding a high skills score.
+
+</td>
+<td width="50%">
+
+#### 🏛️ Department Relevance — 25 %
+
+Maps the student's academic department to industry keywords via a curated lookup table covering **17 departments** (Computer Science, Electrical Engineering, Business, Law, Medicine, etc.):
+
+- Each department maps to a list of relevant industry keywords
+- The engine counts how many keywords appear in the offer's combined text (title + description + requirements + company industry)
+- Score is amplified by 1.5× to reward strong matches
+- Fallback: if no department key matches, it checks for raw word overlap
+
+</td>
+</tr>
+<tr>
+<td width="50%">
+
+#### 📍 Location Proximity — 15 %
+
+Students don't always specify a city — SmartMatch® infers location from the university domain and compares against the offer and company locations:
+
+- **City match**: university city words found in offer/company location → 1.0
+- **Remote offers**: automatically score 0.7 (location-agnostic)
+- **No match**: scores 0.1 (not zero, because relocation is possible)
+
+*Example:* `univ-constantine3.dz` → extracts `"constantine"` → matches offers in Constantine with a perfect location score.
+
+</td>
+<td width="50%">
+
+#### 📝 Title Relevance — 10 %
+
+A lightweight signal that checks whether the student's skills appear in the offer's title — because a title like *"React Frontend Developer Intern"* is a stronger signal than skills buried in the description.
+
+- Tokenizes student skills and checks against normalized title text
+- Capped at 3 skill matches to prevent title-stuffing from inflating scores
+
+</td>
+</tr>
+</table>
+
+### The User Experience
+
+SmartMatch® doesn't auto-activate — students opt in via an animated toggle switch on the Internships page:
+
+```
+  ┌──────────────────────────────────────────────────────────────────┐
+  │                                                                  │
+  │   1. Student opens /internships                                  │
+  │   2. Flips the ⚡ SmartMatch® toggle                             │
+  │   3. Branded breathing overlay appears:                          │
+  │                                                                  │
+  │              ╭──────────────────────╮                             │
+  │              │                      │                             │
+  │              │    SmartMatch®       │  ← breathing animation     │
+  │              │  Analyzing offers... │                             │
+  │              │                      │                             │
+  │              ╰──────────────────────╯                             │
+  │                                                                  │
+  │   4. Offers re-sort by match score (highest first)               │
+  │   5. Each card shows:                                            │
+  │      • ScoreRing — an SVG circular gauge (0–100%)                │
+  │      • Matched skills highlighted on the card                    │
+  │      • "Ranked for you" badge in the header                      │
+  │   6. Toggle off → returns to default chronological order         │
+  │                                                                  │
+  └──────────────────────────────────────────────────────────────────┘
+```
+
+### Architecture
+
+```
+  Student Profile                 Internship Offers
+  ┌──────────────┐                ┌──────────────────┐
+  │ skills[]     │                │ requirements     │
+  │ department   │───── GET ─────▶│ description      │
+  │ university   │  /api/matching │ location / type  │
+  └──────────────┘                │ company industry │
+         │                        └──────────────────┘
+         │                                │
+         ▼                                ▼
+  ┌──────────────────────────────────────────────┐
+  │            SmartMatch® Engine                │
+  │                                              │
+  │  scoreSkills()      → 50 %                   │
+  │  scoreDepartment()  → 25 %                   │
+  │  scoreLocation()    → 15 %                   │
+  │  scoreTitleRelevance() → 10 %                │
+  │                                              │
+  │  Final = Σ weighted scores × 100             │
+  │  Sort descending → return top N              │
+  └──────────────────────────────────────────────┘
+         │
+         ▼
+  ┌──────────────────────┐
+  │  MatchedOffer[]      │
+  │  { matchScore,       │
+  │    matchedSkills[] } │
+  └──────────────────────┘
+```
+
+### Why Not AI?
+
+We initially prototyped SmartMatch® with **Google Gemini embeddings** (vector similarity between student profiles and offer descriptions). We switched to a pure algorithmic approach because:
+
+| | AI Embeddings | SmartMatch® Algorithm |
+|:---|:---:|:---:|
+| **Latency** | ~800 ms (API round-trip) | ~50 ms (in-process) |
+| **Cost** | Per-request API billing | Free — zero external calls |
+| **Transparency** | Black-box similarity score | Explainable dimension breakdown |
+| **Offline** | ❌ Requires network | ✅ Works without internet |
+| **Matched skills** | Not provided | Returns exact skill matches |
+| **Tuning** | Re-embed entire corpus | Adjust weights instantly |
+
+The algorithmic approach gives us **full control**, **instant tuning**, and **explainable results** — students can see *why* an offer scored high, not just *that* it did.
 
 ## 🛠️ Tech Stack
 
@@ -215,6 +378,8 @@ The PostgreSQL database is managed with **Drizzle ORM** and includes:
 | `/api/admin/*` | Admin panel operations |
 | `/api/university/*` | University dashboard & validation |
 | `/api/superadmin/*` | Platform-wide administration |
+| `/api/matching` | SmartMatch® — ranked offers for authenticated students |
+| `/api/search/users` | Search students by name (debounced suggestions) |
 
 ## 🤝 Contributing
 

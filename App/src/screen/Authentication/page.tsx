@@ -12,6 +12,7 @@ import {
   HiOutlineLocationMarker,
   HiOutlineBriefcase,
   HiOutlineDocumentAdd,
+  HiOutlineGlobe,
 } from "react-icons/hi";
 
 import Logo from "@/Components/Logo";
@@ -31,10 +32,14 @@ const GENERAL_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 /* ============================================
    Component
    ============================================ */
-export default function AuthenticationPage() {
+interface AuthenticationPageProps {
+  initialMode?: "login" | "register";
+}
+
+export default function AuthenticationPage({ initialMode = "login" }: AuthenticationPageProps) {
   const { t } = useLanguage();
   const router = useRouter();
-  const { user, isLoading, login, register, registerCompany } = useAuth();
+  const { user, isLoading, login, register, registerCompany, registerUniversity } = useAuth();
 
   /* ---- Redirect if already logged in ---- */
   useEffect(() => {
@@ -43,12 +48,13 @@ export default function AuthenticationPage() {
         user.role === "company" ? "/company"
           : user.role === "admin" ? "/admin"
             : user.role === "superadmin" ? "/superadmin"
-              : "/student"
+              : user.role === "university" ? "/university"
+                : "/student"
       );
     }
   }, [user, isLoading, router]);
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [accountType, setAccountType] = useState<"student" | "company">("student");
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
+  const [accountType, setAccountType] = useState<"student" | "company" | "university">("student");
 
   /* ---- Shared fields ---- */
   const [email, setEmail] = useState("");
@@ -67,6 +73,12 @@ export default function AuthenticationPage() {
   const [industry, setIndustry] = useState("");
   const [location, setLocation] = useState("");
   const [verificationDocument, setVerificationDocument] = useState<File | null>(null);
+
+  /* ---- University register fields ---- */
+  const [universityName, setUniversityName] = useState("");
+  const [domain, setDomain] = useState("");
+  const [uniWebsite, setUniWebsite] = useState("");
+  const [uniLocation, setUniLocation] = useState("");
 
   /* ---- State ---- */
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -92,12 +104,13 @@ export default function AuthenticationPage() {
     const errs: Record<string, string> = {};
     const isLoginMode = mode === "login";
     const isCompanyMode = accountType === "company";
+    const isUniversityMode = accountType === "university";
 
     if (!email) errs.email = t("auth.error.emailRequired");
-    else if (isLoginMode || isCompanyMode) {
+    else if (isLoginMode || isCompanyMode || isUniversityMode) {
       if (!GENERAL_EMAIL_REGEX.test(email)) errs.email = t("auth.error.invalidEmailGeneral");
     } else {
-      if (!UNIV_EMAIL_REGEX.test(email)) errs.email = t("auth.error.invalidEmail");
+      if (!GENERAL_EMAIL_REGEX.test(email)) errs.email = t("auth.error.invalidEmailGeneral");
     }
 
     if (!password) errs.password = t("auth.error.passwordRequired");
@@ -107,6 +120,9 @@ export default function AuthenticationPage() {
     if (!isLoginMode) {
       if (isCompanyMode) {
         if (!companyName.trim()) errs.companyName = t("auth.error.companyNameRequired");
+      } else if (isUniversityMode) {
+        if (!universityName.trim()) errs.universityName = t("auth.error.universityNameRequired");
+        if (!domain.trim()) errs.domain = t("auth.error.domainRequired");
       } else {
         if (!firstName.trim()) errs.firstName = t("auth.error.firstNameRequired");
         if (!lastName.trim()) errs.lastName = t("auth.error.lastNameRequired");
@@ -120,10 +136,11 @@ export default function AuthenticationPage() {
 
     setErrors(errs);
     return Object.keys(errs).length === 0;
-  }, [email, password, firstName, lastName, companyName, confirmPassword, agreeTerms, mode, accountType, t]);
+  }, [email, password, firstName, lastName, companyName, universityName, domain, confirmPassword, agreeTerms, mode, accountType, t]);
 
   const isLogin = mode === "login";
   const isCompany = accountType === "company";
+  const isUniversity = accountType === "university";
 
   /* ---- Submit ---- */
   const handleSubmit = useCallback(
@@ -147,6 +164,15 @@ export default function AuthenticationPage() {
             location: location.trim() || undefined,
             verificationDocument: verificationDocument || undefined,
           });
+        } else if (isUniversity) {
+          resultUser = await registerUniversity({
+            email,
+            password,
+            universityName: universityName.trim(),
+            domain: domain.trim(),
+            website: uniWebsite.trim() || undefined,
+            location: uniLocation.trim() || undefined,
+          });
         } else {
           resultUser = await register({
             email,
@@ -163,7 +189,9 @@ export default function AuthenticationPage() {
               ? "/admin"
               : resultUser.role === "superadmin"
                 ? "/superadmin"
-                : "/student"
+                : resultUser.role === "university"
+                  ? "/university"
+                  : "/student"
         );
       } catch (err: unknown) {
         const axiosErr = err as {
@@ -177,7 +205,7 @@ export default function AuthenticationPage() {
         setIsSubmitting(false);
       }
     },
-    [validate, isLogin, isCompany, email, password, firstName, lastName, university, companyName, contactPerson, industry, location, verificationDocument, login, register, registerCompany, router]
+    [validate, isLogin, isCompany, isUniversity, email, password, firstName, lastName, university, companyName, contactPerson, industry, location, verificationDocument, universityName, domain, uniWebsite, uniLocation, login, register, registerCompany, registerUniversity, router]
   );
 
   /* ---- Switch mode ---- */
@@ -213,7 +241,9 @@ export default function AuthenticationPage() {
                 ? t("auth.signInSubtitle")
                 : isCompany
                   ? t("auth.companyRegisterSubtitle")
-                  : t("auth.registerSubtitle")}
+                  : isUniversity
+                    ? t("auth.universityRegisterSubtitle")
+                    : t("auth.registerSubtitle")}
             </p>
           </div>
 
@@ -267,11 +297,22 @@ export default function AuthenticationPage() {
                 >
                   {t("auth.accountCompany")}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setAccountType("university")}
+                  className={`flex-1 rounded-[6px] py-2 text-sm font-medium transition-all cursor-pointer ${
+                    accountType === "university"
+                      ? "bg-surface-white text-coffee-dark shadow-sm"
+                      : "text-text-muted hover:text-text-secondary"
+                  }`}
+                >
+                  {t("auth.accountUniversity")}
+                </button>
               </div>
             )}
 
             {/* ---- Student register fields ---- */}
-            {!isLogin && !isCompany && (
+            {!isLogin && !isCompany && !isUniversity && (
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   id="firstName"
@@ -367,18 +408,69 @@ export default function AuthenticationPage() {
               </>
             )}
 
+            {/* ---- University register fields ---- */}
+            {!isLogin && isUniversity && (
+              <>
+                <FormField
+                  id="universityName"
+                  label={t("auth.universityName")}
+                  type="text"
+                  value={universityName}
+                  onChange={setUniversityName}
+                  placeholder={t("auth.universityNamePlaceholder")}
+                  icon={<HiOutlineAcademicCap size={18} />}
+                  error={errors.universityName}
+                />
+                <FormField
+                  id="domain"
+                  label={t("auth.domain")}
+                  type="text"
+                  value={domain}
+                  onChange={setDomain}
+                  placeholder={t("auth.domainPlaceholder")}
+                  icon={<HiOutlineGlobe size={18} />}
+                  error={errors.domain}
+                  hint={
+                    <p className="mt-1 text-xs text-text-muted">
+                      {t("auth.domainHint")}
+                    </p>
+                  }
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    id="uniWebsite"
+                    label={t("auth.website")}
+                    type="text"
+                    value={uniWebsite}
+                    onChange={setUniWebsite}
+                    placeholder={t("auth.websitePlaceholder")}
+                    icon={<HiOutlineGlobe size={18} />}
+                  />
+                  <FormField
+                    id="uniLocation"
+                    label={t("auth.location")}
+                    type="text"
+                    value={uniLocation}
+                    onChange={setUniLocation}
+                    placeholder={t("auth.locationPlaceholder")}
+                    icon={<HiOutlineLocationMarker size={18} />}
+                  />
+                </div>
+              </>
+            )}
+
             {/* Email */}
             <FormField
               id="email"
-              label={isLogin ? t("auth.loginEmailLabel") : isCompany ? t("auth.companyEmailLabel") : t("auth.emailLabel")}
+              label={isLogin ? t("auth.loginEmailLabel") : isCompany ? t("auth.companyEmailLabel") : isUniversity ? t("auth.universityEmailLabel") : t("auth.emailLabel")}
               type="email"
               value={email}
               onChange={handleEmailChange}
-              placeholder={isLogin ? t("auth.loginEmailPlaceholder") : isCompany ? t("auth.companyEmailPlaceholder") : t("auth.emailPlaceholder")}
+              placeholder={isLogin ? t("auth.loginEmailPlaceholder") : isCompany ? t("auth.companyEmailPlaceholder") : isUniversity ? t("auth.universityEmailPlaceholder") : t("auth.emailPlaceholder")}
               icon={<HiOutlineMail size={18} />}
               error={errors.email}
               hint={
-                !isLogin && !isCompany ? (
+                !isLogin && !isCompany && !isUniversity ? (
                   <p className="mt-1 text-xs text-text-muted">
                     {t("auth.emailHint")}
                     <span className="font-medium text-coffee-warm">
@@ -390,7 +482,7 @@ export default function AuthenticationPage() {
             />
 
             {/* Auto-detected university (student only) */}
-            {!isLogin && !isCompany && university && (
+            {!isLogin && !isCompany && !isUniversity && university && (
               <div className="mb-5 flex items-center gap-2 rounded-button bg-coffee-gold/10 px-4 py-2.5 text-sm backdrop-blur-sm">
                 <HiOutlineAcademicCap
                   size={18}
@@ -514,11 +606,18 @@ export default function AuthenticationPage() {
           </form>
 
           {/* Helper note (student register only) */}
-          {!isLogin && !isCompany && (
+          {!isLogin && !isCompany && !isUniversity && (
             <p className="mt-5 text-center text-xs text-text-muted lg:text-left">
               {t("auth.helperNote")}
               <span className="font-medium">{t("auth.emailHintDomain")}</span>
               {t("auth.helperNoteEnd")}
+            </p>
+          )}
+
+          {/* Helper note (university register) */}
+          {!isLogin && isUniversity && (
+            <p className="mt-5 text-center text-xs text-text-muted lg:text-left">
+              {t("auth.universityHelperNote")}
             </p>
           )}
         </div>

@@ -1,6 +1,8 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../model/prisma';
+import { eq } from 'drizzle-orm';
+import { db } from '../model/db';
+import { users, students, companies, universities } from '../model/schema';
 
 const SALT_ROUNDS = 12;
 
@@ -22,6 +24,15 @@ export interface RegisterCompanyInput {
   verificationDocumentUrl?: string;
 }
 
+export interface RegisterUniversityInput {
+  email: string;
+  password: string;
+  universityName: string;
+  domain: string;
+  website?: string;
+  location?: string;
+}
+
 export interface LoginInput {
   email: string;
   password: string;
@@ -37,11 +48,35 @@ export interface AuthResult {
     lastName?: string;
     university?: string;
     companyName?: string;
+    universityName?: string;
   };
 }
 
 export async function registerStudent(input: RegisterInput): Promise<AuthResult> {
-  const existing = await prisma.user.findUnique({ where: { email: input.email } });
+  // Check that the email domain belongs to a registered & validated university
+  const emailDomain = input.email.split('@')[1]?.toLowerCase();
+  if (!emailDomain) {
+    const err = new Error('Invalid email format') as Error & { code: string; status: number };
+    err.code = 'INVALID_EMAIL';
+    err.status = 400;
+    throw err;
+  }
+
+  const [uni] = await db.select().from(universities).where(eq(universities.domain, emailDomain));
+  if (!uni) {
+    const err = new Error('No university registered with this email domain. Your university must register first.') as Error & { code: string; status: number };
+    err.code = 'UNIVERSITY_NOT_REGISTERED';
+    err.status = 400;
+    throw err;
+  }
+  if (!uni.isValidated) {
+    const err = new Error('Your university is still pending validation. Please try again later.') as Error & { code: string; status: number };
+    err.code = 'UNIVERSITY_NOT_VALIDATED';
+    err.status = 400;
+    throw err;
+  }
+
+  const [existing] = await db.select().from(users).where(eq(users.email, input.email));
   if (existing) {
     const err = new Error('Email already registered') as Error & { code: string; status: number };
     err.code = 'EMAIL_IN_USE';
@@ -51,20 +86,18 @@ export async function registerStudent(input: RegisterInput): Promise<AuthResult>
 
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
 
-  const user = await prisma.user.create({
-    data: {
-      email: input.email,
-      passwordHash,
-      role: 'student',
-      firstName: input.firstName,
-      lastName: input.lastName,
-      university: input.university,
-      student: {
-        create: {
-          skills: [],
-        },
-      },
-    },
+  const [user] = await db.insert(users).values({
+    email: input.email,
+    passwordHash,
+    role: 'student',
+    firstName: input.firstName,
+    lastName: input.lastName,
+    university: uni.universityName,
+  }).returning();
+
+  await db.insert(students).values({
+    userId: user.id,
+    skills: [],
   });
 
   const token = signToken(user.id, user.role);
@@ -82,7 +115,7 @@ export async function registerStudent(input: RegisterInput): Promise<AuthResult>
 }
 
 export async function registerCompany(input: RegisterCompanyInput): Promise<AuthResult> {
-  const existing = await prisma.user.findUnique({ where: { email: input.email } });
+  const [existing] = await db.select().from(users).where(eq(users.email, input.email));
   if (existing) {
     const err = new Error('Email already registered') as Error & { code: string; status: number };
     err.code = 'EMAIL_IN_USE';
@@ -92,23 +125,20 @@ export async function registerCompany(input: RegisterCompanyInput): Promise<Auth
 
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
 
-  const user = await prisma.user.create({
-    data: {
-      email: input.email,
-      passwordHash,
-      role: 'company',
-      company: {
-        create: {
-          companyName: input.companyName,
-          contactPerson: input.contactPerson,
-          industry: input.industry,
-          location: input.location,
-          verificationDocumentUrl: input.verificationDocumentUrl,
-        },
-      },
-    },
-    include: { company: true },
-  });
+  const [user] = await db.insert(users).values({
+    email: input.email,
+    passwordHash,
+    role: 'company',
+  }).returning();
+
+  const [company] = await db.insert(companies).values({
+    userId: user.id,
+    companyName: input.companyName,
+    contactPerson: input.contactPerson,
+    industry: input.industry,
+    location: input.location,
+    verificationDocumentUrl: input.verificationDocumentUrl,
+  }).returning();
 
   const token = signToken(user.id, user.role);
   return {
@@ -117,16 +147,60 @@ export async function registerCompany(input: RegisterCompanyInput): Promise<Auth
       id: user.id,
       email: user.email,
       role: user.role,
-      companyName: user.company!.companyName,
+      companyName: company.companyName,
+    },
+  };
+}
+
+export async function registerUniversity(input: RegisterUniversityInput): Promise<AuthResult> {
+  const domain = input.domain.toLowerCase().replace(/^@/, '');
+
+  const [existingDomain] = await db.select().from(universities).where(eq(universities.domain, domain));
+  if (existingDomain) {
+    const err = new Error('A university with this domain is already registered') as Error & { code: string; status: number };
+    err.code = 'DOMAIN_IN_USE';
+    err.status = 409;
+    throw err;
+  }
+
+  const [existing] = await db.select().from(users).where(eq(users.email, input.email));
+  if (existing) {
+    const err = new Error('Email already registered') as Error & { code: string; status: number };
+    err.code = 'EMAIL_IN_USE';
+    err.status = 409;
+    throw err;
+  }
+
+  const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
+
+  const [user] = await db.insert(users).values({
+    email: input.email,
+    passwordHash,
+    role: 'university',
+  }).returning();
+
+  const [uni] = await db.insert(universities).values({
+    userId: user.id,
+    universityName: input.universityName,
+    domain,
+    website: input.website,
+    location: input.location,
+  }).returning();
+
+  const token = signToken(user.id, user.role);
+  return {
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      universityName: uni.universityName,
     },
   };
 }
 
 export async function loginUser(input: LoginInput): Promise<AuthResult> {
-  const user = await prisma.user.findUnique({
-    where: { email: input.email },
-    include: { company: true },
-  });
+  const [user] = await db.select().from(users).where(eq(users.email, input.email));
   if (!user) {
     const err = new Error('Invalid credentials') as Error & { code: string; status: number };
     err.code = 'INVALID_CREDENTIALS';
@@ -142,6 +216,9 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
     throw err;
   }
 
+  const [company] = await db.select().from(companies).where(eq(companies.userId, user.id));
+  const [uni] = await db.select().from(universities).where(eq(universities.userId, user.id));
+
   const token = signToken(user.id, user.role);
   return {
     token,
@@ -152,7 +229,8 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
       firstName: user.firstName ?? undefined,
       lastName: user.lastName ?? undefined,
       university: user.university ?? undefined,
-      companyName: user.company?.companyName ?? undefined,
+      companyName: company?.companyName ?? undefined,
+      universityName: uni?.universityName ?? undefined,
     },
   };
 }

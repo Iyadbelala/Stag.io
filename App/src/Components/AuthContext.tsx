@@ -13,11 +13,12 @@ import { api } from "@/lib/api";
 export interface AuthUser {
   id: string;
   email: string;
-  role: "student" | "company" | "admin" | "superadmin";
+  role: "student" | "company" | "admin" | "superadmin" | "university";
   firstName?: string;
   lastName?: string;
   university?: string;
   companyName?: string;
+  universityName?: string;
 }
 
 interface RegisterData {
@@ -38,6 +39,15 @@ interface RegisterCompanyData {
   verificationDocument?: File;
 }
 
+interface RegisterUniversityData {
+  email: string;
+  password: string;
+  universityName: string;
+  domain: string;
+  website?: string;
+  location?: string;
+}
+
 interface AuthContextValue {
   user: AuthUser | null;
   token: string | null;
@@ -45,6 +55,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<AuthUser>;
   register: (data: RegisterData) => Promise<AuthUser>;
   registerCompany: (data: RegisterCompanyData) => Promise<AuthUser>;
+  registerUniversity: (data: RegisterUniversityData) => Promise<AuthUser>;
   logout: () => void;
   updateUser: (updatedUser: AuthUser) => void;
 }
@@ -115,6 +126,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.data.user;
   }, []);
 
+  const registerUniversity = useCallback(async (payload: RegisterUniversityData): Promise<AuthUser> => {
+    const { data } = await api.post<{
+      success: true;
+      data: { token: string; user: AuthUser };
+    }>("/api/auth/register/university", payload);
+    persist(data.data.token, data.data.user);
+    return data.data.user;
+  }, []);
+
   const updateUser = useCallback((updatedUser: AuthUser) => {
     localStorage.setItem(USER_KEY, JSON.stringify(updatedUser));
     setUser(updatedUser);
@@ -128,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, registerCompany, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, registerCompany, registerUniversity, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,4 +1,6 @@
-import { prisma } from '../model/prisma';
+import { eq } from 'drizzle-orm';
+import { db } from '../model/db';
+import { users, companies } from '../model/schema';
 
 export interface CompanyProfile {
   id: string;
@@ -24,12 +26,10 @@ export interface UpdateCompanyProfileInput {
 }
 
 export async function getCompanyProfile(userId: string): Promise<CompanyProfile> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { company: true },
-  });
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
+  const [company] = await db.select().from(companies).where(eq(companies.userId, userId));
 
-  if (!user || !user.company) {
+  if (!user || !company) {
     const err = new Error('Company not found') as Error & { code: string; status: number };
     err.code = 'NOT_FOUND';
     err.status = 404;
@@ -40,13 +40,13 @@ export async function getCompanyProfile(userId: string): Promise<CompanyProfile>
     id: user.id,
     email: user.email,
     role: user.role,
-    companyName: user.company.companyName,
-    industry: user.company.industry,
-    website: user.company.website,
-    logoUrl: user.company.logoUrl,
-    description: user.company.description,
-    location: user.company.location,
-    contactPerson: user.company.contactPerson,
+    companyName: company.companyName,
+    industry: company.industry,
+    website: company.website,
+    logoUrl: company.logoUrl,
+    description: company.description,
+    location: company.location,
+    contactPerson: company.contactPerson,
     createdAt: user.createdAt,
   };
 }
@@ -63,25 +63,24 @@ export async function updateCompanyProfile(
   if (input.location !== undefined) companyUpdate.location = input.location;
   if (input.contactPerson !== undefined) companyUpdate.contactPerson = input.contactPerson;
 
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data: {
-      company: { update: companyUpdate },
-    },
-    include: { company: true },
-  });
+  if (Object.keys(companyUpdate).length > 0) {
+    await db.update(companies).set(companyUpdate).where(eq(companies.userId, userId));
+  }
+
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
+  const [company] = await db.select().from(companies).where(eq(companies.userId, userId));
 
   return {
     id: user.id,
     email: user.email,
     role: user.role,
-    companyName: user.company!.companyName,
-    industry: user.company!.industry,
-    website: user.company!.website,
-    logoUrl: user.company!.logoUrl,
-    description: user.company!.description,
-    location: user.company!.location,
-    contactPerson: user.company!.contactPerson,
+    companyName: company.companyName,
+    industry: company.industry,
+    website: company.website,
+    logoUrl: company.logoUrl,
+    description: company.description,
+    location: company.location,
+    contactPerson: company.contactPerson,
     createdAt: user.createdAt,
   };
 }

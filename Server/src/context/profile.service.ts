@@ -1,4 +1,6 @@
-import { prisma } from '../model/prisma';
+import { eq } from 'drizzle-orm';
+import { db } from '../model/db';
+import { users, students } from '../model/schema';
 
 export interface StudentProfile {
   id: string;
@@ -11,6 +13,8 @@ export interface StudentProfile {
   bio: string | null;
   skills: string[];
   cvUrl: string | null;
+  profilePhotoUrl: string | null;
+  portfolioPhotos: string[];
   createdAt: Date;
 }
 
@@ -23,10 +27,7 @@ export interface UpdateProfileInput {
 }
 
 export async function getStudentProfile(userId: string): Promise<StudentProfile> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { student: true },
-  });
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
 
   if (!user) {
     const err = new Error('User not found') as Error & { code: string; status: number };
@@ -35,6 +36,8 @@ export async function getStudentProfile(userId: string): Promise<StudentProfile>
     throw err;
   }
 
+  const [student] = await db.select().from(students).where(eq(students.userId, userId));
+
   return {
     id: user.id,
     email: user.email,
@@ -42,10 +45,12 @@ export async function getStudentProfile(userId: string): Promise<StudentProfile>
     firstName: user.firstName,
     lastName: user.lastName,
     university: user.university,
-    department: user.student?.department ?? null,
-    bio: user.student?.bio ?? null,
-    skills: user.student?.skills ?? [],
-    cvUrl: user.student?.cvUrl ?? null,
+    department: student?.department ?? null,
+    bio: student?.bio ?? null,
+    skills: student?.skills ?? [],
+    cvUrl: student?.cvUrl ?? null,
+    profilePhotoUrl: student?.profilePhotoUrl ?? null,
+    portfolioPhotos: student?.portfolioPhotos ?? [],
     createdAt: user.createdAt,
   };
 }
@@ -54,27 +59,24 @@ export async function updateStudentProfile(
   userId: string,
   input: UpdateProfileInput
 ): Promise<StudentProfile> {
-  // Update User fields
   const userUpdate: Record<string, string> = {};
   if (input.firstName !== undefined) userUpdate.firstName = input.firstName;
   if (input.lastName !== undefined) userUpdate.lastName = input.lastName;
 
-  // Update Student fields
   const studentUpdate: Record<string, unknown> = {};
   if (input.department !== undefined) studentUpdate.department = input.department;
   if (input.bio !== undefined) studentUpdate.bio = input.bio;
   if (input.skills !== undefined) studentUpdate.skills = input.skills;
 
-  const user = await prisma.user.update({
-    where: { id: userId },
-    data: {
-      ...userUpdate,
-      student: {
-        update: studentUpdate,
-      },
-    },
-    include: { student: true },
-  });
+  if (Object.keys(userUpdate).length > 0) {
+    await db.update(users).set(userUpdate).where(eq(users.id, userId));
+  }
+  if (Object.keys(studentUpdate).length > 0) {
+    await db.update(students).set(studentUpdate).where(eq(students.userId, userId));
+  }
+
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
+  const [student] = await db.select().from(students).where(eq(students.userId, userId));
 
   return {
     id: user.id,
@@ -83,10 +85,12 @@ export async function updateStudentProfile(
     firstName: user.firstName,
     lastName: user.lastName,
     university: user.university,
-    department: user.student?.department ?? null,
-    bio: user.student?.bio ?? null,
-    skills: user.student?.skills ?? [],
-    cvUrl: user.student?.cvUrl ?? null,
+    department: student?.department ?? null,
+    bio: student?.bio ?? null,
+    skills: student?.skills ?? [],
+    cvUrl: student?.cvUrl ?? null,
+    profilePhotoUrl: student?.profilePhotoUrl ?? null,
+    portfolioPhotos: student?.portfolioPhotos ?? [],
     createdAt: user.createdAt,
   };
 }

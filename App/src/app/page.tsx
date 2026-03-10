@@ -1,5 +1,13 @@
+"use client";
+
+import { useAuth } from "@/Components/AuthContext";
 import Homepage from "@/screen/Homepage/page";
+import InternshipsPage from "@/screen/Internships/page";
 
 export default function Home() {
-  return <Homepage />;
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) return null;
+
+  return user ? <InternshipsPage /> : <Homepage />;
 }

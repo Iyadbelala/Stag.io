@@ -7,6 +7,7 @@ import offersRouter from './offers.routes';
 import applicationsRouter from './applications.routes';
 import adminRouter from './admin.routes';
 import superadminRouter from './superadmin.routes';
+import universityRouter from './university.routes';
 
 export const router = Router();
 
@@ -51,3 +52,6 @@ router.use('/admin', adminRouter);
 
 // Super Admin
 router.use('/superadmin', superadminRouter);
+
+// University
+router.use('/university', universityRouter);

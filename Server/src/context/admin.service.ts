@@ -1,4 +1,6 @@
-import { prisma } from '../model/prisma';
+import { eq, desc } from 'drizzle-orm';
+import { db } from '../model/db';
+import { users, companies, students, internshipOffers, applications, universities } from '../model/schema';
 import PDFDocument from 'pdfkit';
 
 /* ──────────────────────────────────────────────
@@ -11,31 +13,43 @@ export interface PendingCompany {
   location: string | null;
   contactPerson: string | null;
   email: string;
+  website: string | null;
+  description: string | null;
+  logoUrl: string | null;
   verificationDocumentUrl: string | null;
   createdAt: string;
 }
 
 export async function getPendingCompanies(): Promise<PendingCompany[]> {
-  const companies = await prisma.company.findMany({
-    where: { isValidated: false },
-    include: { user: { select: { email: true } } },
-    orderBy: { createdAt: 'desc' },
-  });
+  const rows = await db
+    .select()
+    .from(companies)
+    .where(eq(companies.isValidated, false))
+    .orderBy(desc(companies.createdAt));
 
-  return companies.map((c) => ({
-    id: c.id,
-    companyName: c.companyName,
-    industry: c.industry,
-    location: c.location,
-    contactPerson: c.contactPerson,
-    email: c.user.email,
-    verificationDocumentUrl: c.verificationDocumentUrl,
-    createdAt: c.createdAt.toISOString(),
-  }));
+  const result: PendingCompany[] = [];
+  for (const c of rows) {
+    const [user] = await db.select().from(users).where(eq(users.id, c.userId));
+    result.push({
+      id: c.id,
+      companyName: c.companyName,
+      industry: c.industry,
+      location: c.location,
+      contactPerson: c.contactPerson,
+      email: user?.email ?? '',
+      website: c.website,
+      description: c.description,
+      logoUrl: c.logoUrl,
+      verificationDocumentUrl: c.verificationDocumentUrl,
+      createdAt: c.createdAt.toISOString(),
+    });
+  }
+
+  return result;
 }
 
 export async function validateCompany(companyId: string): Promise<{ id: string; isValidated: boolean }> {
-  const company = await prisma.company.findUnique({ where: { id: companyId } });
+  const [company] = await db.select().from(companies).where(eq(companies.id, companyId));
 
   if (!company) {
     const err = new Error('Company not found') as Error & { code: string; status: number };
@@ -51,19 +65,17 @@ export async function validateCompany(companyId: string): Promise<{ id: string; 
     throw err;
   }
 
-  const updated = await prisma.company.update({
-    where: { id: companyId },
-    data: { isValidated: true },
-  });
+  const [updated] = await db
+    .update(companies)
+    .set({ isValidated: true })
+    .where(eq(companies.id, companyId))
+    .returning();
 
   return { id: updated.id, isValidated: updated.isValidated };
 }
 
 export async function rejectCompany(companyId: string): Promise<void> {
-  const company = await prisma.company.findUnique({
-    where: { id: companyId },
-    include: { user: true },
-  });
+  const [company] = await db.select().from(companies).where(eq(companies.id, companyId));
 
   if (!company) {
     const err = new Error('Company not found') as Error & { code: string; status: number };
@@ -73,7 +85,7 @@ export async function rejectCompany(companyId: string): Promise<void> {
   }
 
   // Delete the user (cascades to company)
-  await prisma.user.delete({ where: { id: company.userId } });
+  await db.delete(users).where(eq(users.id, company.userId));
 }
 
 /* ──────────────────────────────────────────────
@@ -95,58 +107,59 @@ export interface AdminApplication {
    List accepted applications (pending admin validation)
    ────────────────────────────────────────────── */
 export async function getAcceptedApplications(): Promise<AdminApplication[]> {
-  const apps = await prisma.application.findMany({
-    where: { status: 'accepted' },
-    include: {
-      student: { include: { user: { select: { firstName: true, lastName: true, email: true } } } },
-      offer: { include: { company: { select: { companyName: true } } } },
-    },
-    orderBy: { updatedAt: 'desc' },
-  });
+  const apps = await db
+    .select()
+    .from(applications)
+    .where(eq(applications.status, 'accepted'))
+    .orderBy(desc(applications.updatedAt));
 
-  return apps.map((a) => ({
-    id: a.id,
-    studentName: `${a.student.user.firstName ?? ''} ${a.student.user.lastName ?? ''}`.trim() || 'Unknown',
-    studentEmail: a.student.user.email,
-    offerTitle: a.offer.title,
-    companyName: a.offer.company.companyName,
-    coverLetter: a.coverLetter,
-    cvUrl: a.cvUrl,
-    status: a.status,
-    appliedAt: a.appliedAt.toISOString(),
-  }));
+  return buildAdminApplications(apps);
 }
 
 /* ──────────────────────────────────────────────
    List all applications (for overview)
    ────────────────────────────────────────────── */
 export async function getAllApplications(): Promise<AdminApplication[]> {
-  const apps = await prisma.application.findMany({
-    include: {
-      student: { include: { user: { select: { firstName: true, lastName: true, email: true } } } },
-      offer: { include: { company: { select: { companyName: true } } } },
-    },
-    orderBy: { updatedAt: 'desc' },
-  });
+  const apps = await db
+    .select()
+    .from(applications)
+    .orderBy(desc(applications.updatedAt));
 
-  return apps.map((a) => ({
-    id: a.id,
-    studentName: `${a.student.user.firstName ?? ''} ${a.student.user.lastName ?? ''}`.trim() || 'Unknown',
-    studentEmail: a.student.user.email,
-    offerTitle: a.offer.title,
-    companyName: a.offer.company.companyName,
-    coverLetter: a.coverLetter,
-    cvUrl: a.cvUrl,
-    status: a.status,
-    appliedAt: a.appliedAt.toISOString(),
-  }));
+  return buildAdminApplications(apps);
+}
+
+async function buildAdminApplications(apps: (typeof applications.$inferSelect)[]): Promise<AdminApplication[]> {
+  const result: AdminApplication[] = [];
+  for (const a of apps) {
+    const [student] = await db.select().from(students).where(eq(students.id, a.studentId));
+    const [studentUser] = student
+      ? await db.select().from(users).where(eq(users.id, student.userId))
+      : [undefined];
+    const [offer] = await db.select().from(internshipOffers).where(eq(internshipOffers.id, a.offerId));
+    const [company] = offer
+      ? await db.select().from(companies).where(eq(companies.id, offer.companyId))
+      : [undefined];
+
+    result.push({
+      id: a.id,
+      studentName: `${studentUser?.firstName ?? ''} ${studentUser?.lastName ?? ''}`.trim() || 'Unknown',
+      studentEmail: studentUser?.email ?? '',
+      offerTitle: offer?.title ?? '',
+      companyName: company?.companyName ?? '',
+      coverLetter: a.coverLetter,
+      cvUrl: a.cvUrl,
+      status: a.status,
+      appliedAt: a.appliedAt.toISOString(),
+    });
+  }
+  return result;
 }
 
 /* ──────────────────────────────────────────────
    Validate an accepted application
    ────────────────────────────────────────────── */
 export async function validateApplication(applicationId: string): Promise<{ id: string; status: string }> {
-  const app = await prisma.application.findUnique({ where: { id: applicationId } });
+  const [app] = await db.select().from(applications).where(eq(applications.id, applicationId));
 
   if (!app) {
     const err = new Error('Application not found') as Error & { code: string; status: number };
@@ -162,10 +175,11 @@ export async function validateApplication(applicationId: string): Promise<{ id: 
     throw err;
   }
 
-  const updated = await prisma.application.update({
-    where: { id: applicationId },
-    data: { status: 'validated' },
-  });
+  const [updated] = await db
+    .update(applications)
+    .set({ status: 'validated' })
+    .where(eq(applications.id, applicationId))
+    .returning();
 
   return { id: updated.id, status: updated.status };
 }
@@ -174,19 +188,7 @@ export async function validateApplication(applicationId: string): Promise<{ id: 
    Generate internship agreement PDF
    ────────────────────────────────────────────── */
 export async function generateApplicationPdf(applicationId: string): Promise<Buffer> {
-  const app = await prisma.application.findUnique({
-    where: { id: applicationId },
-    include: {
-      student: {
-        include: {
-          user: { select: { firstName: true, lastName: true, email: true, university: true } },
-        },
-      },
-      offer: {
-        include: { company: { select: { companyName: true, location: true, contactPerson: true } } },
-      },
-    },
-  });
+  const [app] = await db.select().from(applications).where(eq(applications.id, applicationId));
 
   if (!app) {
     const err = new Error('Application not found') as Error & { code: string; status: number };
@@ -202,6 +204,15 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
     throw err;
   }
 
+  const [student] = await db.select().from(students).where(eq(students.id, app.studentId));
+  const [studentUser] = student
+    ? await db.select().from(users).where(eq(users.id, student.userId))
+    : [undefined];
+  const [offer] = await db.select().from(internshipOffers).where(eq(internshipOffers.id, app.offerId));
+  const [company] = offer
+    ? await db.select().from(companies).where(eq(companies.id, offer.companyId))
+    : [undefined];
+
   // Build the PDF in memory
   return new Promise<Buffer>((resolve, reject) => {
     const doc = new PDFDocument({ margin: 0, size: 'A4' });
@@ -211,7 +222,7 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const studentName = `${app.student.user.firstName ?? ''} ${app.student.user.lastName ?? ''}`.trim() || 'N/A';
+    const studentName = `${studentUser?.firstName ?? ''} ${studentUser?.lastName ?? ''}`.trim() || 'N/A';
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const pageW = 595.28;
     const pageH = 841.89;
@@ -316,13 +327,13 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
 
     const studentLines = [
       { label: 'Full Name:', value: studentName },
-      { label: 'Email:', value: app.student.user.email },
-      { label: 'University:', value: app.student.user.university ?? 'N/A' },
+      { label: 'Email:', value: studentUser?.email ?? 'N/A' },
+      { label: 'University:', value: studentUser?.university ?? 'N/A' },
     ];
     const companyLines = [
-      { label: 'Company:', value: app.offer.company.companyName },
-      { label: 'Location:', value: app.offer.company.location ?? 'N/A' },
-      { label: 'Contact:', value: app.offer.company.contactPerson ?? 'N/A' },
+      { label: 'Company:', value: company?.companyName ?? 'N/A' },
+      { label: 'Location:', value: company?.location ?? 'N/A' },
+      { label: 'Contact:', value: company?.contactPerson ?? 'N/A' },
     ];
 
     // Card labels
@@ -342,10 +353,10 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
     sectionHeader('2', 'Internship Details');
 
     const detailLines = [
-      { label: 'Position:', value: app.offer.title },
-      { label: 'Duration:', value: app.offer.duration },
-      { label: 'Location:', value: app.offer.location },
-      { label: 'Type:', value: app.offer.type.charAt(0).toUpperCase() + app.offer.type.slice(1) },
+      { label: 'Position:', value: offer?.title ?? 'N/A' },
+      { label: 'Duration:', value: offer?.duration ?? 'N/A' },
+      { label: 'Location:', value: offer?.location ?? 'N/A' },
+      { label: 'Type:', value: offer ? offer.type.charAt(0).toUpperCase() + offer.type.slice(1) : 'N/A' },
     ];
     const dh = infoCard(detailLines, margin, contentW);
     y += dh + 12;
@@ -356,13 +367,13 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
     doc.font('Helvetica-Bold').fontSize(8.5).fillColor(warmBrown);
     doc.text('DESCRIPTION', margin + 10, y + 6);
     doc.font('Helvetica').fontSize(9).fillColor('#444');
-    doc.text(app.offer.description, margin + 10, y + 18, { width: contentW - 20 });
+    doc.text(offer?.description ?? '', margin + 10, y + 18, { width: contentW - 20 });
     y = doc.y + 10;
 
     doc.font('Helvetica-Bold').fontSize(8.5).fillColor(warmBrown);
     doc.text('REQUIREMENTS', margin + 10, y);
     doc.font('Helvetica').fontSize(9).fillColor('#444');
-    doc.text(app.offer.requirements, margin + 10, y + 12, { width: contentW - 20 });
+    doc.text(offer?.requirements ?? '', margin + 10, y + 12, { width: contentW - 20 });
     y = doc.y + 10;
 
     // Draw the outer box around desc+req
@@ -406,7 +417,7 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
     // Three signature blocks
     const sigBlocks = [
       { role: 'Student', name: studentName },
-      { role: 'Company', name: app.offer.company.companyName },
+      { role: 'Company', name: company?.companyName ?? 'N/A' },
       { role: 'University Admin', name: 'Universit\u00E9 Constantine 2' },
     ];
 
@@ -453,4 +464,84 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
 
     doc.end();
   });
+}
+
+/* ──────────────────────────────────────────────
+   University validation types & functions
+   ────────────────────────────────────────────── */
+export interface PendingUniversity {
+  id: string;
+  universityName: string;
+  domain: string;
+  website: string | null;
+  location: string | null;
+  logoUrl: string | null;
+  description: string | null;
+  email: string;
+  createdAt: string;
+}
+
+export async function getPendingUniversities(): Promise<PendingUniversity[]> {
+  const rows = await db
+    .select()
+    .from(universities)
+    .where(eq(universities.isValidated, false))
+    .orderBy(desc(universities.createdAt));
+
+  const result: PendingUniversity[] = [];
+  for (const u of rows) {
+    const [user] = await db.select().from(users).where(eq(users.id, u.userId));
+    result.push({
+      id: u.id,
+      universityName: u.universityName,
+      domain: u.domain,
+      website: u.website,
+      location: u.location,
+      logoUrl: u.logoUrl,
+      description: u.description,
+      email: user?.email ?? '',
+      createdAt: u.createdAt.toISOString(),
+    });
+  }
+
+  return result;
+}
+
+export async function validateUniversity(universityId: string): Promise<{ id: string; isValidated: boolean }> {
+  const [uni] = await db.select().from(universities).where(eq(universities.id, universityId));
+
+  if (!uni) {
+    const err = new Error('University not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  if (uni.isValidated) {
+    const err = new Error('University is already validated') as Error & { code: string; status: number };
+    err.code = 'ALREADY_VALIDATED';
+    err.status = 400;
+    throw err;
+  }
+
+  const [updated] = await db
+    .update(universities)
+    .set({ isValidated: true })
+    .where(eq(universities.id, universityId))
+    .returning();
+
+  return { id: updated.id, isValidated: updated.isValidated };
+}
+
+export async function rejectUniversity(universityId: string): Promise<void> {
+  const [uni] = await db.select().from(universities).where(eq(universities.id, universityId));
+
+  if (!uni) {
+    const err = new Error('University not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  await db.delete(users).where(eq(users.id, uni.userId));
 }

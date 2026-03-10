@@ -1,4 +1,6 @@
-import { prisma } from '../model/prisma';
+import { eq, and, count, desc } from 'drizzle-orm';
+import { db } from '../model/db';
+import { users, students, companies, internshipOffers, applications } from '../model/schema';
 
 export interface StudentDashboardStats {
   applicationsSent: number;
@@ -22,60 +24,51 @@ export interface StudentDashboardData {
 }
 
 export async function getStudentDashboard(userId: string): Promise<StudentDashboardData> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { student: true },
-  });
+  const [user] = await db.select().from(users).where(eq(users.id, userId));
+  const [student] = await db.select().from(students).where(eq(students.userId, userId));
 
-  if (!user || !user.student) {
+  if (!user || !student) {
     const err = new Error('Student not found') as Error & { code: string; status: number };
     err.code = 'NOT_FOUND';
     err.status = 404;
     throw err;
   }
 
-  const studentId = user.student.id;
+  const studentId = student.id;
 
   // Get stats
-  const [applicationsSent, acceptedApplications, pendingResponses, rejectedApplications] = await Promise.all([
-    prisma.application.count({
-      where: { studentId },
-    }),
-    prisma.application.count({
-      where: { studentId, status: 'accepted' },
-    }),
-    prisma.application.count({
-      where: { studentId, status: 'pending' },
-    }),
-    prisma.application.count({
-      where: { studentId, status: 'rejected' },
-    }),
+  const [[sent], [accepted], [pending], [rejected]] = await Promise.all([
+    db.select({ value: count() }).from(applications).where(eq(applications.studentId, studentId)),
+    db.select({ value: count() }).from(applications).where(and(eq(applications.studentId, studentId), eq(applications.status, 'accepted'))),
+    db.select({ value: count() }).from(applications).where(and(eq(applications.studentId, studentId), eq(applications.status, 'pending'))),
+    db.select({ value: count() }).from(applications).where(and(eq(applications.studentId, studentId), eq(applications.status, 'rejected'))),
   ]);
 
   // Get recent applications (latest 5)
-  const applications = await prisma.application.findMany({
-    where: { studentId },
-    orderBy: { appliedAt: 'desc' },
-    take: 5,
-    include: {
-      offer: {
-        include: {
-          company: { select: { companyName: true } },
-        },
-      },
-    },
-  });
+  const recentApps = await db
+    .select()
+    .from(applications)
+    .where(eq(applications.studentId, studentId))
+    .orderBy(desc(applications.appliedAt))
+    .limit(5);
 
-  const recentApplications: RecentApplication[] = applications.map((app) => ({
-    id: app.id,
-    title: app.offer.title,
-    company: app.offer.company.companyName,
-    status: app.status,
-    appliedAt: app.appliedAt.toISOString(),
-  }));
+  const recentApplications: RecentApplication[] = [];
+  for (const app of recentApps) {
+    const [offer] = await db.select().from(internshipOffers).where(eq(internshipOffers.id, app.offerId));
+    const [company] = offer
+      ? await db.select().from(companies).where(eq(companies.id, offer.companyId))
+      : [undefined];
+
+    recentApplications.push({
+      id: app.id,
+      title: offer?.title ?? '',
+      company: company?.companyName ?? '',
+      status: app.status,
+      appliedAt: app.appliedAt.toISOString(),
+    });
+  }
 
   // Compute profile completion
-  const student = user.student;
   const fields = [
     user.firstName,
     user.lastName,
@@ -90,10 +83,10 @@ export async function getStudentDashboard(userId: string): Promise<StudentDashbo
 
   return {
     stats: {
-      applicationsSent,
-      acceptedApplications,
-      pendingResponses,
-      rejectedApplications,
+      applicationsSent: sent.value,
+      acceptedApplications: accepted.value,
+      pendingResponses: pending.value,
+      rejectedApplications: rejected.value,
     },
     recentApplications,
     profileCompletion,

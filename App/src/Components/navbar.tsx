@@ -71,7 +71,9 @@ export default function Navbar() {
 
         {/* ---- Desktop Links ---- */}
         <ul className="hidden items-center gap-8 md:flex">
-          {navLinks.map((link) => (
+          {navLinks
+            .filter((link) => !(user && link.href === "/"))
+            .map((link) => (
             <li key={link.href}>
               <Link
                 href={link.href}
@@ -152,21 +154,21 @@ export default function Navbar() {
                   {/* User info header */}
                   <div className="border-b border-surface-sand px-4 py-3">
                     <p className="text-sm font-medium text-coffee-dark truncate">
-                      {user.role === "company" ? user.companyName : `${user.firstName} ${user.lastName}`}
+                      {user.role === "company" ? user.companyName : user.role === "university" ? user.universityName : `${user.firstName} ${user.lastName}`}
                     </p>
                     <p className="text-xs text-text-muted truncate">{user.email}</p>
                   </div>
 
                   {/* Menu items */}
                   <Link
-                    href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : user.role === "superadmin" ? "/superadmin" : "/student"}
+                    href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : user.role === "superadmin" ? "/superadmin" : user.role === "university" ? "/university" : "/student"}
                     onClick={() => setUserMenuOpen(false)}
                     className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
                   >
                     <HiOutlineViewGrid size={16} />
                     Dashboard
                   </Link>
-                  {user.role !== "admin" && user.role !== "superadmin" && (
+                  {user.role !== "admin" && user.role !== "superadmin" && user.role !== "university" && (
                     <Link
                       href={user.role === "company" ? "/company/profile" : "/student/profile"}
                       onClick={() => setUserMenuOpen(false)}
@@ -256,7 +258,9 @@ export default function Navbar() {
         }`}
       >
         <div className="flex flex-col gap-4 border-t border-surface-sand bg-surface-white px-6 py-6">
-          {navLinks.map((link) => (
+          {navLinks
+            .filter((link) => !(user && link.href === "/"))
+            .map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -275,12 +279,12 @@ export default function Navbar() {
                 {/* Mobile user info */}
                 <div className="px-1 py-1">
                   <p className="text-sm font-medium text-coffee-dark">
-                    {user.role === "company" ? user.companyName : `${user.firstName} ${user.lastName}`}
+                    {user.role === "company" ? user.companyName : user.role === "university" ? user.universityName : `${user.firstName} ${user.lastName}`}
                   </p>
                   <p className="text-xs text-text-muted">{user.email}</p>
                 </div>
                 <Link
-                  href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : user.role === "superadmin" ? "/superadmin" : "/student"}
+                  href={user.role === "company" ? "/company" : user.role === "admin" ? "/admin" : user.role === "superadmin" ? "/superadmin" : user.role === "university" ? "/university" : "/student"}
                   onClick={() => setMobileOpen(false)}
                   className="rounded-button border-2 border-coffee-warm px-5 py-2.5 text-center text-sm font-body font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
                 >

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   HiOutlineArrowLeft,
@@ -8,6 +9,8 @@ import {
   HiOutlineMail,
   HiOutlineGlobe,
   HiOutlineCheck,
+  HiOutlineCamera,
+  HiOutlineTrash,
 } from "react-icons/hi";
 import { useAuth } from "@/Components/AuthContext";
 import { api } from "@/lib/api";
@@ -24,6 +27,7 @@ interface CompanyProfileData {
   location: string;
   website: string;
   description: string;
+  logoUrl: string | null;
 }
 
 /* ============================================
@@ -41,10 +45,13 @@ export default function CompanyProfile() {
     location: "",
     website: "",
     description: "",
+    logoUrl: null,
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"idle" | "success" | "error">("idle");
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   /* ---- Fetch profile on mount ---- */
   useEffect(() => {
@@ -60,9 +67,9 @@ export default function CompanyProfile() {
           location: p.location || "",
           website: p.website || "",
           description: p.description || "",
+          logoUrl: p.logoUrl || null,
         });
       } catch {
-        // Fallback to auth context data
         if (user) {
           setForm((f) => ({
             ...f,
@@ -81,6 +88,35 @@ export default function CompanyProfile() {
   const updateField = useCallback((field: keyof CompanyProfileData, value: string) => {
     setForm((f) => ({ ...f, [field]: value }));
     setSaveStatus("idle");
+  }, []);
+
+  /* ---- Logo upload ---- */
+  const handleLogoUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append("photo", file);
+      const { data } = await api.post<{ success: true; data: { url: string } }>("/api/company/logo", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setForm((f) => ({ ...f, logoUrl: data.data.url }));
+    } catch {
+      /* ignore */
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  }, []);
+
+  const handleRemoveLogo = useCallback(async () => {
+    try {
+      await api.delete("/api/company/logo");
+      setForm((f) => ({ ...f, logoUrl: null }));
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   /* ---- Save ---- */
@@ -142,6 +178,81 @@ export default function CompanyProfile() {
               <p className="text-sm text-text-muted">
                 {t("companyProfile.subtitle")}
               </p>
+            </div>
+          </div>
+        </div>
+
+        {/* ---- Company Logo ---- */}
+        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+          <h2 className="mb-6 flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
+            <HiOutlineCamera size={20} className="text-coffee-warm" />
+            {t("companyProfile.logo")}
+          </h2>
+
+          <div className="flex items-center gap-6">
+            {/* Logo preview */}
+            <div className="relative group">
+              {form.logoUrl ? (
+                <Image
+                  src={form.logoUrl}
+                  alt="Company logo"
+                  width={96}
+                  height={96}
+                  className="h-24 w-24 rounded-xl object-cover border-2 border-surface-sand"
+                />
+              ) : (
+                <div className="flex h-24 w-24 items-center justify-center rounded-xl bg-gradient-to-br from-coffee-warm to-coffee-gold text-2xl font-bold text-text-inverse">
+                  {(form.companyName?.[0] || "C").toUpperCase()}
+                </div>
+              )}
+
+              {/* Overlay on hover */}
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={isUploadingLogo}
+                className="absolute inset-0 flex items-center justify-center rounded-xl bg-coffee-dark/50 text-text-inverse opacity-0 transition-opacity group-hover:opacity-100 cursor-pointer"
+              >
+                {isUploadingLogo ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                ) : (
+                  <HiOutlineCamera size={24} />
+                )}
+              </button>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+            </div>
+
+            {/* Actions */}
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={isUploadingLogo}
+                className="flex items-center gap-2 rounded-button bg-coffee-warm px-4 py-2 text-sm font-medium text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer disabled:opacity-60"
+              >
+                <HiOutlineCamera size={16} />
+                {isUploadingLogo
+                  ? t("companyProfile.uploading")
+                  : form.logoUrl
+                  ? t("companyProfile.changeLogo")
+                  : t("companyProfile.uploadLogo")}
+              </button>
+              {form.logoUrl && (
+                <button
+                  type="button"
+                  onClick={handleRemoveLogo}
+                  className="flex items-center gap-2 rounded-button border border-surface-sand px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:border-status-error hover:text-status-error cursor-pointer"
+                >
+                  <HiOutlineTrash size={16} />
+                  {t("companyProfile.removeLogo")}
+                </button>
+              )}
             </div>
           </div>
         </div>

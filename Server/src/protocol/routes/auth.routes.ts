@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { registerStudent, registerCompany, loginUser } from '../../context/auth.service';
+import { registerStudent, registerCompany, registerUniversity, loginUser } from '../../context/auth.service';
 import { uploadDocument } from '../middleware/upload.middleware';
 
 const authRouter = Router();
@@ -70,6 +70,30 @@ authRouter.post('/register/company', uploadDocument.single('verificationDocument
 
   try {
     const result = await registerCompany({ email, password, companyName, contactPerson, industry, location, verificationDocumentUrl });
+    res.status(201).json({ success: true, data: result });
+  } catch (err: unknown) {
+    const e = err as { code?: string; status?: number; message: string };
+    res.status(e.status ?? 500).json({
+      success: false,
+      error: { code: e.code ?? 'INTERNAL_ERROR', message: e.message },
+    });
+  }
+});
+
+/* POST /api/auth/register/university */
+authRouter.post('/register/university', async (req: Request, res: Response) => {
+  const { email, password, universityName, domain, website, location } = req.body;
+
+  if (!email || !password || !universityName || !domain) {
+    res.status(400).json({
+      success: false,
+      error: { code: 'MISSING_FIELDS', message: 'Email, password, university name, and domain are required' },
+    });
+    return;
+  }
+
+  try {
+    const result = await registerUniversity({ email, password, universityName, domain, website, location });
     res.status(201).json({ success: true, data: result });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };

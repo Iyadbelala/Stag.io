@@ -1,5 +1,5 @@
 import AuthenticationPage from "@/screen/Authentication/page";
 
 export default function Login() {
-  return <AuthenticationPage />;
+  return <AuthenticationPage initialMode="login" />;
 }

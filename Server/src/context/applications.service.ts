@@ -1,4 +1,6 @@
-import { prisma } from '../model/prisma';
+import { eq, and, desc } from 'drizzle-orm';
+import { db } from '../model/db';
+import { users, companies, students, internshipOffers, applications } from '../model/schema';
 
 export interface ApplyInput {
   coverLetter?: string;
@@ -26,12 +28,9 @@ export async function applyToOffer(
   input: ApplyInput,
 ): Promise<ApplicationResult> {
   // 1. Ensure the user has a student profile
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { student: true },
-  });
+  const [student] = await db.select().from(students).where(eq(students.userId, userId));
 
-  if (!user || !user.student) {
+  if (!student) {
     const err = new Error('Student profile not found') as Error & { code: string; status: number };
     err.code = 'NOT_FOUND';
     err.status = 404;
@@ -39,10 +38,7 @@ export async function applyToOffer(
   }
 
   // 2. Verify the offer exists and is active
-  const offer = await prisma.internshipOffer.findUnique({
-    where: { id: offerId },
-    include: { company: { select: { companyName: true } } },
-  });
+  const [offer] = await db.select().from(internshipOffers).where(eq(internshipOffers.id, offerId));
 
   if (!offer || offer.status !== 'active') {
     const err = new Error('Internship offer not found or no longer active') as Error & { code: string; status: number };
@@ -51,10 +47,13 @@ export async function applyToOffer(
     throw err;
   }
 
+  const [company] = await db.select().from(companies).where(eq(companies.id, offer.companyId));
+
   // 3. Check for duplicate application
-  const existing = await prisma.application.findFirst({
-    where: { studentId: user.student.id, offerId },
-  });
+  const [existing] = await db
+    .select()
+    .from(applications)
+    .where(and(eq(applications.studentId, student.id), eq(applications.offerId, offerId)));
 
   if (existing) {
     const err = new Error('You have already applied to this internship') as Error & { code: string; status: number };
@@ -64,19 +63,12 @@ export async function applyToOffer(
   }
 
   // 4. Create the application
-  const application = await prisma.application.create({
-    data: {
-      studentId: user.student.id,
-      offerId,
-      coverLetter: input.coverLetter ?? null,
-      cvUrl: input.cvUrl ?? null,
-    },
-    include: {
-      offer: {
-        include: { company: { select: { companyName: true } } },
-      },
-    },
-  });
+  const [application] = await db.insert(applications).values({
+    studentId: student.id,
+    offerId,
+    coverLetter: input.coverLetter ?? null,
+    cvUrl: input.cvUrl ?? null,
+  }).returning();
 
   return {
     id: application.id,
@@ -86,8 +78,8 @@ export async function applyToOffer(
     cvUrl: application.cvUrl,
     status: application.status,
     appliedAt: application.appliedAt.toISOString(),
-    offerTitle: application.offer.title,
-    companyName: application.offer.company.companyName,
+    offerTitle: offer.title,
+    companyName: company?.companyName ?? '',
   };
 }
 
@@ -95,39 +87,42 @@ export async function applyToOffer(
  * Get all applications for a student.
  */
 export async function getStudentApplications(userId: string): Promise<ApplicationResult[]> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { student: true },
-  });
+  const [student] = await db.select().from(students).where(eq(students.userId, userId));
 
-  if (!user || !user.student) {
+  if (!student) {
     const err = new Error('Student profile not found') as Error & { code: string; status: number };
     err.code = 'NOT_FOUND';
     err.status = 404;
     throw err;
   }
 
-  const applications = await prisma.application.findMany({
-    where: { studentId: user.student.id },
-    include: {
-      offer: {
-        include: { company: { select: { companyName: true } } },
-      },
-    },
-    orderBy: { appliedAt: 'desc' },
-  });
+  const apps = await db
+    .select()
+    .from(applications)
+    .where(eq(applications.studentId, student.id))
+    .orderBy(desc(applications.appliedAt));
 
-  return applications.map((a) => ({
-    id: a.id,
-    studentId: a.studentId,
-    offerId: a.offerId,
-    coverLetter: a.coverLetter,
-    cvUrl: a.cvUrl,
-    status: a.status,
-    appliedAt: a.appliedAt.toISOString(),
-    offerTitle: a.offer.title,
-    companyName: a.offer.company.companyName,
-  }));
+  const results: ApplicationResult[] = [];
+  for (const a of apps) {
+    const [offer] = await db.select().from(internshipOffers).where(eq(internshipOffers.id, a.offerId));
+    const [company] = offer
+      ? await db.select().from(companies).where(eq(companies.id, offer.companyId))
+      : [undefined];
+
+    results.push({
+      id: a.id,
+      studentId: a.studentId,
+      offerId: a.offerId,
+      coverLetter: a.coverLetter,
+      cvUrl: a.cvUrl,
+      status: a.status,
+      appliedAt: a.appliedAt.toISOString(),
+      offerTitle: offer?.title ?? '',
+      companyName: company?.companyName ?? '',
+    });
+  }
+
+  return results;
 }
 
 /**
@@ -139,34 +134,38 @@ export async function updateApplicationStatus(
   newStatus: 'accepted' | 'rejected',
 ): Promise<{ id: string; status: string }> {
   // Verify user owns the company that owns the offer
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { company: true },
-  });
+  const [company] = await db.select().from(companies).where(eq(companies.userId, userId));
 
-  if (!user || !user.company) {
+  if (!company) {
     const err = new Error('Company not found') as Error & { code: string; status: number };
     err.code = 'NOT_FOUND';
     err.status = 404;
     throw err;
   }
 
-  const application = await prisma.application.findUnique({
-    where: { id: applicationId },
-    include: { offer: true },
-  });
+  const [application] = await db.select().from(applications).where(eq(applications.id, applicationId));
 
-  if (!application || application.offer.companyId !== user.company.id) {
+  if (!application) {
     const err = new Error('Application not found') as Error & { code: string; status: number };
     err.code = 'NOT_FOUND';
     err.status = 404;
     throw err;
   }
 
-  const updated = await prisma.application.update({
-    where: { id: applicationId },
-    data: { status: newStatus },
-  });
+  const [offer] = await db.select().from(internshipOffers).where(eq(internshipOffers.id, application.offerId));
+
+  if (!offer || offer.companyId !== company.id) {
+    const err = new Error('Application not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  const [updated] = await db
+    .update(applications)
+    .set({ status: newStatus })
+    .where(eq(applications.id, applicationId))
+    .returning();
 
   return { id: updated.id, status: updated.status };
 }

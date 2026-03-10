@@ -1,4 +1,6 @@
-import { prisma } from '../model/prisma';
+import { eq, and, desc, count } from 'drizzle-orm';
+import { db } from '../model/db';
+import { users, companies, internshipOffers, applications } from '../model/schema';
 
 export interface CreateOfferInput {
   title: string;
@@ -26,41 +28,17 @@ export interface OfferResult {
   createdAt: string;
 }
 
-export async function createOffer(userId: string, input: CreateOfferInput): Promise<OfferResult> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { company: true },
-  });
+async function getCompanyForUser(userId: string) {
+  const [company] = await db.select().from(companies).where(eq(companies.userId, userId));
+  return company ?? null;
+}
 
-  if (!user || !user.company) {
-    const err = new Error('Company not found') as Error & { code: string; status: number };
-    err.code = 'NOT_FOUND';
-    err.status = 404;
-    throw err;
-  }
-
-  if (!user.company.isValidated) {
-    const err = new Error('Your company must be validated by an admin before posting offers') as Error & { code: string; status: number };
-    err.code = 'NOT_VALIDATED';
-    err.status = 403;
-    throw err;
-  }
-
-  const offer = await prisma.internshipOffer.create({
-    data: {
-      companyId: user.company.id,
-      title: input.title,
-      description: input.description,
-      requirements: input.requirements,
-      duration: input.duration,
-      location: input.location,
-      type: input.type,
-    },
-    include: {
-      company: { select: { companyName: true, industry: true, location: true } },
-      _count: { select: { applications: true } },
-    },
-  });
+async function toOfferResult(offer: typeof internshipOffers.$inferSelect): Promise<OfferResult> {
+  const [company] = await db.select().from(companies).where(eq(companies.id, offer.companyId));
+  const [appCount] = await db
+    .select({ value: count() })
+    .from(applications)
+    .where(eq(applications.offerId, offer.id));
 
   return {
     id: offer.id,
@@ -72,52 +50,61 @@ export async function createOffer(userId: string, input: CreateOfferInput): Prom
     type: offer.type,
     status: offer.status,
     companyId: offer.companyId,
-    companyName: offer.company.companyName,
-    companyIndustry: offer.company.industry,
-    companyLocation: offer.company.location,
-    applicationCount: offer._count.applications,
+    companyName: company?.companyName ?? '',
+    companyIndustry: company?.industry ?? null,
+    companyLocation: company?.location ?? null,
+    applicationCount: appCount?.value ?? 0,
     createdAt: offer.createdAt.toISOString(),
   };
 }
 
-export async function getCompanyOffers(userId: string): Promise<OfferResult[]> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { company: true },
-  });
+export async function createOffer(userId: string, input: CreateOfferInput): Promise<OfferResult> {
+  const company = await getCompanyForUser(userId);
 
-  if (!user || !user.company) {
+  if (!company) {
     const err = new Error('Company not found') as Error & { code: string; status: number };
     err.code = 'NOT_FOUND';
     err.status = 404;
     throw err;
   }
 
-  const offers = await prisma.internshipOffer.findMany({
-    where: { companyId: user.company.id },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      company: { select: { companyName: true, industry: true, location: true } },
-      _count: { select: { applications: true } },
-    },
-  });
+  if (!company.isValidated) {
+    const err = new Error('Your company must be validated by an admin before posting offers') as Error & { code: string; status: number };
+    err.code = 'NOT_VALIDATED';
+    err.status = 403;
+    throw err;
+  }
 
-  return offers.map((offer) => ({
-    id: offer.id,
-    title: offer.title,
-    description: offer.description,
-    requirements: offer.requirements,
-    duration: offer.duration,
-    location: offer.location,
-    type: offer.type,
-    status: offer.status,
-    companyId: offer.companyId,
-    companyName: offer.company.companyName,
-    companyIndustry: offer.company.industry,
-    companyLocation: offer.company.location,
-    applicationCount: offer._count.applications,
-    createdAt: offer.createdAt.toISOString(),
-  }));
+  const [offer] = await db.insert(internshipOffers).values({
+    companyId: company.id,
+    title: input.title,
+    description: input.description,
+    requirements: input.requirements,
+    duration: input.duration,
+    location: input.location,
+    type: input.type,
+  }).returning();
+
+  return toOfferResult(offer);
+}
+
+export async function getCompanyOffers(userId: string): Promise<OfferResult[]> {
+  const company = await getCompanyForUser(userId);
+
+  if (!company) {
+    const err = new Error('Company not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  const offers = await db
+    .select()
+    .from(internshipOffers)
+    .where(eq(internshipOffers.companyId, company.id))
+    .orderBy(desc(internshipOffers.createdAt));
+
+  return Promise.all(offers.map(toOfferResult));
 }
 
 export async function updateOffer(
@@ -125,21 +112,19 @@ export async function updateOffer(
   offerId: string,
   input: Partial<CreateOfferInput>,
 ): Promise<OfferResult> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { company: true },
-  });
+  const company = await getCompanyForUser(userId);
 
-  if (!user || !user.company) {
+  if (!company) {
     const err = new Error('Company not found') as Error & { code: string; status: number };
     err.code = 'NOT_FOUND';
     err.status = 404;
     throw err;
   }
 
-  const existing = await prisma.internshipOffer.findFirst({
-    where: { id: offerId, companyId: user.company.id },
-  });
+  const [existing] = await db
+    .select()
+    .from(internshipOffers)
+    .where(and(eq(internshipOffers.id, offerId), eq(internshipOffers.companyId, company.id)));
 
   if (!existing) {
     const err = new Error('Offer not found') as Error & { code: string; status: number };
@@ -148,56 +133,37 @@ export async function updateOffer(
     throw err;
   }
 
-  const offer = await prisma.internshipOffer.update({
-    where: { id: offerId },
-    data: {
-      ...(input.title !== undefined && { title: input.title }),
-      ...(input.description !== undefined && { description: input.description }),
-      ...(input.requirements !== undefined && { requirements: input.requirements }),
-      ...(input.duration !== undefined && { duration: input.duration }),
-      ...(input.location !== undefined && { location: input.location }),
-      ...(input.type !== undefined && { type: input.type }),
-    },
-    include: {
-      company: { select: { companyName: true, industry: true, location: true } },
-      _count: { select: { applications: true } },
-    },
-  });
+  const updateData: Record<string, unknown> = {};
+  if (input.title !== undefined) updateData.title = input.title;
+  if (input.description !== undefined) updateData.description = input.description;
+  if (input.requirements !== undefined) updateData.requirements = input.requirements;
+  if (input.duration !== undefined) updateData.duration = input.duration;
+  if (input.location !== undefined) updateData.location = input.location;
+  if (input.type !== undefined) updateData.type = input.type;
 
-  return {
-    id: offer.id,
-    title: offer.title,
-    description: offer.description,
-    requirements: offer.requirements,
-    duration: offer.duration,
-    location: offer.location,
-    type: offer.type,
-    status: offer.status,
-    companyId: offer.companyId,
-    companyName: offer.company.companyName,
-    companyIndustry: offer.company.industry,
-    companyLocation: offer.company.location,
-    applicationCount: offer._count.applications,
-    createdAt: offer.createdAt.toISOString(),
-  };
+  const [updated] = await db
+    .update(internshipOffers)
+    .set(updateData)
+    .where(eq(internshipOffers.id, offerId))
+    .returning();
+
+  return toOfferResult(updated);
 }
 
 export async function deleteOffer(userId: string, offerId: string): Promise<void> {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    include: { company: true },
-  });
+  const company = await getCompanyForUser(userId);
 
-  if (!user || !user.company) {
+  if (!company) {
     const err = new Error('Company not found') as Error & { code: string; status: number };
     err.code = 'NOT_FOUND';
     err.status = 404;
     throw err;
   }
 
-  const offer = await prisma.internshipOffer.findFirst({
-    where: { id: offerId, companyId: user.company.id },
-  });
+  const [offer] = await db
+    .select()
+    .from(internshipOffers)
+    .where(and(eq(internshipOffers.id, offerId), eq(internshipOffers.companyId, company.id)));
 
   if (!offer) {
     const err = new Error('Offer not found') as Error & { code: string; status: number };
@@ -206,33 +172,16 @@ export async function deleteOffer(userId: string, offerId: string): Promise<void
     throw err;
   }
 
-  await prisma.internshipOffer.delete({ where: { id: offerId } });
+  await db.delete(internshipOffers).where(eq(internshipOffers.id, offerId));
 }
 
 export async function listPublicOffers(): Promise<OfferResult[]> {
-  const offers = await prisma.internshipOffer.findMany({
-    where: { status: 'active', company: { isValidated: true } },
-    orderBy: { createdAt: 'desc' },
-    include: {
-      company: { select: { companyName: true, industry: true, location: true } },
-      _count: { select: { applications: true } },
-    },
-  });
+  const rows = await db
+    .select({ offer: internshipOffers })
+    .from(internshipOffers)
+    .innerJoin(companies, eq(internshipOffers.companyId, companies.id))
+    .where(and(eq(internshipOffers.status, 'active'), eq(companies.isValidated, true)))
+    .orderBy(desc(internshipOffers.createdAt));
 
-  return offers.map((offer) => ({
-    id: offer.id,
-    title: offer.title,
-    description: offer.description,
-    requirements: offer.requirements,
-    duration: offer.duration,
-    location: offer.location,
-    type: offer.type,
-    status: offer.status,
-    companyId: offer.companyId,
-    companyName: offer.company.companyName,
-    companyIndustry: offer.company.industry,
-    companyLocation: offer.company.location,
-    applicationCount: offer._count.applications,
-    createdAt: offer.createdAt.toISOString(),
-  }));
+  return Promise.all(rows.map((r) => toOfferResult(r.offer)));
 }

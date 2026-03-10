@@ -15,8 +15,6 @@
     "build": "npm run build --workspace=shared && npm run build --workspace=App && npm run build --workspace=Server"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.18",
-    "concurrently": "^9.2.1",
-    "tailwindcss": "^4.1.18"
+    "concurrently": "^9.2.1"
   }
 }

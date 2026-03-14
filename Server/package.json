@@ -11,6 +11,7 @@
     "seed": "tsx src/seed.ts"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@modelcontextprotocol/sdk": "^1.27.1",
     "@neondatabase/serverless": "^1.0.2",
     "@paralleldrive/cuid2": "^3.3.0",

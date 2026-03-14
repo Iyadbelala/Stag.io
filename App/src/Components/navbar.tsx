@@ -12,6 +12,7 @@ import {
   HiOutlineUser,
   HiOutlineViewGrid,
   HiOutlineLogout,
+  HiOutlineBookmark,
 } from "react-icons/hi";
 import { useTheme } from "@/Components/ThemeContext";
 import { useLanguage } from "@/Components/LanguageContext";
@@ -176,6 +177,16 @@ export default function Navbar() {
                     >
                       <HiOutlineUser size={16} />
                       Profile
+                    </Link>
+                  )}
+                  {user.role === "student" && (
+                    <Link
+                      href="/saved"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
+                    >
+                      <HiOutlineBookmark size={16} />
+                      Saved
                     </Link>
                   )}
 

@@ -81,6 +81,14 @@ export const internshipOffers = pgTable('internship_offers', {
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
 });
 
+/* ── Saved Offers (bookmarks) ── */
+export const savedOffers = pgTable('saved_offers', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  studentId: text('studentId').notNull().references(() => students.id, { onDelete: 'cascade' }),
+  offerId: text('offerId').notNull().references(() => internshipOffers.id, { onDelete: 'cascade' }),
+  savedAt: timestamp('savedAt', { withTimezone: true }).defaultNow().notNull(),
+});
+
 /* ── Applications ── */
 export const applications = pgTable('applications', {
   id: text('id').primaryKey().$defaultFn(() => createId()),

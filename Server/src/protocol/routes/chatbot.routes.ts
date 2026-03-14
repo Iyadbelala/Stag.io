@@ -33,8 +33,9 @@ chatbotRouter.post('/', async (req: Request, res: Response) => {
     const response = await processChat(message.trim(), userId, history ?? []);
     res.json({ success: true, data: response });
   } catch (err: unknown) {
-    const e = err as { message: string };
+    const e = err as { message: string; stack?: string };
     console.error('[Chatbot Error]', e.message);
+    console.error('[Chatbot Stack]', e.stack);
     res.status(500).json({
       success: false,
       error: { code: 'CHATBOT_ERROR', message: 'Something went wrong. Please try again.' },

@@ -11,6 +11,7 @@ import universityRouter from './university.routes';
 import matchingRouter from './matching.routes';
 import searchRouter from './search.routes';
 import chatbotRouter from './chatbot.routes';
+import savedRouter from './saved.routes';
 
 export const router = Router();
 
@@ -67,3 +68,6 @@ router.use('/search', searchRouter);
 
 // AI Chatbot
 router.use('/chatbot', chatbotRouter);
+
+// Saved/bookmarked offers
+router.use('/saved', savedRouter);

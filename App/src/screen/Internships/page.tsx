@@ -270,6 +270,14 @@ export default function InternshipsPage() {
     fetchInternships();
   }, []);
 
+  /* ---- Fetch saved offer IDs from backend ---- */
+  useEffect(() => {
+    if (!user) return;
+    api.get<{ success: true; data: string[] }>("/api/saved")
+      .then(({ data }) => setSavedIds(new Set(data.data)))
+      .catch(() => {});
+  }, [user]);
+
   /* ---- Fetch smart matches (triggered by toggle) ---- */
   const fetchMatches = useCallback(async () => {
     if (!user || user.role !== "student") return;
@@ -368,13 +376,30 @@ export default function InternshipsPage() {
     }
   }, [displayList, selectedId]);
 
-  const toggleSave = (id: string) => {
+  const toggleSave = async (id: string) => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    // Optimistic update
+    const wasSaved = savedIds.has(id);
     setSavedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
+      if (wasSaved) next.delete(id);
       else next.add(id);
       return next;
     });
+    try {
+      await api.post(`/api/saved/${id}`);
+    } catch {
+      // Revert on failure
+      setSavedIds((prev) => {
+        const next = new Set(prev);
+        if (wasSaved) next.add(id);
+        else next.delete(id);
+        return next;
+      });
+    }
   };
 
   const handleSearch = () => {
@@ -605,11 +630,11 @@ export default function InternshipsPage() {
       </div>
 
       {/* ---- Main Content ---- */}
-      <div className="mx-auto flex max-w-6xl gap-5 px-4 sm:px-6 py-5">
+      <div className="mx-auto flex max-w-6xl gap-5 px-3 sm:px-6 py-4 sm:py-5">
 
         {/* ---- LEFT: Card List ---- */}
         <div
-          className={`w-full lg:w-[400px] shrink-0 space-y-2.5 overflow-y-auto lg:max-h-[calc(100vh-240px)] pr-1 ${
+          className={`w-full lg:w-[400px] shrink-0 space-y-2 sm:space-y-2.5 overflow-y-auto lg:max-h-[calc(100vh-240px)] pr-1 ${
             selected ? "hidden lg:block" : ""
           }`}
         >
@@ -631,7 +656,7 @@ export default function InternshipsPage() {
                 <button
                   key={item.id}
                   onClick={() => setSelectedId(item.id)}
-                  className={`animate-card-slide-in group relative flex w-full cursor-pointer flex-col rounded-2xl border p-4 text-left transition-all duration-200 ${
+                  className={`animate-card-slide-in group relative flex w-full cursor-pointer flex-col rounded-2xl border p-3.5 sm:p-4 text-left transition-all duration-200 ${
                     isActive
                       ? "border-coffee-warm/40 bg-surface-white shadow-md shadow-coffee-warm/8 ring-1 ring-coffee-warm/15"
                       : "border-surface-sand bg-surface-white hover:border-coffee-gold/30 hover:shadow-sm"
@@ -712,25 +737,42 @@ export default function InternshipsPage() {
           )}
         </div>
 
-        {/* ---- RIGHT: Detail Panel ---- */}
+        {/* ---- RIGHT: Detail Panel (desktop inline / mobile slide-up) ---- */}
+        {/* Mobile overlay backdrop */}
+        {selected && (
+          <div
+            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden animate-fade-in"
+            onClick={() => setSelectedId(null)}
+          />
+        )}
         <div
-          className={`flex-1 overflow-y-auto rounded-2xl border border-surface-sand bg-surface-white shadow-sm lg:max-h-[calc(100vh-240px)] ${
-            selected ? "" : "hidden lg:flex lg:items-center lg:justify-center"
-          }`}
+          className={`
+            ${selected
+              ? "fixed inset-x-0 bottom-0 z-50 max-h-[90vh] rounded-t-3xl shadow-2xl lg:relative lg:inset-auto lg:z-auto lg:max-h-none lg:rounded-2xl lg:shadow-sm"
+              : "hidden lg:flex lg:items-center lg:justify-center lg:rounded-2xl lg:shadow-sm"
+            }
+            flex-1 overflow-y-auto border border-surface-sand bg-surface-white lg:max-h-[calc(100vh-240px)]
+          `}
+          style={selected ? { animation: "chatbot-slide-up 0.3s ease-out" } : undefined}
         >
           {selected ? (
-            <div className="animate-fade-in">
+            <div>
+              {/* Mobile drag handle */}
+              <div className="sticky top-0 z-10 flex items-center justify-center pt-3 pb-1 bg-surface-white rounded-t-3xl lg:hidden">
+                <div className="h-1 w-10 rounded-full bg-surface-sand" />
+              </div>
+
               {/* Mobile back */}
               <button
                 onClick={() => setSelectedId(null)}
-                className="m-4 mb-0 flex items-center gap-1 text-sm text-coffee-warm hover:text-coffee-gold lg:hidden cursor-pointer"
+                className="mx-4 mb-1 flex items-center gap-1 text-sm text-coffee-warm hover:text-coffee-gold lg:hidden cursor-pointer"
               >
                 <HiOutlineChevronLeft size={16} />
                 {t("internships.backToList")}
               </button>
 
               {/* Detail Header */}
-              <div className="p-6 sm:p-8 pb-0 sm:pb-0">
+              <div className="p-4 sm:p-6 lg:p-8 pb-0 sm:pb-0">
                 {/* Match banner */}
                 {"matchScore" in selected && (selected as MatchedInternship).matchScore > 0 && (
                   <div className="mb-5 rounded-xl bg-gradient-to-br from-coffee-gold/8 via-surface-cream to-coffee-warm/8 border border-coffee-gold/15 p-4">
@@ -818,6 +860,16 @@ export default function InternshipsPage() {
                     )}
                   </button>
                   <button
+                    onClick={() => {
+                      const url = `${window.location.origin}/internships?id=${selected.id}`;
+                      if (navigator.share) {
+                        navigator.share({ title: selected.title, text: `${selected.title} at ${selected.companyName}`, url });
+                      } else {
+                        navigator.clipboard.writeText(url);
+                        setApplySuccess("Link copied to clipboard!");
+                        setTimeout(() => setApplySuccess(null), 2000);
+                      }
+                    }}
                     className="flex h-10 w-10 items-center justify-center rounded-xl border border-surface-sand text-text-muted transition-all hover:border-coffee-gold/30 hover:bg-coffee-gold/5 hover:text-coffee-warm cursor-pointer"
                     aria-label={t("internships.share")}
                   >
@@ -839,7 +891,7 @@ export default function InternshipsPage() {
               </div>
 
               {/* Content area */}
-              <div className="p-6 sm:p-8 pt-5 sm:pt-5 space-y-6">
+              <div className="p-4 sm:p-6 lg:p-8 pt-5 sm:pt-5 space-y-5 sm:space-y-6 pb-8">
                 <div className="h-px bg-surface-sand" />
 
                 {/* Description */}

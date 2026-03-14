@@ -67,8 +67,8 @@ adminRouter.patch('/applications/:id/validate', requireAuth, requireAdmin, async
 adminRouter.get('/applications/:id/pdf', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
     const pdfBuffer = await generateApplicationPdf(req.params.id as string);
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename="internship-agreement-${req.params.id}.pdf"`);
+    res.type('application/pdf');
+    res.header('Content-Disposition', `attachment; filename="internship-agreement-${req.params.id}.pdf"`);
     res.send(pdfBuffer);
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };

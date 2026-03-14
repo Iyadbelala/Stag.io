@@ -10,6 +10,7 @@ import superadminRouter from './superadmin.routes';
 import universityRouter from './university.routes';
 import matchingRouter from './matching.routes';
 import searchRouter from './search.routes';
+import chatbotRouter from './chatbot.routes';
 
 export const router = Router();
 
@@ -63,3 +64,6 @@ router.use('/matching', matchingRouter);
 
 // Public search
 router.use('/search', searchRouter);
+
+// AI Chatbot
+router.use('/chatbot', chatbotRouter);

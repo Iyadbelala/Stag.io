@@ -6,6 +6,7 @@ import Footer from "@/Components/footer";
 import { ThemeProvider } from "@/Components/ThemeContext";
 import { LanguageProvider } from "@/Components/LanguageContext";
 import { AuthProvider } from "@/Components/AuthContext";
+import ChatBot from "@/Components/ChatBot";
 
 const playfair = Playfair_Display({
   variable: "--font-heading",
@@ -41,6 +42,7 @@ export default function RootLayout({
               <Navbar />
               <main>{children}</main>
               <Footer />
+              <ChatBot />
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

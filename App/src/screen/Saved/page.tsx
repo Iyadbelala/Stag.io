@@ -12,6 +12,7 @@ import {
   HiOutlineGlobeAlt,
   HiOutlineRefresh,
   HiOutlineChevronRight,
+  HiOutlineArrowLeft,
 } from "react-icons/hi";
 import { useAuth } from "@/Components/AuthContext";
 import { api } from "@/lib/api";
@@ -169,6 +170,12 @@ export default function SavedPage() {
       {/* ── Header ── */}
       <div className="bg-gradient-to-b from-surface-white to-surface-cream border-b border-surface-sand">
         <div className="mx-auto max-w-3xl px-4 pt-6 pb-5 sm:px-6">
+          <button
+            onClick={() => router.back()}
+            className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-surface-white border border-surface-sand text-coffee-dark shadow-sm hover:bg-surface-sand transition-colors"
+          >
+            <HiOutlineArrowLeft size={18} />
+          </button>
           <h1 className="text-xl sm:text-2xl font-heading font-bold text-coffee-dark">
             Saved Internships
           </h1>

@@ -21,6 +21,7 @@ export interface StudentDashboardData {
   stats: StudentDashboardStats;
   recentApplications: RecentApplication[];
   profileCompletion: number;
+  missingFields: string[];
 }
 
 export async function getStudentDashboard(userId: string): Promise<StudentDashboardData> {
@@ -69,17 +70,20 @@ export async function getStudentDashboard(userId: string): Promise<StudentDashbo
   }
 
   // Compute profile completion
-  const fields = [
-    user.firstName,
-    user.lastName,
-    user.university,
-    student.department,
-    student.bio,
-    student.cvUrl,
-    student.skills.length > 0 ? 'has_skills' : null,
+  const fieldChecks: { label: string; value: unknown }[] = [
+    { label: 'first name', value: user.firstName },
+    { label: 'last name', value: user.lastName },
+    { label: 'university', value: user.university },
+    { label: 'department', value: student.department },
+    { label: 'bio', value: student.bio },
+    { label: 'profile photo', value: student.profilePhotoUrl },
+    { label: 'skills', value: student.skills.length > 0 ? 'has_skills' : null },
+    { label: 'portfolio', value: student.portfolioPhotos.length > 0 ? 'has_portfolio' : null },
   ];
-  const filledCount = fields.filter((f) => f && (typeof f !== 'string' || f.trim().length > 0)).length;
-  const profileCompletion = Math.round((filledCount / fields.length) * 100);
+  const isFilled = (v: unknown) => v && (typeof v !== 'string' || v.trim().length > 0);
+  const filledCount = fieldChecks.filter((f) => isFilled(f.value)).length;
+  const profileCompletion = Math.round((filledCount / fieldChecks.length) * 100);
+  const missingFields = fieldChecks.filter((f) => !isFilled(f.value)).map((f) => f.label);
 
   return {
     stats: {
@@ -90,5 +94,6 @@ export async function getStudentDashboard(userId: string): Promise<StudentDashbo
     },
     recentApplications,
     profileCompletion,
+    missingFields,
   };
 }

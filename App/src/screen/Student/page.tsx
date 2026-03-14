@@ -38,6 +38,7 @@ interface DashboardData {
   stats: DashboardStats;
   recentApplications: RecentApplication[];
   profileCompletion: number;
+  missingFields: string[];
 }
 
 /* ============================================
@@ -150,6 +151,7 @@ export default function StudentDashboard() {
           stats: { applicationsSent: 0, acceptedApplications: 0, pendingResponses: 0, rejectedApplications: 0 },
           recentApplications: [],
           profileCompletion: 0,
+          missingFields: [],
         });
       } finally {
         setIsLoading(false);
@@ -178,6 +180,7 @@ export default function StudentDashboard() {
   const stats = data?.stats ?? { applicationsSent: 0, acceptedApplications: 0, pendingResponses: 0, rejectedApplications: 0 };
   const recentApplications = data?.recentApplications ?? [];
   const profileCompletion = data?.profileCompletion ?? 0;
+  const missingFields = data?.missingFields ?? [];
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-6 py-10">
@@ -258,7 +261,9 @@ export default function StudentDashboard() {
                   {t("student.completeProfile")}
                 </p>
                 <p className="mt-0.5 text-sm text-text-muted">
-                  {t("student.completeProfileDesc")}
+                  {missingFields.length > 0
+                    ? `${t("student.addYour")} ${missingFields.join(", ")} ${t("student.toStandOut")}`
+                    : t("student.completeProfileDesc")}
                 </p>
               </div>
               <Link

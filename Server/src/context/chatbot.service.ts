@@ -34,20 +34,34 @@ function getModel() {
 const SYSTEM_PROMPT = `You are **Stag**, the AI assistant for Stag.io — an internship platform for Algerian students.
 
 Your capabilities:
-- Help students find and search internships
-- Give personalized recommendations (SmartMatch®)
-- Track application status
-- Explain how the platform works
+- Help students find and search internships with detailed information
+- Give personalized recommendations using SmartMatch® (an algorithm that scores offers based on skill match 50%, department relevance 25%, location 15%, and title relevance 10%)
+- Track application status and provide detailed breakdowns
+- Explain how the platform works in depth
 - Answer questions about companies on the platform
+- Give career advice and internship tips relevant to Algerian students
+
+Platform knowledge (use this to answer "how does X work?" questions):
+- **Signing up**: Students register with email, then complete their profile (name, university, department, skills, bio, CV upload, portfolio photos).
+- **Finding internships**: Students can browse active offers on the Offers page, filter by type (remote/onsite/hybrid), or ask you for SmartMatch® recommendations.
+- **SmartMatch®**: An intelligent matching algorithm that scores internship offers against a student's profile. It weighs: skills (50%), department relevance (25%), location proximity (15%), and job title relevance (10%). Higher % = better fit.
+- **Applying**: Students click "Apply" on an offer, attach a cover letter and CV, then submit. Applications go through statuses: pending → accepted/rejected. Universities can also validate applications.
+- **Saving offers**: Students can bookmark/save offers they're interested in to review later on the Saved page.
+- **Profile completion**: A complete profile (name, university, department, skills, bio, CV) improves SmartMatch® accuracy and makes applications stronger.
+- **Companies**: Companies register, get verified, then post internship offers with title, description, requirements, duration, location, and type.
+- **Universities**: Universities can register to validate student applications and monitor internship activity.
 
 Rules:
-- Be concise and helpful. Keep responses short (2-4 sentences max for simple questions).
-- Use **bold** for emphasis (markdown).
-- You're friendly but professional.
+- Provide detailed, informative answers. Use 3-6 sentences for simple questions, and more for complex ones. Include specifics from the data context when available.
+- When listing internships, include descriptions, requirements, and company details — don't just list titles.
+- When giving recommendations, explain **why** each offer is a good match (which skills matched, department fit, etc.).
+- Use **bold** for emphasis and bullet points/numbered lists for readability (markdown).
+- You're friendly, encouraging, and professional.
 - Only answer questions related to internships, careers, and the Stag.io platform.
 - If asked about unrelated topics, politely redirect to internship-related help.
 - Never make up internship offers or data — only reference real data provided in context.
-- Respond in the same language the user writes in (English, French, or Arabic).`;
+- Respond in the same language the user writes in (English, French, or Arabic).
+- When a user's profile is incomplete, proactively suggest what they should add and why it helps.`;
 
 /* ── Build context from DB for the user ── */
 async function buildUserContext(userId: string | null): Promise<string> {
@@ -64,7 +78,17 @@ async function buildUserContext(userId: string | null): Promise<string> {
       if (student) {
         parts.push(`Skills: ${student.skills.length > 0 ? student.skills.join(', ') : 'none'}`);
         parts.push(`Department: ${student.department ?? 'not set'}`);
-        parts.push(`Profile complete: ${student.bio && student.cvUrl ? 'yes' : 'no'}`);
+        parts.push(`Bio: ${student.bio ? 'set' : 'missing'}`);
+        parts.push(`Profile photo: ${student.profilePhotoUrl ? 'set' : 'missing'}`);
+        parts.push(`Portfolio: ${student.portfolioPhotos.length > 0 ? `${student.portfolioPhotos.length} photos` : 'missing'}`);
+        const filled = [user?.firstName, user?.lastName, user?.university, student.department, student.bio, student.profilePhotoUrl, student.skills.length > 0, student.portfolioPhotos.length > 0].filter(Boolean).length;
+        parts.push(`Profile completion: ${Math.round((filled / 8) * 100)}%`);
+
+        // Add application summary
+        const apps = await db.select().from(applications).where(eq(applications.studentId, student.id));
+        if (apps.length > 0) {
+          parts.push(`Applications: ${apps.length} total (${apps.filter(a => a.status === 'pending').length} pending, ${apps.filter(a => a.status === 'accepted').length} accepted, ${apps.filter(a => a.status === 'rejected').length} rejected)`);
+        }
       }
     }
 
@@ -96,10 +120,19 @@ async function fetchDataContext(type: string, userId: string | null): Promise<st
     if (type === 'recommend' && userId) {
       const matches = await getSmartMatches(userId, 5);
       if (matches.length === 0) return '\nNo recommendations available — either no offers or no student profile.';
-      const list = matches.map((m, i) =>
-        `${i + 1}. "${m.title}" at ${m.companyName} — ${m.matchScore}% match (skills: ${m.matchedSkills.join(', ') || 'none'}) — ${m.location} (${m.type})`
-      ).join('\n');
-      return `\nSmartMatch® recommendations:\n${list}`;
+
+      // Fetch full offer details for recommendations
+      const offerDetails = await Promise.all(
+        matches.map(m => db.select().from(internshipOffers).where(eq(internshipOffers.id, m.id)).then(r => r[0]))
+      );
+
+      const list = matches.map((m, i) => {
+        const offer = offerDetails[i];
+        const desc = offer?.description ? (offer.description.length > 200 ? offer.description.slice(0, 200) + '...' : offer.description) : '';
+        const reqs = offer?.requirements ? (offer.requirements.length > 150 ? offer.requirements.slice(0, 150) + '...' : offer.requirements) : '';
+        return `${i + 1}. **"${m.title}"** at ${m.companyName} — **${m.matchScore}% match**\n   Matched skills: ${m.matchedSkills.join(', ') || 'none'}\n   📍 ${m.location} (${m.type})\n   Description: ${desc}\n   Requirements: ${reqs}`;
+      }).join('\n\n');
+      return `\nSmartMatch® recommendations (best matches for your profile):\n\n${list}`;
     }
 
     if (type === 'applications' && userId) {
@@ -125,10 +158,11 @@ async function fetchDataContext(type: string, userId: string | null): Promise<st
         `Department: ${student.department ?? '—'}`,
         `Skills: ${student.skills.length > 0 ? student.skills.join(', ') : '—'}`,
         `Bio: ${student.bio ? 'yes' : 'missing'}`,
-        `CV: ${student.cvUrl ? 'uploaded' : 'missing'}`,
+        `Profile photo: ${student.profilePhotoUrl ? 'set' : 'missing'}`,
+        `Portfolio: ${student.portfolioPhotos.length > 0 ? `${student.portfolioPhotos.length} photos` : 'missing'}`,
       ];
-      const filled = [user.firstName, user.lastName, user.university, student.department, student.bio, student.cvUrl, student.skills.length > 0].filter(Boolean).length;
-      return `\nUser profile (${Math.round((filled / 7) * 100)}% complete):\n${fields.join('\n')}`;
+      const filled = [user.firstName, user.lastName, user.university, student.department, student.bio, student.profilePhotoUrl, student.skills.length > 0, student.portfolioPhotos.length > 0].filter(Boolean).length;
+      return `\nUser profile (${Math.round((filled / 8) * 100)}% complete):\n${fields.join('\n')}`;
     }
 
     if (type === 'offers') {
@@ -136,6 +170,8 @@ async function fetchDataContext(type: string, userId: string | null): Promise<st
         .select({
           id: internshipOffers.id,
           title: internshipOffers.title,
+          description: internshipOffers.description,
+          requirements: internshipOffers.requirements,
           location: internshipOffers.location,
           type: internshipOffers.type,
           duration: internshipOffers.duration,
@@ -150,14 +186,20 @@ async function fetchDataContext(type: string, userId: string | null): Promise<st
       const companyRows = await Promise.all(
         companyIds.map(id => db.select().from(companies).where(eq(companies.id, id)).then(r => r[0]))
       );
-      const companyMap = new Map(companyRows.filter(Boolean).map(c => [c!.id, c!.companyName]));
+      const companyMap = new Map(companyRows.filter(Boolean).map(c => [c!.id, { name: c!.companyName, industry: c!.industry, website: c!.website, description: c!.description }]));
 
-      const list = offers.slice(0, 10).map((o, i) =>
-        `${i + 1}. "${o.title}" at ${companyMap.get(o.companyId) ?? 'Unknown'} — ${o.location} (${o.type}) — ${o.duration}`
-      ).join('\n');
+      const list = offers.slice(0, 10).map((o, i) => {
+        const company = companyMap.get(o.companyId);
+        const companyInfo = company
+          ? `${company.name}${company.industry ? ` (${company.industry})` : ''}${company.website ? ` — ${company.website}` : ''}`
+          : 'Unknown';
+        const desc = o.description.length > 200 ? o.description.slice(0, 200) + '...' : o.description;
+        const reqs = o.requirements.length > 150 ? o.requirements.slice(0, 150) + '...' : o.requirements;
+        return `${i + 1}. **"${o.title}"** at ${companyInfo}\n   📍 ${o.location} (${o.type}) | ⏱ ${o.duration}\n   Description: ${desc}\n   Requirements: ${reqs}`;
+      }).join('\n\n');
 
-      const more = offers.length > 10 ? `\n...and ${offers.length - 10} more offers.` : '';
-      return `\nActive internships (${offers.length} total):\n${list}${more}`;
+      const more = offers.length > 10 ? `\n\n...and ${offers.length - 10} more offers available on the platform.` : '';
+      return `\nActive internships (${offers.length} total):\n\n${list}${more}`;
     }
   } catch {
     return '\nCould not fetch data at this time.';
@@ -203,8 +245,8 @@ export async function processChat(
   const userContext = await buildUserContext(userId);
   const dataContext = dataType ? await fetchDataContext(dataType, userId) : '';
 
-  // Build conversation history for Gemini (last 6 messages to save tokens)
-  const recentHistory = history.slice(-6).map(m => ({
+  // Build conversation history for Gemini (last 10 messages for better context)
+  const recentHistory = history.slice(-10).map(m => ({
     role: m.role === 'user' ? 'user' as const : 'model' as const,
     parts: [{ text: m.text }],
   }));

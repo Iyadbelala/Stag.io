@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl -s http://localhost:5000/health)"
+      "Bash(curl -s http://localhost:5000/health)",
+      "Bash(find /c/Users/User/OneDrive/Documents/GitHub/Stag.io -type f \\\\\\(-name *.json -o -name *.config.ts -o -name *.config.js \\\\\\))"
     ]
   }
 }

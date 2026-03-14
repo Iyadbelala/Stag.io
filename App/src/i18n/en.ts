@@ -531,6 +531,8 @@ const en: Record<string, string> = {
   "student.rejected": "Rejected",
   "student.completeProfile": "Complete your profile to stand out",
   "student.completeProfileDesc": "Add your CV, skills, and bio to increase your visibility to companies.",
+  "student.addYour": "Add your",
+  "student.toStandOut": "to increase your visibility to companies.",
   "student.completeProfileBtn": "Complete Profile",
   "student.complete": "complete",
   "student.recentApplications": "Recent Applications",

@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../model/db';
 import { universities, users, students, applications, internshipOffers, companies } from '../model/schema';
+import { sendNotification } from './notifications.service';
 
 /* ──────────────────────────────────────────────
    University Profile
@@ -254,6 +255,16 @@ export async function validateApplication(
     .set({ status: 'validated', updatedAt: new Date() })
     .where(eq(applications.id, applicationId))
     .returning();
+
+  // Notify the student
+  const [offer] = await db.select().from(internshipOffers).where(eq(internshipOffers.id, app.offerId));
+  sendNotification(
+    student.userId,
+    'application_status_changed',
+    'Application Validated',
+    `Your application for "${offer?.title ?? 'an internship'}" has been validated by your university`,
+    applicationId,
+  ).catch(() => {});
 
   return { id: updated.id, status: updated.status };
 }

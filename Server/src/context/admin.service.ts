@@ -2,6 +2,7 @@ import { eq, desc } from 'drizzle-orm';
 import { db } from '../model/db';
 import { users, companies, students, internshipOffers, applications, universities } from '../model/schema';
 import PDFDocument from 'pdfkit';
+import { sendNotification } from './notifications.service';
 
 /* ──────────────────────────────────────────────
    Company validation types & functions
@@ -181,6 +182,19 @@ export async function validateApplication(applicationId: string): Promise<{ id: 
     .where(eq(applications.id, applicationId))
     .returning();
 
+  // Notify the student that their application was validated
+  const [student] = await db.select().from(students).where(eq(students.id, app.studentId));
+  if (student) {
+    const [offer] = await db.select().from(internshipOffers).where(eq(internshipOffers.id, app.offerId));
+    sendNotification(
+      student.userId,
+      'application_status_changed',
+      'Application Validated',
+      `Your application for "${offer?.title ?? 'an internship'}" has been validated by the admin`,
+      applicationId,
+    ).catch(() => {});
+  }
+
   return { id: updated.id, status: updated.status };
 }
 
@@ -299,15 +313,17 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
     //  HELPER — info card (rounded rect background)
     // ═══════════════════════════════════════════
     const infoCard = (lines: { label: string; value: string }[], cardX: number, cardW: number) => {
+      const labelColW = 75;
+      const valueColW = cardW - 24 - labelColW;
       const cardH = lines.length * 18 + 16;
       doc.roundedRect(cardX, y, cardW, cardH, 6).fill(cream);
       doc.strokeColor(gold).lineWidth(0.5).roundedRect(cardX, y, cardW, cardH, 6).stroke();
       let ly = y + 10;
       for (const line of lines) {
         doc.font('Helvetica-Bold').fontSize(8.5).fillColor(warmBrown);
-        doc.text(line.label, cardX + 12, ly);
-        doc.font('Helvetica').fontSize(9).fillColor('#333');
-        doc.text(line.value, cardX + 12 + 90, ly);
+        doc.text(line.label, cardX + 12, ly, { width: labelColW });
+        doc.font('Helvetica').fontSize(8).fillColor('#333');
+        doc.text(line.value, cardX + 12 + labelColW, ly, { width: valueColW, ellipsis: true });
         ly += 18;
       }
       return cardH;
@@ -338,8 +354,8 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
 
     // Card labels
     doc.font('Helvetica-Bold').fontSize(9).fillColor(gold);
-    doc.text('▎ THE STUDENT', margin + 6, y);
-    doc.text('▎ THE COMPANY', margin + halfW + 20, y);
+    doc.text('THE STUDENT', margin + 6, y);
+    doc.text('THE COMPANY', margin + halfW + 20, y);
     y += 14;
 
     const h1 = infoCard(studentLines, margin, halfW);

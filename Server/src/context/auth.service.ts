@@ -1,8 +1,11 @@
+import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { eq } from 'drizzle-orm';
 import { db } from '../model/db';
 import { users, students, companies, universities } from '../model/schema';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../lib/email';
+import { sendNotification } from './notifications.service';
 
 const SALT_ROUNDS = 12;
 
@@ -52,7 +55,22 @@ export interface AuthResult {
   };
 }
 
-export async function registerStudent(input: RegisterInput): Promise<AuthResult> {
+export interface VerificationRequired {
+  requiresVerification: true;
+  email: string;
+}
+
+export type AuthResponse = AuthResult | VerificationRequired;
+
+function isVerificationRequired(r: AuthResponse): r is VerificationRequired {
+  return 'requiresVerification' in r;
+}
+
+function generateOTP(): string {
+  return crypto.randomInt(100000, 999999).toString();
+}
+
+export async function registerStudent(input: RegisterInput): Promise<AuthResponse> {
   // Check that the email domain belongs to a registered & validated university
   const emailDomain = input.email.split('@')[1]?.toLowerCase();
   if (!emailDomain) {
@@ -85,6 +103,8 @@ export async function registerStudent(input: RegisterInput): Promise<AuthResult>
   }
 
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
+  const code = generateOTP();
+  const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
 
   const [user] = await db.insert(users).values({
     email: input.email,
@@ -93,6 +113,8 @@ export async function registerStudent(input: RegisterInput): Promise<AuthResult>
     firstName: input.firstName,
     lastName: input.lastName,
     university: uni.universityName,
+    emailVerificationCode: code,
+    emailVerificationExpiry: expiry,
   }).returning();
 
   await db.insert(students).values({
@@ -100,21 +122,13 @@ export async function registerStudent(input: RegisterInput): Promise<AuthResult>
     skills: [],
   });
 
-  const token = signToken(user.id, user.role);
-  return {
-    token,
-    user: {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      firstName: user.firstName ?? undefined,
-      lastName: user.lastName ?? undefined,
-      university: user.university ?? undefined,
-    },
-  };
+  // Send verification email (don't block on failure)
+  sendVerificationEmail(input.email, code).catch(() => {});
+
+  return { requiresVerification: true, email: input.email };
 }
 
-export async function registerCompany(input: RegisterCompanyInput): Promise<AuthResult> {
+export async function registerCompany(input: RegisterCompanyInput): Promise<AuthResponse> {
   const [existing] = await db.select().from(users).where(eq(users.email, input.email));
   if (existing) {
     const err = new Error('Email already registered') as Error & { code: string; status: number };
@@ -129,6 +143,7 @@ export async function registerCompany(input: RegisterCompanyInput): Promise<Auth
     email: input.email,
     passwordHash,
     role: 'company',
+    isEmailVerified: true,
   }).returning();
 
   const [company] = await db.insert(companies).values({
@@ -139,6 +154,14 @@ export async function registerCompany(input: RegisterCompanyInput): Promise<Auth
     location: input.location,
     verificationDocumentUrl: input.verificationDocumentUrl,
   }).returning();
+
+  // Notify all admins about the new company
+  notifyAdmins(
+    'company_pending_approval',
+    'New Company Registration',
+    `${input.companyName} has registered and needs approval`,
+    user.id,
+  );
 
   const token = signToken(user.id, user.role);
   return {
@@ -152,7 +175,7 @@ export async function registerCompany(input: RegisterCompanyInput): Promise<Auth
   };
 }
 
-export async function registerUniversity(input: RegisterUniversityInput): Promise<AuthResult> {
+export async function registerUniversity(input: RegisterUniversityInput): Promise<AuthResponse> {
   const domain = input.domain.toLowerCase().replace(/^@/, '');
 
   const [existingDomain] = await db.select().from(universities).where(eq(universities.domain, domain));
@@ -177,6 +200,7 @@ export async function registerUniversity(input: RegisterUniversityInput): Promis
     email: input.email,
     passwordHash,
     role: 'university',
+    isEmailVerified: true,
   }).returning();
 
   const [uni] = await db.insert(universities).values({
@@ -186,6 +210,14 @@ export async function registerUniversity(input: RegisterUniversityInput): Promis
     website: input.website,
     location: input.location,
   }).returning();
+
+  // Notify all admins about the new university
+  notifyAdmins(
+    'university_pending_approval',
+    'New University Registration',
+    `${input.universityName} has registered and needs approval`,
+    user.id,
+  );
 
   const token = signToken(user.id, user.role);
   return {
@@ -199,7 +231,7 @@ export async function registerUniversity(input: RegisterUniversityInput): Promis
   };
 }
 
-export async function loginUser(input: LoginInput): Promise<AuthResult> {
+export async function loginUser(input: LoginInput): Promise<AuthResponse> {
   const [user] = await db.select().from(users).where(eq(users.email, input.email));
   if (!user) {
     const err = new Error('Invalid credentials') as Error & { code: string; status: number };
@@ -214,6 +246,20 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
     err.code = 'INVALID_CREDENTIALS';
     err.status = 401;
     throw err;
+  }
+
+  // If email not verified, resend OTP and require verification
+  if (!user.isEmailVerified) {
+    const code = generateOTP();
+    const expiry = new Date(Date.now() + 15 * 60 * 1000);
+    await db.update(users).set({
+      emailVerificationCode: code,
+      emailVerificationExpiry: expiry,
+    }).where(eq(users.id, user.id));
+
+    sendVerificationEmail(user.email, code).catch(() => {});
+
+    return { requiresVerification: true, email: user.email };
   }
 
   const [company] = await db.select().from(companies).where(eq(companies.userId, user.id));
@@ -233,6 +279,138 @@ export async function loginUser(input: LoginInput): Promise<AuthResult> {
       universityName: uni?.universityName ?? undefined,
     },
   };
+}
+
+/* ── Email Verification ── */
+
+export async function verifyEmail(email: string, code: string): Promise<AuthResult> {
+  const [user] = await db.select().from(users).where(eq(users.email, email));
+  if (!user) {
+    const err = new Error('User not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  if (user.isEmailVerified) {
+    const err = new Error('Email already verified') as Error & { code: string; status: number };
+    err.code = 'ALREADY_VERIFIED';
+    err.status = 400;
+    throw err;
+  }
+
+  if (
+    user.emailVerificationCode !== code ||
+    !user.emailVerificationExpiry ||
+    user.emailVerificationExpiry < new Date()
+  ) {
+    const err = new Error('Invalid or expired verification code') as Error & { code: string; status: number };
+    err.code = 'INVALID_CODE';
+    err.status = 400;
+    throw err;
+  }
+
+  await db.update(users).set({
+    isEmailVerified: true,
+    emailVerificationCode: null,
+    emailVerificationExpiry: null,
+  }).where(eq(users.id, user.id));
+
+  const [company] = await db.select().from(companies).where(eq(companies.userId, user.id));
+  const [uni] = await db.select().from(universities).where(eq(universities.userId, user.id));
+
+  const token = signToken(user.id, user.role);
+  return {
+    token,
+    user: {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      firstName: user.firstName ?? undefined,
+      lastName: user.lastName ?? undefined,
+      university: user.university ?? undefined,
+      companyName: company?.companyName ?? undefined,
+      universityName: uni?.universityName ?? undefined,
+    },
+  };
+}
+
+export async function resendVerificationCode(email: string): Promise<void> {
+  const [user] = await db.select().from(users).where(eq(users.email, email));
+  if (!user) {
+    const err = new Error('User not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  if (user.isEmailVerified) {
+    const err = new Error('Email already verified') as Error & { code: string; status: number };
+    err.code = 'ALREADY_VERIFIED';
+    err.status = 400;
+    throw err;
+  }
+
+  const code = generateOTP();
+  const expiry = new Date(Date.now() + 15 * 60 * 1000);
+
+  await db.update(users).set({
+    emailVerificationCode: code,
+    emailVerificationExpiry: expiry,
+  }).where(eq(users.id, user.id));
+
+  await sendVerificationEmail(email, code);
+}
+
+/* ── Password Reset ── */
+
+export async function requestPasswordReset(email: string): Promise<void> {
+  const [user] = await db.select().from(users).where(eq(users.email, email));
+  // Always return success to prevent email enumeration
+  if (!user) return;
+
+  const resetToken = crypto.randomBytes(32).toString('hex');
+  const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await db.update(users).set({
+    passwordResetToken: resetToken,
+    passwordResetExpiry: expiry,
+  }).where(eq(users.id, user.id));
+
+  await sendPasswordResetEmail(email, resetToken);
+}
+
+export async function resetPassword(token: string, newPassword: string): Promise<void> {
+  const allUsers = await db.select().from(users);
+  const user = allUsers.find((u) => u.passwordResetToken === token);
+
+  if (!user || !user.passwordResetExpiry || user.passwordResetExpiry < new Date()) {
+    const err = new Error('Invalid or expired reset token') as Error & { code: string; status: number };
+    err.code = 'INVALID_TOKEN';
+    err.status = 400;
+    throw err;
+  }
+
+  const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+  await db.update(users).set({
+    passwordHash,
+    passwordResetToken: null,
+    passwordResetExpiry: null,
+  }).where(eq(users.id, user.id));
+}
+
+async function notifyAdmins(
+  type: 'company_pending_approval' | 'university_pending_approval',
+  title: string,
+  message: string,
+  relatedId: string,
+): Promise<void> {
+  const admins = await db.select().from(users).where(eq(users.role, 'admin'));
+  const superadmins = await db.select().from(users).where(eq(users.role, 'superadmin'));
+  for (const admin of [...admins, ...superadmins]) {
+    sendNotification(admin.id, type, title, message, relatedId).catch(() => {});
+  }
 }
 
 function signToken(userId: string, role: string): string {

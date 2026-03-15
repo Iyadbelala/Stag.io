@@ -1,5 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth.middleware';
+import { eq } from 'drizzle-orm';
+import { db } from '../../model/db';
+import { applications, students, users } from '../../model/schema';
 import {
   getUniversityProfile,
   updateUniversityProfile,
@@ -10,6 +13,7 @@ import {
   getActiveInternships,
   getPendingValidations,
 } from '../../context/university.service';
+import { generateApplicationPdf } from '../../context/admin.service';
 
 const universityRouter = Router();
 
@@ -120,6 +124,43 @@ universityRouter.get('/internships/pending', requireAuth, requireUniversity, asy
   try {
     const pending = await getPendingValidations(req.user!.sub);
     res.json({ success: true, data: pending });
+  } catch (err: unknown) {
+    const e = err as { code?: string; status?: number; message: string };
+    res.status(e.status ?? 500).json({ success: false, error: { code: e.code ?? 'INTERNAL_ERROR', message: e.message } });
+  }
+});
+
+/* GET /api/university/applications/:applicationId/pdf — download agreement PDF for own student */
+universityRouter.get('/applications/:applicationId/pdf', requireAuth, requireUniversity, async (req: Request, res: Response) => {
+  try {
+    const profile = await getUniversityProfile(req.user!.sub);
+    if (!profile) {
+      res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'University not found' } });
+      return;
+    }
+
+    const [app] = await db.select().from(applications).where(eq(applications.id, req.params.applicationId as string));
+    if (!app) {
+      res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Application not found' } });
+      return;
+    }
+
+    const [student] = await db.select().from(students).where(eq(students.id, app.studentId));
+    if (!student) {
+      res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Student not found' } });
+      return;
+    }
+
+    const [studentUser] = await db.select().from(users).where(eq(users.id, student.userId));
+    if (!studentUser || !studentUser.email.toLowerCase().endsWith(`@${profile.domain}`)) {
+      res.status(403).json({ success: false, error: { code: 'FORBIDDEN', message: 'This student does not belong to your university' } });
+      return;
+    }
+
+    const pdfBuffer = await generateApplicationPdf(req.params.applicationId as string);
+    res.type('application/pdf');
+    res.header('Content-Disposition', `attachment; filename="internship-agreement-${req.params.applicationId}.pdf"`);
+    res.send(pdfBuffer);
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };
     res.status(e.status ?? 500).json({ success: false, error: { code: e.code ?? 'INTERNAL_ERROR', message: e.message } });

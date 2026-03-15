@@ -12,6 +12,8 @@ import matchingRouter from './matching.routes';
 import searchRouter from './search.routes';
 import chatbotRouter from './chatbot.routes';
 import savedRouter from './saved.routes';
+import notificationsRouter from './notifications.routes';
+import reviewsRouter from './reviews.routes';
 
 export const router = Router();
 
@@ -71,3 +73,9 @@ router.use('/chatbot', chatbotRouter);
 
 // Saved/bookmarked offers
 router.use('/saved', savedRouter);
+
+// Notifications
+router.use('/notifications', notificationsRouter);
+
+// Reviews & Ratings
+router.use('/reviews', reviewsRouter);

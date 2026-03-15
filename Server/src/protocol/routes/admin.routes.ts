@@ -9,9 +9,10 @@ import {
 
 const adminRouter = Router();
 
-/* ── Middleware: only admin role may access ── */
+/* ── Middleware: only admin/superadmin may access ── */
 function requireAdmin(req: Request, res: Response, next: () => void): void {
-  if (req.user?.role !== 'admin') {
+  const allowed = ['admin', 'superadmin'];
+  if (!req.user?.role || !allowed.includes(req.user.role)) {
     res.status(403).json({
       success: false,
       error: { code: 'FORBIDDEN', message: 'Admin access required' },

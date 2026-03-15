@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp, pgEnum } from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, timestamp, pgEnum, integer } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 
 /* ── Enums ── */
@@ -6,6 +6,14 @@ export const userRoleEnum = pgEnum('UserRole', ['student', 'company', 'admin', '
 export const offerTypeEnum = pgEnum('OfferType', ['remote', 'onsite', 'hybrid']);
 export const offerStatusEnum = pgEnum('OfferStatus', ['draft', 'active', 'closed']);
 export const applicationStatusEnum = pgEnum('ApplicationStatus', ['pending', 'accepted', 'rejected', 'withdrawn', 'validated']);
+export const notificationTypeEnum = pgEnum('NotificationType', [
+  'application_status_changed',
+  'new_application',
+  'agreement_needs_validation',
+  'company_pending_approval',
+  'university_pending_approval',
+  'new_review',
+]);
 
 /* ── Users ── */
 export const users = pgTable('users', {
@@ -16,6 +24,11 @@ export const users = pgTable('users', {
   firstName: text('firstName'),
   lastName: text('lastName'),
   university: text('university'),
+  isEmailVerified: boolean('isEmailVerified').default(false).notNull(),
+  emailVerificationCode: text('emailVerificationCode'),
+  emailVerificationExpiry: timestamp('emailVerificationExpiry', { withTimezone: true }),
+  passwordResetToken: text('passwordResetToken'),
+  passwordResetExpiry: timestamp('passwordResetExpiry', { withTimezone: true }),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
 });
@@ -99,4 +112,30 @@ export const applications = pgTable('applications', {
   status: applicationStatusEnum('status').default('pending').notNull(),
   appliedAt: timestamp('appliedAt', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
+});
+
+/* ── Reviews ── */
+export const reviewerRoleEnum = pgEnum('ReviewerRole', ['student', 'company']);
+
+export const reviews = pgTable('reviews', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  applicationId: text('applicationId').notNull().references(() => applications.id, { onDelete: 'cascade' }),
+  reviewerUserId: text('reviewerUserId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  revieweeUserId: text('revieweeUserId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  reviewerRole: reviewerRoleEnum('reviewerRole').notNull(),
+  rating: integer('rating').notNull(),
+  comment: text('comment'),
+  createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
+});
+
+/* ── Notifications ── */
+export const notifications = pgTable('notifications', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  userId: text('userId').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  type: notificationTypeEnum('type').notNull(),
+  title: text('title').notNull(),
+  message: text('message').notNull(),
+  isRead: boolean('isRead').default(false).notNull(),
+  relatedId: text('relatedId'),
+  createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
 });

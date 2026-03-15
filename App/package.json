@@ -16,6 +16,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-icons": "^5.5.0",
+    "socket.io-client": "^4.8.3",
     "source-map-js": "^1.2.1"
   },
   "devDependencies": {

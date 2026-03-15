@@ -1,6 +1,7 @@
 import { eq, and, desc } from 'drizzle-orm';
 import { db } from '../model/db';
-import { users, companies, students, internshipOffers, applications } from '../model/schema';
+import { users, companies, students, internshipOffers, applications, universities } from '../model/schema';
+import { sendNotification } from './notifications.service';
 
 export interface ApplyInput {
   coverLetter?: string;
@@ -69,6 +70,17 @@ export async function applyToOffer(
     coverLetter: input.coverLetter ?? null,
     cvUrl: input.cvUrl ?? null,
   }).returning();
+
+  // Notify the company that owns the offer
+  if (company) {
+    sendNotification(
+      company.userId,
+      'new_application',
+      'New Application Received',
+      `A student has applied to "${offer.title}"`,
+      application.id,
+    ).catch(() => {});
+  }
 
   return {
     id: application.id,
@@ -166,6 +178,39 @@ export async function updateApplicationStatus(
     .set({ status: newStatus })
     .where(eq(applications.id, applicationId))
     .returning();
+
+  // Notify the student about the status change
+  const [student] = await db.select().from(students).where(eq(students.id, application.studentId));
+  if (student) {
+    const [studentUser] = await db.select().from(users).where(eq(users.id, student.userId));
+    if (studentUser) {
+      const statusLabel = newStatus === 'accepted' ? 'accepted' : 'rejected';
+      sendNotification(
+        studentUser.id,
+        'application_status_changed',
+        `Application ${statusLabel}`,
+        `Your application for "${offer.title}" has been ${statusLabel}`,
+        application.id,
+      ).catch(() => {});
+
+      // If accepted, notify universities for validation
+      if (newStatus === 'accepted') {
+        const emailDomain = studentUser.email.split('@')[1]?.toLowerCase();
+        if (emailDomain) {
+          const [uni] = await db.select().from(universities).where(eq(universities.domain, emailDomain));
+          if (uni) {
+            sendNotification(
+              uni.userId,
+              'agreement_needs_validation',
+              'Agreement Needs Validation',
+              `${studentUser.firstName} ${studentUser.lastName}'s application for "${offer.title}" needs your validation`,
+              application.id,
+            ).catch(() => {});
+          }
+        }
+      }
+    }
+  }
 
   return { id: updated.id, status: updated.status };
 }

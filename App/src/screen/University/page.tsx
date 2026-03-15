@@ -21,6 +21,7 @@ import {
   HiOutlineClock,
   HiOutlinePhotograph,
   HiOutlineChevronLeft,
+  HiOutlineDownload,
 } from "react-icons/hi";
 import { useAuth } from "@/Components/AuthContext";
 import { useRouter } from "next/navigation";
@@ -223,6 +224,26 @@ export default function UniversityDashboard() {
       setActionMsg({ type: "error", text: t("university.validateFailed") });
     }
     setTimeout(() => setActionMsg(null), 4000);
+  };
+
+  /* ---- Download agreement PDF ---- */
+  const handleDownloadPdf = async (applicationId: string) => {
+    try {
+      const res = await api.get(`/api/university/applications/${applicationId}/pdf`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `internship-agreement-${applicationId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      setActionMsg({ type: "error", text: "Failed to download agreement PDF" });
+      setTimeout(() => setActionMsg(null), 4000);
+    }
   };
 
   /* ---- Filtered students ---- */
@@ -529,6 +550,15 @@ export default function UniversityDashboard() {
                                   {t("university.validate")}
                                 </button>
                               )}
+                              {app.status === "validated" && (
+                                <button
+                                  onClick={() => handleDownloadPdf(app.id)}
+                                  className="flex items-center gap-1.5 rounded-full bg-coffee-gold/10 px-3 py-1.5 text-xs font-medium text-coffee-warm hover:bg-coffee-gold/20 transition-colors cursor-pointer"
+                                >
+                                  <HiOutlineDownload size={14} />
+                                  Agreement PDF
+                                </button>
+                              )}
                             </div>
                           </div>
                           {app.coverLetter && (
@@ -680,6 +710,15 @@ export default function UniversityDashboard() {
                                 >
                                   <HiOutlineCheckCircle size={12} />
                                   {t("university.validate")}
+                                </button>
+                              )}
+                              {c.status === "validated" && (
+                                <button
+                                  onClick={() => handleDownloadPdf(c.applicationId)}
+                                  className="mt-1 flex items-center gap-1 rounded-full bg-coffee-gold/10 px-2.5 py-1 text-[11px] font-medium text-coffee-warm hover:bg-coffee-gold/20 transition-colors cursor-pointer"
+                                >
+                                  <HiOutlineDownload size={12} />
+                                  Agreement PDF
                                 </button>
                               )}
                             </td>

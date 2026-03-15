@@ -6,6 +6,7 @@ import Footer from "@/Components/footer";
 import { ThemeProvider } from "@/Components/ThemeContext";
 import { LanguageProvider } from "@/Components/LanguageContext";
 import { AuthProvider } from "@/Components/AuthContext";
+import { NotificationProvider } from "@/Components/NotificationContext";
 import ChatBot from "@/Components/ChatBot";
 
 const playfair = Playfair_Display({
@@ -39,10 +40,12 @@ export default function RootLayout({
         <ThemeProvider>
           <LanguageProvider>
             <AuthProvider>
-              <Navbar />
-              <main>{children}</main>
-              <Footer />
-              <ChatBot />
+              <NotificationProvider>
+                <Navbar />
+                <main>{children}</main>
+                <Footer />
+                <ChatBot />
+              </NotificationProvider>
             </AuthProvider>
           </LanguageProvider>
         </ThemeProvider>

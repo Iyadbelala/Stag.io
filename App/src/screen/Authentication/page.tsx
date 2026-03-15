@@ -182,6 +182,13 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
             university,
           });
         }
+
+        // If null, email verification is required
+        if (!resultUser) {
+          router.push("/verify-email");
+          return;
+        }
+
         router.push(
           resultUser.role === "company"
             ? "/company"

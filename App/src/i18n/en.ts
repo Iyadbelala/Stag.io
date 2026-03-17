@@ -712,6 +712,7 @@ const en: Record<string, string> = {
   "internships.greatFit": "Great Fit",
   "internships.goodMatch": "Good Match",
   "internships.retryMatches": "Retry",
+  "internships.useStagCv": "Use Stag.io CV",
 
   /* ---- Student Profile ---- */
   "studentProfile.title": "My Profile",
@@ -737,6 +738,12 @@ const en: Record<string, string> = {
   "studentProfile.addToPortfolio": "Add Photo",
   "studentProfile.noPortfolio": "No portfolio photos yet. Add your certificates and achievements!",
   "studentProfile.uploading": "Uploading...",
+  "studentProfile.cvBuilder": "CV Builder",
+  "studentProfile.cvBuilderDesc": "Generate a professional CV from your profile data",
+  "studentProfile.downloadCv": "Download CV",
+  "studentProfile.generatingCv": "Generating...",
+  "studentProfile.cvReady": "Your CV includes your personal info, education, skills, and bio.",
+  "studentProfile.cvIncomplete": "Complete your profile (name, department, skills) for a better CV.",
 
   /* ---- Company Profile ---- */
   "companyProfile.title": "Company Profile",

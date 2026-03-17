@@ -17,6 +17,8 @@ import {
   HiOutlineChevronLeft,
   HiOutlineChevronRight,
   HiOutlineTrash,
+  HiOutlineDocumentDownload,
+  HiOutlineDocument,
 } from "react-icons/hi";
 import { useAuth } from "@/Components/AuthContext";
 import { api } from "@/lib/api";
@@ -63,6 +65,7 @@ export default function StudentProfile() {
   const [isUploadingPortfolio, setIsUploadingPortfolio] = useState(false);
   const [portfolioIndex, setPortfolioIndex] = useState(0);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [isGeneratingCv, setIsGeneratingCv] = useState(false);
   const profilePhotoRef = useRef<HTMLInputElement>(null);
   const portfolioPhotoRef = useRef<HTMLInputElement>(null);
 
@@ -225,6 +228,33 @@ export default function StudentProfile() {
       setIsSaving(false);
     }
   }, [form, user, updateUser]);
+
+  /* ---- CV Download ---- */
+  const handleDownloadCv = useCallback(async () => {
+    setIsGeneratingCv(true);
+    try {
+      const response = await api.get("/api/profile/cv/download", {
+        responseType: "blob",
+      });
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      const fileName = `${form.firstName}_${form.lastName}_CV.pdf`.replace(/\s+/g, "_");
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch {
+      /* ignore */
+    } finally {
+      setIsGeneratingCv(false);
+    }
+  }, [form.firstName, form.lastName]);
+
+  /* ---- Profile completeness for CV ---- */
+  const cvReady = !!(form.firstName && form.lastName && form.skills.length > 0);
 
   /* ---- Initials for avatar fallback ---- */
   const initials =
@@ -646,6 +676,49 @@ export default function StudentProfile() {
               </div>
             </>
           )}
+        </div>
+
+        {/* ---- CV Builder ---- */}
+        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
+                <HiOutlineDocument size={20} className="text-coffee-warm" />
+                {t("studentProfile.cvBuilder")}
+              </h2>
+              <p className="mt-1 text-sm text-text-muted">
+                {t("studentProfile.cvBuilderDesc")}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleDownloadCv}
+              disabled={isGeneratingCv}
+              className="flex items-center gap-2 rounded-button bg-coffee-warm px-5 py-2.5 text-sm font-medium text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isGeneratingCv ? (
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  {t("studentProfile.generatingCv")}
+                </>
+              ) : (
+                <>
+                  <HiOutlineDocumentDownload size={18} />
+                  {t("studentProfile.downloadCv")}
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className={`mt-4 rounded-lg border px-4 py-3 text-sm ${
+            cvReady
+              ? "border-status-success/30 bg-status-success/5 text-status-success"
+              : "border-coffee-gold/30 bg-coffee-gold/5 text-coffee-warm"
+          }`}>
+            {cvReady
+              ? t("studentProfile.cvReady")
+              : t("studentProfile.cvIncomplete")}
+          </div>
         </div>
 
         {/* ---- Save Button ---- */}

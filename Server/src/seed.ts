@@ -47,6 +47,7 @@ async function seed() {
     firstName: 'Iyad',
     lastName: 'Belala',
     university: 'univ-constantine2.dz',
+    isEmailVerified: true,
   }).returning();
 
   await db.insert(students).values({

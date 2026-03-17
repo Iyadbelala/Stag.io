@@ -21,6 +21,7 @@ import {
   HiOutlineRefresh,
   HiOutlineGlobeAlt,
   HiOutlineChevronRight,
+  HiOutlineDocument,
 } from "react-icons/hi";
 import { useLanguage } from "@/Components/LanguageContext";
 import { useAuth } from "@/Components/AuthContext";
@@ -150,6 +151,19 @@ interface ApplicationFormModalProps {
 function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, onSubmit, t }: ApplicationFormModalProps) {
   const [coverLetter, setCoverLetter] = useState("");
   const [cvUrl, setCvUrl] = useState("");
+  const [isGeneratingCv, setIsGeneratingCv] = useState(false);
+
+  const handleGenerateCv = async () => {
+    setIsGeneratingCv(true);
+    try {
+      const { data } = await api.post<{ success: true; data: { url: string } }>("/api/profile/cv/generate");
+      setCvUrl(data.data.url);
+    } catch {
+      /* ignore */
+    } finally {
+      setIsGeneratingCv(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -188,7 +202,27 @@ function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, 
               placeholder="https://drive.google.com/your-cv or LinkedIn URL"
               className="w-full rounded-xl border border-surface-sand bg-surface-cream/40 px-4 py-3 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted/50 focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10"
             />
-            <p className="mt-1 text-xs text-text-muted">{t("internships.cvHint")}</p>
+            <div className="mt-2 flex items-center gap-2">
+              <p className="text-xs text-text-muted">{t("internships.cvHint")}</p>
+              <button
+                type="button"
+                onClick={handleGenerateCv}
+                disabled={isGeneratingCv}
+                className="shrink-0 flex items-center gap-1.5 rounded-lg border border-coffee-gold/30 bg-coffee-gold/5 px-3 py-1.5 text-xs font-medium text-coffee-warm transition-colors hover:bg-coffee-gold/15 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isGeneratingCv ? (
+                  <>
+                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-coffee-warm border-t-transparent" />
+                    {t("studentProfile.generatingCv")}
+                  </>
+                ) : (
+                  <>
+                    <HiOutlineDocument size={14} />
+                    {t("internships.useStagCv")}
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
           <div>

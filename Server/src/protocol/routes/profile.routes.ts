@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth.middleware';
 import { getStudentProfile, updateStudentProfile } from '../../context/profile.service';
 import { getStudentDashboard } from '../../context/student-dashboard.service';
+import { generateStudentCv } from '../../context/cv.service';
 import { uploadToCloudinary, deleteFromCloudinary } from '../../lib/cloudinary';
 import { db } from '../../model/db';
 import { students } from '../../model/schema';
@@ -140,6 +141,72 @@ profileRouter.delete('/portfolio', requireAuth, async (req: Request, res: Respon
   } catch (err: unknown) {
     const e = err as { message: string };
     res.status(500).json({ success: false, error: { message: e.message } });
+  }
+});
+
+/* POST /api/profile/cv/generate — generate CV URL and save to profile */
+profileRouter.post('/cv/generate', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const baseUrl = process.env.API_URL || `${req.protocol}://${req.get('host')}`;
+    const cvUrl = `${baseUrl}/api/profile/cv/${req.user!.sub}`;
+
+    // Save CV URL to student profile
+    await db.update(students)
+      .set({ cvUrl, updatedAt: new Date() })
+      .where(eq(students.userId, req.user!.sub));
+
+    res.json({ success: true, data: { url: cvUrl } });
+  } catch (err: unknown) {
+    const e = err as { code?: string; status?: number; message: string };
+    res.status(e.status ?? 500).json({
+      success: false,
+      error: { code: e.code ?? 'INTERNAL_ERROR', message: e.message },
+    });
+  }
+});
+
+/* GET /api/profile/cv/download — download your own CV as PDF (requires auth) */
+profileRouter.get('/cv/download', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const profile = await getStudentProfile(req.user!.sub);
+    const fullName = `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() || 'student';
+    const fileName = `${fullName.replace(/\s+/g, '_')}_CV.pdf`;
+
+    const pdfBuffer = await generateStudentCv(req.user!.sub);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    res.send(pdfBuffer);
+  } catch (err: unknown) {
+    const e = err as { code?: string; status?: number; message: string };
+    res.status(e.status ?? 500).json({
+      success: false,
+      error: { code: e.code ?? 'INTERNAL_ERROR', message: e.message },
+    });
+  }
+});
+
+/* GET /api/profile/cv/:userId — public endpoint to view a student's CV PDF */
+profileRouter.get('/cv/:userId', async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.userId as string;
+    const profile = await getStudentProfile(userId);
+    const fullName = `${profile.firstName ?? ''} ${profile.lastName ?? ''}`.trim() || 'student';
+    const fileName = `${fullName.replace(/\s+/g, '_')}_CV.pdf`;
+
+    const pdfBuffer = await generateStudentCv(userId);
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="${fileName}"`);
+    res.setHeader('Content-Length', pdfBuffer.length);
+    res.send(pdfBuffer);
+  } catch (err: unknown) {
+    const e = err as { code?: string; status?: number; message: string };
+    res.status(e.status ?? 500).json({
+      success: false,
+      error: { code: e.code ?? 'INTERNAL_ERROR', message: e.message },
+    });
   }
 });
 

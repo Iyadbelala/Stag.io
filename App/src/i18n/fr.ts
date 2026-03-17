@@ -722,6 +722,7 @@ const fr: Record<string, string> = {
   "internships.greatFit": "Excellent choix",
   "internships.goodMatch": "Bon choix",
   "internships.retryMatches": "Réessayer",
+  "internships.useStagCv": "Utiliser le CV Stag.io",
 
   /* ---- Student Profile ---- */
   "studentProfile.title": "Mon profil",
@@ -747,6 +748,12 @@ const fr: Record<string, string> = {
   "studentProfile.addToPortfolio": "Ajouter une photo",
   "studentProfile.noPortfolio": "Aucune photo de portfolio. Ajoutez vos certificats et réalisations !",
   "studentProfile.uploading": "Téléchargement...",
+  "studentProfile.cvBuilder": "Générateur de CV",
+  "studentProfile.cvBuilderDesc": "Générez un CV professionnel à partir de vos données de profil",
+  "studentProfile.downloadCv": "Télécharger le CV",
+  "studentProfile.generatingCv": "Génération...",
+  "studentProfile.cvReady": "Votre CV comprend vos informations personnelles, formation, compétences et bio.",
+  "studentProfile.cvIncomplete": "Complétez votre profil (nom, département, compétences) pour un meilleur CV.",
 
   /* ---- Company Profile ---- */
   "companyProfile.title": "Profil entreprise",

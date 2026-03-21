@@ -48,7 +48,6 @@ export default function Homepage() {
 
   const slides: SlideData[] = [1, 2, 3, 4].map((n, i) => ({
     title: t(`slides.${n}.title`),
-    description: t(`slides.${n}.desc`),
     icon: slideIcons[i],
   }));
 

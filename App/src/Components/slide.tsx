@@ -6,7 +6,6 @@ import { useLanguage } from "@/Components/LanguageContext";
 
 export interface SlideData {
   title: string;
-  description: string;
   icon: React.ReactNode;
 }
 
@@ -55,9 +54,6 @@ export default function Slide({ slides, autoPlayMs = 5000 }: SlideProps) {
             <h3 className="mb-3 font-heading text-xl font-semibold text-coffee-dark">
               {slide.title}
             </h3>
-            <p className="mx-auto max-w-md text-sm leading-relaxed text-text-secondary">
-              {slide.description}
-            </p>
           </div>
         ))}
       </div>

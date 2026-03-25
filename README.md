@@ -441,6 +441,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 <br/><br/>
 
-<sub>Made with care by the <strong>Stag.io</strong> team — Atelier TI 2025 – 2026, University of Constantine 3</sub>
+<sub>Made with care by the <strong>Stag.io</strong> team — Atelier TI 2025 – 2026, University of Constantine 2</sub>
 
 </div>

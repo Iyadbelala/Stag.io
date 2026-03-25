@@ -1,6 +1,6 @@
 "use client";
 
-import { useAuth } from "@/Components/AuthContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 import Homepage from "@/screen/Homepage/page";
 import InternshipsPage from "@/screen/Internships/page";
 

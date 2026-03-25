@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/Components/navbar";
-import Footer from "@/Components/footer";
-import { ThemeProvider } from "@/Components/ThemeContext";
-import { LanguageProvider } from "@/Components/LanguageContext";
-import { AuthProvider } from "@/Components/AuthContext";
-import { NotificationProvider } from "@/Components/NotificationContext";
-import ChatBot from "@/Components/ChatBot";
+import Navbar from "@/Components/layout/Navbar";
+import Footer from "@/Components/layout/Footer";
+import { ThemeProvider } from "@/Components/contexts/ThemeContext";
+import { LanguageProvider } from "@/Components/contexts/LanguageContext";
+import { AuthProvider } from "@/Components/contexts/AuthContext";
+import { NotificationProvider } from "@/Components/contexts/NotificationContext";
+import ChatBot from "@/Components/features/ChatBot";
 
 const playfair = Playfair_Display({
   variable: "--font-heading",

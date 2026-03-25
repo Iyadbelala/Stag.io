@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/Components/AuthContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 import CompanyProfile from "@/screen/Company/Profile/page";
 
 export default function CompanyProfilePage() {

@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { HiOutlineMail, HiOutlineLocationMarker } from "react-icons/hi";
 import { FaLinkedinIn, FaXTwitter, FaGithub, FaInstagram } from "react-icons/fa6";
-import Logo from "@/Components/Logo";
-import { useLanguage } from "@/Components/LanguageContext";
+import Logo from "@/Components/ui/Logo";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
 
 export default function Footer() {
   const { t } = useLanguage();
@@ -41,7 +41,6 @@ export default function Footer() {
             </span>
             <Link href="/internships" className={linkClass}>{t("footer.internships")}</Link>
             <Link href="/companies" className={linkClass}>{t("footer.companies")}</Link>
-            
             <Link href="/how-it-works" className={linkClass}>{t("footer.howItWorks")}</Link>
           </nav>
 

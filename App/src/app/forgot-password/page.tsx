@@ -3,9 +3,9 @@
 import { useState, useCallback } from "react";
 import Link from "next/link";
 import { HiOutlineMail } from "react-icons/hi";
-import FloatingOrbs from "@/Components/FloatingOrbs";
-import AuthBrandPanel from "@/Components/AuthBrandPanel";
-import { useAuth } from "@/Components/AuthContext";
+import FloatingOrbs from "@/Components/ui/FloatingOrbs";
+import AuthBrandPanel from "@/Components/features/AuthBrandPanel";
+import { useAuth } from "@/Components/contexts/AuthContext";
 
 export default function ForgotPasswordPage() {
   const { forgotPassword } = useAuth();

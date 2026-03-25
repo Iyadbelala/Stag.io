@@ -2,11 +2,9 @@
 
 import { useState } from "react";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
-import FieldError from "@/Components/FieldError";
+import FieldError from "@/Components/ui/FieldError";
 
-/* ============================================
-   Shared class helpers for glass-style inputs
-   ============================================ */
+/* ── Shared class helpers for glass-style inputs ── */
 
 export function inputBaseClass(hasError: boolean) {
   return `peer w-full rounded-[--radius-button] border ${
@@ -22,9 +20,7 @@ export function iconBaseClass(hasError: boolean) {
   } transition-colors peer-focus:text-coffee-warm`;
 }
 
-/* ============================================
-   FormField — labelled input with leading icon
-   ============================================ */
+/* ── FormField — labelled input with leading icon ── */
 
 interface FormFieldProps {
   id: string;
@@ -74,9 +70,7 @@ export function FormField({
   );
 }
 
-/* ============================================
-   PasswordField — password input with toggle
-   ============================================ */
+/* ── PasswordField — password input with toggle ── */
 
 interface PasswordFieldProps {
   id: string;

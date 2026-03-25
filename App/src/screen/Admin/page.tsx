@@ -12,10 +12,10 @@ import {
   HiOutlineChevronUp,
   HiOutlineLogout,
 } from "react-icons/hi";
-import { useAuth } from "@/Components/AuthContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
-import { useLanguage } from "@/Components/LanguageContext";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
 
 /* ============================================
    Types

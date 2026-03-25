@@ -1,9 +1,5 @@
 import { HiOutlineExclamationCircle } from "react-icons/hi";
 
-/* ============================================
-   FieldError — inline validation error message
-   ============================================ */
-
 interface FieldErrorProps {
   message?: string;
 }

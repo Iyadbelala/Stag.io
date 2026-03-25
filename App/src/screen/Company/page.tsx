@@ -16,11 +16,11 @@ import {
   HiOutlinePencil,
   HiOutlineExclamationCircle,
 } from "react-icons/hi";
-import { useAuth } from "@/Components/AuthContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
-import { useLanguage } from "@/Components/LanguageContext";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
 
 /* ============================================
    Types

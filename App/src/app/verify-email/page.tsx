@@ -3,9 +3,9 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { HiOutlineMail } from "react-icons/hi";
-import FloatingOrbs from "@/Components/FloatingOrbs";
-import AuthBrandPanel from "@/Components/AuthBrandPanel";
-import { useAuth } from "@/Components/AuthContext";
+import FloatingOrbs from "@/Components/ui/FloatingOrbs";
+import AuthBrandPanel from "@/Components/features/AuthBrandPanel";
+import { useAuth } from "@/Components/contexts/AuthContext";
 
 export default function VerifyEmailPage() {
   const router = useRouter();

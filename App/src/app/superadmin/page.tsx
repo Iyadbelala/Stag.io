@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/Components/AuthContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 import SuperAdminDashboard from "@/screen/SuperAdmin/page";
 
 export default function SuperAdminPage() {

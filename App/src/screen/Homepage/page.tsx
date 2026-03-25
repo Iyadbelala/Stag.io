@@ -10,9 +10,9 @@ import {
   HiOutlineUserGroup,
   HiOutlineShieldCheck,
 } from "react-icons/hi";
-import Slide from "@/Components/slide";
-import type { SlideData } from "@/Components/slide";
-import { useLanguage } from "@/Components/LanguageContext";
+import Slide from "@/Components/ui/Slide";
+import type { SlideData } from "@/Components/ui/Slide";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
 import { type ReactNode } from "react";
 
 /* ============================================

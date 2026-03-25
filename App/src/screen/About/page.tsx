@@ -10,7 +10,7 @@ import {
   HiOutlineHeart,
   HiOutlineShieldCheck,
 } from "react-icons/hi";
-import { useLanguage } from "@/Components/LanguageContext";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
 import { type ReactNode } from "react";
 
 /* ============================================

@@ -15,13 +15,13 @@ import {
   HiOutlineGlobe,
 } from "react-icons/hi";
 
-import Logo from "@/Components/Logo";
-import FloatingOrbs from "@/Components/FloatingOrbs";
-import FieldError from "@/Components/FieldError";
-import { FormField, PasswordField } from "@/Components/FormField";
-import AuthBrandPanel from "@/Components/AuthBrandPanel";
-import { useLanguage } from "@/Components/LanguageContext";
-import { useAuth } from "@/Components/AuthContext";
+import Logo from "@/Components/ui/Logo";
+import FloatingOrbs from "@/Components/ui/FloatingOrbs";
+import FieldError from "@/Components/ui/FieldError";
+import { FormField, PasswordField } from "@/Components/ui/FormField";
+import AuthBrandPanel from "@/Components/features/AuthBrandPanel";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 
 /* ============================================
    Email validation

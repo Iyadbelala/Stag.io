@@ -9,9 +9,6 @@ import {
   useRef,
 } from "react";
 
-/* ============================================
-   Types
-   ============================================ */
 interface ThemeContextType {
   isDark: boolean;
   toggleTheme: (e: React.MouseEvent) => void;
@@ -26,16 +23,13 @@ const ThemeContext = createContext<ThemeContextType>({
 
 export const useTheme = () => useContext(ThemeContext);
 
-/* ============================================
-   Provider
-   ============================================ */
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
   const overlayRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
-  /* ---- Hydrate from localStorage ---- */
+  /* Hydrate from localStorage */
   useEffect(() => {
     const stored = localStorage.getItem("stag-theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -48,7 +42,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  /* ---- Toggle with explosion animation ---- */
+  /* Toggle with explosion animation */
   const toggleTheme = useCallback(
     (e: React.MouseEvent) => {
       const x = e.clientX;
@@ -60,7 +54,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         Math.max(y, window.innerHeight - y),
       );
 
-      /* ---- Modern: View Transitions API ---- */
+      /* Modern: View Transitions API */
       const root = document.documentElement;
       const supportsVT = "startViewTransition" in document;
 
@@ -90,10 +84,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      /* ---- Fallback: clip-path overlay ---- */
+      /* Fallback: clip-path overlay */
       const overlay = overlayRef.current;
       if (!overlay) {
-        // Absolute fallback — instant switch
         root.classList.toggle("dark", newIsDark);
         setIsDark(newIsDark);
         localStorage.setItem("stag-theme", newIsDark ? "dark" : "light");
@@ -120,13 +113,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       };
 
       overlay.addEventListener("transitionend", onEnd, { once: true });
-      // Safety timeout
       setTimeout(onEnd, 800);
     },
     [isDark],
   );
 
-  /* ---- Prevent flash of wrong theme ---- */
   if (!mounted) return null;
 
   return (

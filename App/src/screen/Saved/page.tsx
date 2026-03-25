@@ -14,7 +14,7 @@ import {
   HiOutlineChevronRight,
   HiOutlineArrowLeft,
 } from "react-icons/hi";
-import { useAuth } from "@/Components/AuthContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 import { api } from "@/lib/api";
 
 /* ── Types ── */

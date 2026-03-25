@@ -20,9 +20,9 @@ import {
   HiOutlineDocumentDownload,
   HiOutlineDocument,
 } from "react-icons/hi";
-import { useAuth } from "@/Components/AuthContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 import { api } from "@/lib/api";
-import { useLanguage } from "@/Components/LanguageContext";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
 
 /* ============================================
    Profile data shape from the API

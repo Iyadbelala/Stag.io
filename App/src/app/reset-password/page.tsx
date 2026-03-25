@@ -4,9 +4,9 @@ import { useState, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { HiOutlineLockClosed } from "react-icons/hi";
-import FloatingOrbs from "@/Components/FloatingOrbs";
-import AuthBrandPanel from "@/Components/AuthBrandPanel";
-import { useAuth } from "@/Components/AuthContext";
+import FloatingOrbs from "@/Components/ui/FloatingOrbs";
+import AuthBrandPanel from "@/Components/features/AuthBrandPanel";
+import { useAuth } from "@/Components/contexts/AuthContext";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();

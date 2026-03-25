@@ -23,8 +23,8 @@ import {
   HiOutlineChevronRight,
   HiOutlineDocument,
 } from "react-icons/hi";
-import { useLanguage } from "@/Components/LanguageContext";
-import { useAuth } from "@/Components/AuthContext";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 import { api } from "@/lib/api";
 
 /* ============================================

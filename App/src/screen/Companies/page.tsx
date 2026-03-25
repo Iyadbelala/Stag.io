@@ -16,7 +16,7 @@ import {
   HiOutlineUser,
   HiOutlineAcademicCap,
 } from "react-icons/hi";
-import { useLanguage } from "@/Components/LanguageContext";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
 import { api } from "@/lib/api";
 
 /* ============================================

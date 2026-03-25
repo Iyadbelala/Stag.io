@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { HiChevronLeft, HiChevronRight } from "react-icons/hi";
-import { useLanguage } from "@/Components/LanguageContext";
 
 export interface SlideData {
   title: string;
@@ -15,8 +14,6 @@ interface SlideProps {
 }
 
 export default function Slide({ slides, autoPlayMs = 5000 }: SlideProps) {
-  const { lang } = useLanguage();
-  const isRtl = false;
   const [current, setCurrent] = useState(0);
 
   const next = useCallback(
@@ -40,7 +37,7 @@ export default function Slide({ slides, autoPlayMs = 5000 }: SlideProps) {
       {/* Slide track */}
       <div
         className="flex transition-transform duration-700 ease-in-out"
-        style={{ transform: `translateX(${isRtl ? "" : "-"}${current * 100}%)` }}
+        style={{ transform: `translateX(-${current * 100}%)` }}
       >
         {slides.map((slide, idx) => (
           <div

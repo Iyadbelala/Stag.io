@@ -2,11 +2,6 @@
 
 import { useRef } from "react";
 
-/* ============================================
-   FloatingOrbs — animated blurred background shapes
-   Used on the Auth page (right panel) for depth.
-   ============================================ */
-
 interface Orb {
   id: number;
   x: number;

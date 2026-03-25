@@ -11,7 +11,7 @@ import {
 } from "react";
 import { io, Socket } from "socket.io-client";
 import { api } from "@/lib/api";
-import { useAuth } from "@/Components/AuthContext";
+import { useAuth } from "@/Components/contexts/AuthContext";
 
 export interface Notification {
   id: string;
@@ -54,7 +54,6 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   // Connect socket when authenticated
   useEffect(() => {
     if (!token || !user) {
-      // Cleanup on logout
       if (socketRef.current) {
         socketRef.current.disconnect();
         socketRef.current = null;

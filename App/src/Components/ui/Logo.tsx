@@ -1,10 +1,5 @@
 import Link from "next/link";
 
-/* ============================================
-   Logo — Stag.io brand mark
-   Reused across Navbar, Footer, Auth pages, etc.
-   ============================================ */
-
 interface LogoProps {
   /** Tailwind text-size class, e.g. "text-2xl" */
   size?: string;

@@ -5,15 +5,9 @@ import {
   HiOutlineClipboardList,
   HiOutlineShieldCheck,
 } from "react-icons/hi";
-import Logo from "@/Components/Logo";
-import { useLanguage } from "@/Components/LanguageContext";
+import Logo from "@/Components/ui/Logo";
+import { useLanguage } from "@/Components/contexts/LanguageContext";
 import { type ReactNode } from "react";
-
-/* ============================================
-   AuthBrandPanel — left sidebar on the auth page
-   Displays brand, hero copy, feature pills, and copyright.
-   Visible on lg+ screens only.
-   ============================================ */
 
 const featureIcons: ReactNode[] = [
   <HiOutlineBriefcase key="bf1" size={20} />,

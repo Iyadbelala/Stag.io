@@ -12,85 +12,99 @@
 [![Express](https://img.shields.io/badge/Express_5-000?style=flat-square&logo=express&logoColor=white)](https://expressjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://neon.tech/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=flat-square&logo=socketdotio&logoColor=white)](https://socket.io/)
+[![Drizzle ORM](https://img.shields.io/badge/Drizzle_ORM-C5F74F?style=flat-square&logo=drizzle&logoColor=black)](https://orm.drizzle.team/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-C8A96A?style=flat-square)](LICENSE)
 
 <br/>
 
-[Features](#-features) · [Tech Stack](#-tech-stack) · [Getting Started](#-getting-started) · [Architecture](#-architecture) · [Contributing](#-contributing) · [Team](#-team)
+[Features](#-features) · [SmartMatch](#-smartmatch) · [Tech Stack](#-tech-stack) · [Getting Started](#-getting-started) · [Architecture](#-architecture) · [API Reference](#-api-reference) · [Team](#-team)
 
 </div>
 
-<br/>
+---
 
-## 📋 Overview
+## Overview
 
 **Stag.io** (_stage_ is French for _internship_) is a full-stack web platform that digitizes the entire internship lifecycle — from opportunity discovery and application to administrative validation and agreement tracking.
 
-Built as a graduation capstone project (Atelier TI 2025–2026), it provides a unified experience for every stakeholder in the internship process:
+Built as a graduation capstone project (**Atelier TI 2025 – 2026**), it provides a unified experience for every stakeholder in the internship process:
 
 <div align="center">
 
-| 🎓 Students | 🏢 Companies | 🏛️ Universities | 🔑 Admins |
-|:---:|:---:|:---:|:---:|
-| Browse & filter offers | Post internship offers | Validate agreements | Oversee platform |
-| Apply with one click | Manage applicants | Monitor student progress | Manage users & roles |
-| Track applications | Company dashboard | University dashboard | Super admin panel |
-| Build profile & CV | Upload verification docs | Domain-based auth | System-wide controls |
+| Role | Capabilities |
+|:---|:---|
+| **Students** | Browse & filter offers, apply with one click, track applications, build profile & CV, get SmartMatch recommendations, save favorite offers, review companies |
+| **Companies** | Post internship offers, manage applicants, company dashboard & analytics, upload verification docs, view & respond to reviews |
+| **Universities** | Validate internship agreements, monitor student progress, domain-based authentication, university dashboard |
+| **Admins** | Oversee platform operations, manage users & roles, approve companies/universities, super admin panel for system-wide control |
 
 </div>
 
-## ✨ Features
+---
+
+## Features
 
 <table>
 <tr>
 <td width="50%">
 
-**Frontend**
-- 🏠 Hero section with animated stats & carousel
-- 🔐 Glassmorphism auth with split-layout design
-- 🌙 Dark mode with explosion animation (View Transitions API)
-- 🌐 Bilingual support (English / French)
-- 📱 Fully responsive — mobile-first design
-- 🎨 Coffee-inspired design system
-- ♿ Accessible form components with validation
-- ⚡ SmartMatch® — intelligent internship matching
+### Frontend
+- Animated hero section with live stats & carousel
+- Glassmorphism authentication with split-layout design
+- Dark mode with explosion animation (View Transitions API)
+- Bilingual support (English / French) with full i18n
+- Fully responsive mobile-first design
+- Coffee-inspired design system with custom theme tokens
+- Accessible form components with real-time validation
+- SmartMatch — intelligent internship matching with score rings
+- AI-powered chatbot (Gemini) with theme-aware UI
+- Real-time notifications via Socket.IO
+- CV generation & download (PDF)
+- Saved offers & review system
 
 </td>
 <td width="50%">
 
-**Backend**
-- 🔒 JWT authentication with role-based access
-- 📄 RESTful API with Express 5
-- 🗄️ PostgreSQL via Drizzle ORM on Neon
-- ☁️ Cloudinary integration for file uploads
-- 📑 PDF generation (internship agreements)
-- 🤖 MCP (Model-Context-Protocol) server
-- ✅ Zod schema validation
-- ⚡ SmartMatch® algorithmic scoring engine
+### Backend
+- JWT authentication with role-based access control (5 roles)
+- RESTful API with Express 5 & strict middleware pipeline
+- PostgreSQL via Drizzle ORM on Neon (serverless)
+- Cloudinary integration for images & document uploads
+- PDF generation for internship agreements (PDFKit)
+- AI chatbot service powered by Google Gemini
+- MCP (Model-Context-Protocol) server integration
+- Real-time notifications with Socket.IO
+- Email verification & password reset (Nodemailer)
+- Zod schema validation on all endpoints
+- SmartMatch scoring engine (< 100ms per request)
+- Database seeding for development
 
 </td>
 </tr>
 </table>
 
-## ⚡ SmartMatch®
+---
+
+## SmartMatch
 
 > *"Stop scrolling through hundreds of offers. Let the right ones find you."*
 
-**SmartMatch®** is Stag.io's proprietary internship matching engine — a zero-dependency, purely algorithmic system that scores and ranks every available internship offer against a student's profile in real time. No AI API keys, no cloud ML services, no third-party costs. The entire engine runs server-side in **< 100 ms** per request.
+**SmartMatch** is Stag.io's proprietary internship matching engine — a zero-dependency, purely algorithmic system that scores and ranks every available internship offer against a student's profile in real time. No external AI APIs, no cloud ML services. The entire engine runs server-side in **< 100 ms** per request.
 
 ### The Problem
 
-Traditional internship platforms dump students into a chronological list of offers with basic keyword search. Students waste time scrolling through irrelevant postings, and companies receive applications from mismatched candidates. Both sides lose.
+Traditional internship platforms dump students into a chronological list of offers with basic keyword search. Students waste time scrolling through irrelevant postings, and companies receive applications from mismatched candidates.
 
 ### The Solution
 
-SmartMatch® flips the experience: instead of students searching for offers, **offers compete for students**. Each offer receives a composite score (0–100) based on how well it aligns with the student's unique profile — skills, academic department, geographic location, and career relevance.
+SmartMatch flips the experience: instead of students searching for offers, **offers compete for students**. Each offer receives a composite score (0 – 100) based on how well it aligns with the student's unique profile.
 
-### How It Works — The 4-Dimension Scoring Engine
+### The 4-Dimension Scoring Engine
 
 ```
   ┌───────────────────────────────────────────────────────────────┐
-  │                    SmartMatch® Score (0–100)                  │
+  │                    SmartMatch Score (0 – 100)                 │
   │                                                               │
   │   ┌─────────────────────────────────────────────────────┐     │
   │   │  Skills Match          ████████████████████   50 %  │     │
@@ -107,147 +121,107 @@ SmartMatch® flips the experience: instead of students searching for offers, **o
 <tr>
 <td width="50%">
 
-#### 🎯 Skills Match — 50 %
+#### Skills Match — 50 %
 
-The heaviest signal. SmartMatch® tokenizes both the student's skills array and the offer's requirements/description into normalized terms, then computes overlap:
+The heaviest signal. SmartMatch tokenizes both the student's skills array and the offer's requirements/description into normalized terms, then computes overlap:
 
-- **Exact match**: full skill name found in offer text → weight 1.0
-- **Partial match**: ≥ 50 % of multi-word skill tokens found → weight 0.7 × ratio
-- **Normalization**: score is divided by `min(required skills, student skills)` so students aren't penalized for having broad skillsets
-
-*Example:* A student with `["React", "TypeScript", "Node.js"]` applying to an offer requiring `"React, TypeScript, Express"` would match 2/3 exactly, yielding a high skills score.
+- **Exact match**: full skill name found in offer text (weight 1.0)
+- **Partial match**: >= 50 % of multi-word skill tokens found (weight 0.7 x ratio)
+- **Normalization**: score is divided by `min(required, student skills)` so students aren't penalized for broad skillsets
 
 </td>
 <td width="50%">
 
-#### 🏛️ Department Relevance — 25 %
+#### Department Relevance — 25 %
 
 Maps the student's academic department to industry keywords via a curated lookup table covering **17 departments** (Computer Science, Electrical Engineering, Business, Law, Medicine, etc.):
 
-- Each department maps to a list of relevant industry keywords
-- The engine counts how many keywords appear in the offer's combined text (title + description + requirements + company industry)
-- Score is amplified by 1.5× to reward strong matches
-- Fallback: if no department key matches, it checks for raw word overlap
+- Each department maps to relevant industry keywords
+- The engine counts keyword appearances in the offer's combined text
+- Score is amplified by 1.5x to reward strong matches
 
 </td>
 </tr>
 <tr>
 <td width="50%">
 
-#### 📍 Location Proximity — 15 %
+#### Location Proximity — 15 %
 
-Students don't always specify a city — SmartMatch® infers location from the university domain and compares against the offer and company locations:
+Infers location from the university domain and compares against the offer and company locations:
 
-- **City match**: university city words found in offer/company location → 1.0
+- **City match**: university city words found in offer/company location (1.0)
 - **Remote offers**: automatically score 0.7 (location-agnostic)
-- **No match**: scores 0.1 (not zero, because relocation is possible)
-
-*Example:* `univ-constantine3.dz` → extracts `"constantine"` → matches offers in Constantine with a perfect location score.
+- **No match**: scores 0.1 (relocation is possible)
 
 </td>
 <td width="50%">
 
-#### 📝 Title Relevance — 10 %
+#### Title Relevance — 10 %
 
-A lightweight signal that checks whether the student's skills appear in the offer's title — because a title like *"React Frontend Developer Intern"* is a stronger signal than skills buried in the description.
+A lightweight signal that checks whether the student's skills appear in the offer title — because a title like *"React Frontend Developer Intern"* is a stronger signal than skills buried in the description.
 
-- Tokenizes student skills and checks against normalized title text
-- Capped at 3 skill matches to prevent title-stuffing from inflating scores
+- Tokenizes student skills against normalized title text
+- Capped at 3 skill matches to prevent title-stuffing
 
 </td>
 </tr>
 </table>
 
-### The User Experience
-
-SmartMatch® doesn't auto-activate — students opt in via an animated toggle switch on the Internships page:
+### User Experience Flow
 
 ```
-  ┌──────────────────────────────────────────────────────────────────┐
-  │                                                                  │
-  │   1. Student opens /internships                                  │
-  │   2. Flips the ⚡ SmartMatch® toggle                             │
-  │   3. Branded breathing overlay appears:                          │
-  │                                                                  │
-  │              ╭──────────────────────╮                            │
-  │              │                      │                            │
-  │              │    SmartMatch®       │  ← breathing animation     │
-  │              │  Analyzing offers... │                            │
-  │              │                      │                            │
-  │              ╰──────────────────────╯                            │
-  │                                                                  │
-  │   4. Offers re-sort by match score (highest first)               │
-  │   5. Each card shows:                                            │
-  │      • ScoreRing — an SVG circular gauge (0–100%)                │
-  │      • Matched skills highlighted on the card                    │
-  │      • "Ranked for you" badge in the header                      │
-  │   6. Toggle off → returns to default chronological order         │
-  │                                                                  │
-  └──────────────────────────────────────────────────────────────────┘
+  1. Student opens /internships
+  2. Flips the SmartMatch toggle
+  3. Branded breathing overlay appears while scoring runs
+  4. Offers re-sort by match score (highest first)
+  5. Each card shows:
+     • ScoreRing — an SVG circular gauge (0 – 100%)
+     • Matched skills highlighted on the card
+     • "Ranked for you" badge in the header
+  6. Toggle off → returns to default chronological order
 ```
 
-### Architecture
+---
 
-```
-  Student Profile                 Internship Offers
-  ┌──────────────┐                ┌──────────────────┐
-  │ skills[]     │                │ requirements     │
-  │ department   │───── GET ─────▶│ description      │
-  │ university   │  /api/matching │ location / type  │
-  └──────────────┘                │ company industry │
-         │                        └──────────────────┘
-         │                                │
-         ▼                                ▼
-  ┌──────────────────────────────────────────────┐
-  │            SmartMatch® Engine                │
-  │                                              │
-  │  scoreSkills()      → 50 %                   │
-  │  scoreDepartment()  → 25 %                   │
-  │  scoreLocation()    → 15 %                   │
-  │  scoreTitleRelevance() → 10 %                │
-  │                                              │
-  │  Final = Σ weighted scores × 100             │
-  │  Sort descending → return top N              │
-  └──────────────────────────────────────────────┘
-         │
-         ▼
-  ┌──────────────────────┐
-  │  MatchedOffer[]      │
-  │  { matchScore,       │
-  │    matchedSkills[] } │
-  └──────────────────────┘
-```
-The algorithmic approach gives us **full control**, **instant tuning**, and **explainable results** — students can see *why* an offer scored high, not just *that* it did.
-
-## 🛠️ Tech Stack
+## Tech Stack
 
 <div align="center">
 
 | Layer | Technology | Purpose |
 |:---|:---|:---|
-| **Frontend** | Next.js 16 · React 19 | App Router, SSR, file-based routing |
-| **Styling** | Tailwind CSS 4 | Utility-first, dark mode, custom theme |
-| **Language** | TypeScript (strict) | End-to-end type safety |
+| **Frontend** | Next.js 16 + React 19 | App Router, SSR, file-based routing |
+| **Styling** | Tailwind CSS 4 | Utility-first, dark mode, custom design tokens |
+| **Language** | TypeScript (strict) | End-to-end type safety across all packages |
 | **Backend** | Express 5 | REST API, middleware pipeline |
 | **Database** | PostgreSQL (Neon) | Serverless Postgres with Drizzle ORM |
-| **Auth** | JWT + bcrypt | Secure token-based authentication |
+| **Auth** | JWT + bcryptjs | Secure token-based authentication |
+| **Real-time** | Socket.IO | Live notifications |
 | **Storage** | Cloudinary | Cloud image & document hosting |
+| **Email** | Nodemailer | Email verification & password reset |
+| **PDF** | PDFKit | Internship agreement & CV generation |
+| **AI Chat** | Google Gemini | Context-aware chatbot |
 | **Validation** | Zod | Runtime schema validation |
-| **AI** | MCP SDK | Model-Context-Protocol integration |
+| **AI Tools** | MCP SDK | Model-Context-Protocol integration |
 | **Monorepo** | npm Workspaces | Shared types & constants |
 
 </div>
 
-## 🎨 Design System
+---
+
+## Design System
 
 Stag.io features a warm **coffee-inspired** design language that evokes professionalism and approachability:
 
 ```
- ┌──────────────────────────────────────────────────────────┐
- │  Dark Coffee    Warm Brown    Soft Gold     Cream Beige  │
- │   #4B2E2B        #7A4E3A      #C8A96A       #F5EFE6     │
- │   ███████        ███████      ███████       ███████      │
- └──────────────────────────────────────────────────────────┘
+ ┌──────────────────────────────────────────────────────────────────┐
+ │  Dark Coffee     Warm Brown     Soft Gold      Cream Beige       │
+ │    #4B2E2B        #7A4E3A        #C8A96A        #F5EFE6          │
+ │    ███████        ███████        ███████        ███████           │
+ │                                                                  │
+ │  Sage Green      Error Red     Warning Amber   Info Blue         │
+ │    #7C9A6E        #DC2626        #F59E0B        #3B82F6          │
+ │    ███████        ███████        ███████        ███████           │
+ └──────────────────────────────────────────────────────────────────┘
 ```
 
 | Element | Choice | Rationale |
@@ -256,14 +230,19 @@ Stag.io features a warm **coffee-inspired** design language that evokes professi
 | Body text | **Inter** | Clean, modern readability |
 | Accent | Soft Gold `#C8A96A` | Warmth without harshness |
 | Surfaces | Glassmorphism + subtle gradients | Depth & layering |
+| Dark mode | Full theme with View Transitions API | Smooth animated toggle |
 
-## 🚀 Getting Started
+---
+
+## Getting Started
 
 ### Prerequisites
 
-- **Node.js** ≥ 18
-- **npm** ≥ 9
-- **PostgreSQL** instance (or a free [Neon](https://neon.tech) account)
+| Requirement | Version |
+|:---|:---|
+| Node.js | >= 18 |
+| npm | >= 9 |
+| PostgreSQL | Any (or free [Neon](https://neon.tech) account) |
 
 ### Installation
 
@@ -276,14 +255,24 @@ cd Stag.io
 npm install
 
 # 3. Configure environment variables
-#    Copy the example and fill in your credentials
 cp Server/.env.example Server/.env
+# Fill in your credentials (database URL, JWT secret, Cloudinary, etc.)
 
 # 4. Start both frontend & backend in dev mode
 npm run dev
 ```
 
 The frontend will be available at **`http://localhost:3000`** and the API at **`http://localhost:3001/api`**.
+
+### Environment Variables
+
+| Variable | Description |
+|:---|:---|
+| `DATABASE_URL` | PostgreSQL connection string (Neon recommended) |
+| `JWT_SECRET` | Secret key for JWT token signing |
+| `CLOUDINARY_*` | Cloudinary cloud name, API key & secret |
+| `GEMINI_API_KEY` | Google Gemini API key for chatbot |
+| `SMTP_*` | SMTP host, port, user & password for emails |
 
 ### Available Scripts
 
@@ -293,81 +282,127 @@ The frontend will be available at **`http://localhost:3000`** and the API at **`
 | `npm run dev:app` | Start Next.js frontend only |
 | `npm run dev:server` | Start Express backend only |
 | `npm run build` | Build shared → frontend → backend |
+| `npm run seed` | Seed the database with sample data |
+| `npm run mcp` | Start the MCP protocol server |
 
-## 🏗️ Architecture
+---
+
+## Architecture
 
 ```
-Stag.io/                         # Monorepo root (npm workspaces)
+Stag.io/                              # Monorepo root (npm workspaces)
 │
-├── App/                          # 🖥️  Next.js 16 Frontend
+├── App/                               # Next.js 16 Frontend
 │   └── src/
-│       ├── app/                  #     App Router — page routes
-│       │   ├── layout.tsx        #     Root layout (theme, nav, footer)
-│       │   ├── student/          #     Student dashboard & profile
-│       │   ├── company/          #     Company dashboard & profile
-│       │   ├── admin/            #     Admin panel
-│       │   ├── university/       #     University dashboard
-│       │   ├── internships/      #     Browse & filter offers
-│       │   ├── login/ register/  #     Authentication pages
-│       │   └── ...               #     About, Blog, FAQs, etc.
-│       ├── Components/           #     Reusable UI (Navbar, Footer, Forms…)
-│       ├── screen/               #     Full-page screen compositions
-│       ├── i18n/                 #     Internationalization (EN / FR)
-│       └── lib/                  #     API client & utilities
+│       ├── app/                       # App Router — page routes
+│       │   ├── layout.tsx             #   Root layout (providers, nav, footer)
+│       │   ├── student/               #   Student dashboard & profile
+│       │   ├── company/               #   Company dashboard & profile
+│       │   ├── admin/                 #   Admin panel
+│       │   ├── university/            #   University dashboard
+│       │   ├── superadmin/            #   Super admin panel
+│       │   ├── internships/           #   Browse & filter offers
+│       │   ├── login/ register/       #   Authentication pages
+│       │   ├── reviews/               #   Review system
+│       │   ├── saved/                 #   Saved offers
+│       │   └── ...                    #   About, Blog, FAQs, etc.
+│       │
+│       ├── Components/                # Organized component library
+│       │   ├── contexts/              #   State providers (Auth, Theme, Language, Notifications)
+│       │   ├── features/              #   Domain components (ChatBot, AuthBrandPanel)
+│       │   ├── layout/                #   Page structure (Navbar/, Footer)
+│       │   └── ui/                    #   Reusable primitives (StatCard, Spinner, FormField...)
+│       │
+│       ├── screen/                    # Full-page screen compositions
+│       │   ├── Homepage/              #   Landing page with hero & carousel
+│       │   ├── Authentication/        #   Login & registration flows
+│       │   ├── Internships/           #   Offer browsing with SmartMatch
+│       │   ├── Student/               #   Student dashboard + Profile/
+│       │   ├── Company/               #   Company dashboard + Profile/
+│       │   ├── Admin/                 #   Admin management panel
+│       │   ├── University/            #   University validation dashboard
+│       │   ├── SuperAdmin/            #   Super admin controls
+│       │   └── Footer/                #   Static pages (Blog, FAQ, Privacy...)
+│       │
+│       ├── i18n/                      # Internationalization (EN / FR)
+│       └── lib/                       # API client (Axios + JWT interceptor)
 │
-├── Server/                       # ⚙️  Express 5 Backend
+├── Server/                            # Express 5 Backend
 │   └── src/
-│       ├── app.ts                #     Express app setup
-│       ├── index.ts              #     Server entry point
-│       ├── mcp.ts                #     MCP protocol server
-│       ├── context/              #     Service layer (business logic)
+│       ├── app.ts                     # Express app setup & middleware
+│       ├── index.ts                   # Server entry point
+│       ├── socket.ts                  # Socket.IO configuration
+│       ├── mcp.ts                     # MCP protocol server
+│       ├── seed.ts                    # Database seeder
+│       ├── context/                   # Service layer (business logic)
 │       │   ├── auth.service.ts
 │       │   ├── offers.service.ts
 │       │   ├── applications.service.ts
-│       │   ├── companies.service.ts
-│       │   ├── profile.service.ts
+│       │   ├── matching.service.ts    # SmartMatch engine
+│       │   ├── chatbot.service.ts     # Gemini AI chatbot
+│       │   ├── cv.service.ts          # CV/PDF generation
+│       │   ├── notifications.service.ts
+│       │   ├── reviews.service.ts
 │       │   └── ...
-│       ├── model/                #     Database schema (Drizzle ORM)
-│       ├── lib/                  #     Cloudinary, helpers
+│       ├── model/                     # Database schema (Drizzle ORM)
+│       │   ├── schema.ts             #   Table definitions & enums
+│       │   └── db.ts                 #   Database connection
+│       ├── lib/                       # Cloudinary, helpers
 │       └── protocol/
-│           ├── middleware/       #     Auth & upload middleware
-│           └── routes/           #     REST API route handlers
+│           ├── middleware/            # Auth & upload middleware
+│           └── routes/               # REST API route handlers
 │
-└── shared/                       # 📦  Shared Package
+└── shared/                            # Shared Package
     └── src/
-        ├── types/                #     TypeScript interfaces
-        └── constants/            #     Roles, statuses, enums
+        ├── types/                     # TypeScript interfaces
+        └── constants/                 # Roles, statuses, enums
 ```
 
-## 🗄️ Database Schema
+---
 
-The PostgreSQL database is managed with **Drizzle ORM** and includes:
+## Database Schema
+
+The PostgreSQL database is managed with **Drizzle ORM** and uses **9 tables**:
 
 | Table | Description |
 |:---|:---|
 | `users` | All platform users with role-based access (student, company, admin, university, superadmin) |
-| `students` | Student profiles — department, CV, skills, portfolio |
-| `companies` | Company profiles — industry, logo, verification docs |
-| `universities` | University profiles — domain-based authentication |
-| `internship_offers` | Job postings with type (remote / onsite / hybrid) and status |
-| `applications` | Student applications with status tracking |
+| `students` | Student profiles — department, skills, CV, bio, portfolio photos |
+| `companies` | Company profiles — industry, logo, verification docs, validation status |
+| `universities` | University profiles — domain-based authentication, validation status |
+| `internship_offers` | Job postings with type (remote / onsite / hybrid), status (draft / active / closed) |
+| `applications` | Student applications with status tracking (pending / accepted / rejected / withdrawn / validated) |
+| `saved_offers` | Student bookmarked offers |
+| `reviews` | Company & internship reviews from students |
+| `notifications` | Real-time notification records with type-based categorization |
 
-## 🗺️ API Routes
+---
 
-| Endpoint | Description |
-|:---|:---|
-| `/api/auth/*` | Registration, login, session management |
-| `/api/offers/*` | CRUD operations for internship offers |
-| `/api/applications/*` | Application submission & status management |
-| `/api/companies/*` | Company listing & details |
-| `/api/profile/*` | User profile management |
-| `/api/admin/*` | Admin panel operations |
-| `/api/university/*` | University dashboard & validation |
-| `/api/superadmin/*` | Platform-wide administration |
-| `/api/matching` | SmartMatch® — ranked offers for authenticated students |
-| `/api/search/users` | Search students by name (debounced suggestions) |
+## API Reference
 
-## 🤝 Contributing
+All endpoints are prefixed with `/api`.
+
+| Endpoint | Methods | Description |
+|:---|:---|:---|
+| `/api/auth/*` | POST | Registration, login, email verification, password reset |
+| `/api/offers/*` | GET, POST, PATCH, DELETE | CRUD for internship offers |
+| `/api/applications/*` | GET, POST, PATCH | Application submission & status management |
+| `/api/companies/*` | GET | Company listing & details |
+| `/api/company-profile/*` | GET, PATCH | Company profile management |
+| `/api/profile/*` | GET, PATCH | Student profile management |
+| `/api/matching` | GET | SmartMatch — ranked offers for authenticated students |
+| `/api/reviews/*` | GET, POST | Review submission & listing |
+| `/api/saved/*` | GET, POST, DELETE | Save/unsave internship offers |
+| `/api/notifications/*` | GET, PATCH | Notification retrieval & read status |
+| `/api/chatbot` | POST | AI chatbot conversation |
+| `/api/search/users` | GET | Search students by name (debounced) |
+| `/api/admin/*` | GET, PATCH, DELETE | Admin panel operations |
+| `/api/university/*` | GET, PATCH | University dashboard & agreement validation |
+| `/api/superadmin/*` | GET, PATCH, DELETE | Platform-wide administration |
+
+---
+
+## Contributing
 
 We welcome contributions! Here's how to get started:
 
@@ -376,19 +411,25 @@ We welcome contributions! Here's how to get started:
 3. **Commit** using [Conventional Commits](https://www.conventionalcommits.org/): `feat:`, `fix:`, `docs:`, etc.
 4. **Push** to your fork and open a **Pull Request**
 
-## 👥 Team
+Please make sure your code follows the existing patterns and passes the build before submitting.
+
+---
+
+## Team
 
 <div align="center">
 
-| <img src="https://github.com/Iyadbelala.png" width="80" style="border-radius:50%"/> | <img src="https://github.com/oualb.png" width="80" style="border-radius:50%"/> | <img src="https://github.com/charafeddine-zerouki.png" width="80" style="border-radius:50%"/> |
+| <img src="https://github.com/Iyadbelala.png" width="100" style="border-radius:50%"/> | <img src="https://github.com/oualb.png" width="100" style="border-radius:50%"/> | <img src="https://github.com/charafeddine-zerouki.png" width="100" style="border-radius:50%"/> |
 |:---:|:---:|:---:|
 | **Iyed Belala** | **Ouael Bensouici** | **Charaf Eddin Zerouki** |
-| Developer | Developer | Developer |
+| Full-Stack Developer | Full-Stack Developer | Full-Stack Developer |
 | [![GitHub](https://img.shields.io/badge/-Iyadbelala-181717?style=flat-square&logo=github)](https://github.com/Iyadbelala) | [![GitHub](https://img.shields.io/badge/-oualb-181717?style=flat-square&logo=github)](https://github.com/oualb) | [![GitHub](https://img.shields.io/badge/-charafeddine--zerouki-181717?style=flat-square&logo=github)](https://github.com/charafeddine-zerouki) |
 
 </div>
 
-## 📄 License
+---
+
+## License
 
 This project is licensed under the [MIT License](LICENSE).
 
@@ -400,6 +441,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 <br/><br/>
 
-<sub>Made with ❤️ by the <strong>Stag.io</strong> team — Atelier TI 2025–2026</sub>
+<sub>Made with care by the <strong>Stag.io</strong> team — Atelier TI 2025 – 2026, University of Constantine 3</sub>
 
 </div>

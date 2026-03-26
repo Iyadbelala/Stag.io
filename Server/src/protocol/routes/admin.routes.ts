@@ -6,6 +6,7 @@ import {
   validateApplication,
   generateApplicationPdf,
 } from '../../context/admin.service';
+import { auditLog } from '../../lib/audit';
 
 const adminRouter = Router();
 
@@ -54,6 +55,7 @@ adminRouter.get('/applications/all', requireAuth, requireAdmin, async (_req: Req
 adminRouter.patch('/applications/:id/validate', requireAuth, requireAdmin, async (req: Request, res: Response) => {
   try {
     const result = await validateApplication(req.params.id as string);
+    auditLog({ actor: req.user!.sub, role: req.user!.role, action: 'validate_application', target: req.params.id as string });
     res.json({ success: true, data: result });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };

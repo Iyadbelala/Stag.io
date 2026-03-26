@@ -85,8 +85,8 @@ export async function rejectCompany(companyId: string): Promise<void> {
     throw err;
   }
 
-  // Delete the user (cascades to company)
-  await db.delete(users).where(eq(users.id, company.userId));
+  // Soft-delete: deactivate the user account (preserves record for audit)
+  await db.update(users).set({ deactivatedAt: new Date() }).where(eq(users.id, company.userId));
 }
 
 /* ──────────────────────────────────────────────
@@ -559,5 +559,6 @@ export async function rejectUniversity(universityId: string): Promise<void> {
     throw err;
   }
 
-  await db.delete(users).where(eq(users.id, uni.userId));
+  // Soft-delete: deactivate the user account (preserves record for audit)
+  await db.update(users).set({ deactivatedAt: new Date() }).where(eq(users.id, uni.userId));
 }

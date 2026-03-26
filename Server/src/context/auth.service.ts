@@ -1,13 +1,77 @@
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { eq } from 'drizzle-orm';
+import { eq, and, gt } from 'drizzle-orm';
 import { db } from '../model/db';
 import { users, students, companies, universities } from '../model/schema';
 import { sendVerificationEmail, sendPasswordResetEmail } from '../lib/email';
 import { sendNotification } from './notifications.service';
+import { isAccountLocked, recordFailedAttempt, clearFailedAttempts } from '../lib/login-limiter';
 
 const SALT_ROUNDS = 12;
+const MIN_PASSWORD_LENGTH = 8;
+
+/* ── Helpers ── */
+
+function throwError(message: string, code: string, status: number): never {
+  const err = new Error(message) as Error & { code: string; status: number };
+  err.code = code;
+  err.status = status;
+  throw err;
+}
+
+function validatePassword(password: string): void {
+  if (!password || password.length < MIN_PASSWORD_LENGTH) {
+    throwError(
+      `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+      'WEAK_PASSWORD',
+      400,
+    );
+  }
+}
+
+function generateOTP(): string {
+  return crypto.randomInt(100000, 999999).toString();
+}
+
+/** Hash a token/code with SHA-256 before storing in DB */
+function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function getJwtSecret(): string {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) throw new Error('JWT_SECRET environment variable is required');
+  return secret;
+}
+
+/** Short-lived access token (15 min) */
+function signAccessToken(userId: string, role: string): string {
+  return jwt.sign(
+    { sub: userId, role, type: 'access' },
+    getJwtSecret(),
+    { expiresIn: '15m' } as jwt.SignOptions,
+  );
+}
+
+/** Long-lived refresh token (7 days) */
+function signRefreshToken(userId: string): string {
+  return jwt.sign(
+    { sub: userId, type: 'refresh' },
+    getJwtSecret(),
+    { expiresIn: '7d' } as jwt.SignOptions,
+  );
+}
+
+/** Generate both tokens */
+function signTokens(userId: string, role: string) {
+  return {
+    accessToken: signAccessToken(userId, role),
+    refreshToken: signRefreshToken(userId),
+  };
+}
+
+/* ── Types ── */
 
 export interface RegisterInput {
   email: string;
@@ -43,6 +107,7 @@ export interface LoginInput {
 
 export interface AuthResult {
   token: string;
+  refreshToken: string;
   user: {
     id: string;
     email: string;
@@ -62,49 +127,32 @@ export interface VerificationRequired {
 
 export type AuthResponse = AuthResult | VerificationRequired;
 
-function isVerificationRequired(r: AuthResponse): r is VerificationRequired {
-  return 'requiresVerification' in r;
-}
-
-function generateOTP(): string {
-  return crypto.randomInt(100000, 999999).toString();
-}
+/* ── Register Student ── */
 
 export async function registerStudent(input: RegisterInput): Promise<AuthResponse> {
-  // Check that the email domain belongs to a registered & validated university
+  validatePassword(input.password);
+
   const emailDomain = input.email.split('@')[1]?.toLowerCase();
   if (!emailDomain) {
-    const err = new Error('Invalid email format') as Error & { code: string; status: number };
-    err.code = 'INVALID_EMAIL';
-    err.status = 400;
-    throw err;
+    throwError('Invalid email format', 'INVALID_EMAIL', 400);
   }
 
   const [uni] = await db.select().from(universities).where(eq(universities.domain, emailDomain));
   if (!uni) {
-    const err = new Error('No university registered with this email domain. Your university must register first.') as Error & { code: string; status: number };
-    err.code = 'UNIVERSITY_NOT_REGISTERED';
-    err.status = 400;
-    throw err;
+    throwError('No university registered with this email domain. Your university must register first.', 'UNIVERSITY_NOT_REGISTERED', 400);
   }
   if (!uni.isValidated) {
-    const err = new Error('Your university is still pending validation. Please try again later.') as Error & { code: string; status: number };
-    err.code = 'UNIVERSITY_NOT_VALIDATED';
-    err.status = 400;
-    throw err;
+    throwError('Your university is still pending validation. Please try again later.', 'UNIVERSITY_NOT_VALIDATED', 400);
   }
 
   const [existing] = await db.select().from(users).where(eq(users.email, input.email));
   if (existing) {
-    const err = new Error('Email already registered') as Error & { code: string; status: number };
-    err.code = 'EMAIL_IN_USE';
-    err.status = 409;
-    throw err;
+    throwError('Email already registered', 'EMAIL_IN_USE', 409);
   }
 
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
   const code = generateOTP();
-  const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+  const expiry = new Date(Date.now() + 15 * 60 * 1000);
 
   const [user] = await db.insert(users).values({
     email: input.email,
@@ -113,7 +161,7 @@ export async function registerStudent(input: RegisterInput): Promise<AuthRespons
     firstName: input.firstName,
     lastName: input.lastName,
     university: uni.universityName,
-    emailVerificationCode: code,
+    emailVerificationCode: hashToken(code),
     emailVerificationExpiry: expiry,
   }).returning();
 
@@ -122,19 +170,20 @@ export async function registerStudent(input: RegisterInput): Promise<AuthRespons
     skills: [],
   });
 
-  // Send verification email (don't block on failure)
+  // Send plaintext code to user, only hash is stored in DB
   sendVerificationEmail(input.email, code).catch(() => {});
 
   return { requiresVerification: true, email: input.email };
 }
 
+/* ── Register Company ── */
+
 export async function registerCompany(input: RegisterCompanyInput): Promise<AuthResponse> {
+  validatePassword(input.password);
+
   const [existing] = await db.select().from(users).where(eq(users.email, input.email));
   if (existing) {
-    const err = new Error('Email already registered') as Error & { code: string; status: number };
-    err.code = 'EMAIL_IN_USE';
-    err.status = 409;
-    throw err;
+    throwError('Email already registered', 'EMAIL_IN_USE', 409);
   }
 
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
@@ -155,7 +204,6 @@ export async function registerCompany(input: RegisterCompanyInput): Promise<Auth
     verificationDocumentUrl: input.verificationDocumentUrl,
   }).returning();
 
-  // Notify all admins about the new company
   notifyAdmins(
     'company_pending_approval',
     'New Company Registration',
@@ -163,9 +211,10 @@ export async function registerCompany(input: RegisterCompanyInput): Promise<Auth
     user.id,
   );
 
-  const token = signToken(user.id, user.role);
+  const { accessToken: token, refreshToken } = signTokens(user.id, user.role);
   return {
     token,
+    refreshToken,
     user: {
       id: user.id,
       email: user.email,
@@ -175,23 +224,21 @@ export async function registerCompany(input: RegisterCompanyInput): Promise<Auth
   };
 }
 
+/* ── Register University ── */
+
 export async function registerUniversity(input: RegisterUniversityInput): Promise<AuthResponse> {
+  validatePassword(input.password);
+
   const domain = input.domain.toLowerCase().replace(/^@/, '');
 
   const [existingDomain] = await db.select().from(universities).where(eq(universities.domain, domain));
   if (existingDomain) {
-    const err = new Error('A university with this domain is already registered') as Error & { code: string; status: number };
-    err.code = 'DOMAIN_IN_USE';
-    err.status = 409;
-    throw err;
+    throwError('A university with this domain is already registered', 'DOMAIN_IN_USE', 409);
   }
 
   const [existing] = await db.select().from(users).where(eq(users.email, input.email));
   if (existing) {
-    const err = new Error('Email already registered') as Error & { code: string; status: number };
-    err.code = 'EMAIL_IN_USE';
-    err.status = 409;
-    throw err;
+    throwError('Email already registered', 'EMAIL_IN_USE', 409);
   }
 
   const passwordHash = await bcrypt.hash(input.password, SALT_ROUNDS);
@@ -211,7 +258,6 @@ export async function registerUniversity(input: RegisterUniversityInput): Promis
     location: input.location,
   }).returning();
 
-  // Notify all admins about the new university
   notifyAdmins(
     'university_pending_approval',
     'New University Registration',
@@ -219,9 +265,10 @@ export async function registerUniversity(input: RegisterUniversityInput): Promis
     user.id,
   );
 
-  const token = signToken(user.id, user.role);
+  const { accessToken: token, refreshToken } = signTokens(user.id, user.role);
   return {
     token,
+    refreshToken,
     user: {
       id: user.id,
       email: user.email,
@@ -231,29 +278,43 @@ export async function registerUniversity(input: RegisterUniversityInput): Promis
   };
 }
 
+/* ── Login ── */
+
 export async function loginUser(input: LoginInput): Promise<AuthResponse> {
+  // Check account lockout before anything
+  const lockSeconds = isAccountLocked(input.email);
+  if (lockSeconds > 0) {
+    const mins = Math.ceil(lockSeconds / 60);
+    throwError(`Account temporarily locked. Try again in ${mins} minute(s)`, 'ACCOUNT_LOCKED', 429);
+  }
+
   const [user] = await db.select().from(users).where(eq(users.email, input.email));
   if (!user) {
-    const err = new Error('Invalid credentials') as Error & { code: string; status: number };
-    err.code = 'INVALID_CREDENTIALS';
-    err.status = 401;
-    throw err;
+    recordFailedAttempt(input.email);
+    throwError('Invalid credentials', 'INVALID_CREDENTIALS', 401);
+  }
+
+  if (user.deactivatedAt) {
+    throwError('This account has been deactivated', 'ACCOUNT_DEACTIVATED', 403);
   }
 
   const valid = await bcrypt.compare(input.password, user.passwordHash);
   if (!valid) {
-    const err = new Error('Invalid credentials') as Error & { code: string; status: number };
-    err.code = 'INVALID_CREDENTIALS';
-    err.status = 401;
-    throw err;
+    const locked = recordFailedAttempt(input.email);
+    if (locked) {
+      throwError('Too many failed attempts. Account locked for 15 minutes', 'ACCOUNT_LOCKED', 429);
+    }
+    throwError('Invalid credentials', 'INVALID_CREDENTIALS', 401);
   }
 
-  // If email not verified, resend OTP and require verification
+  // Successful login — clear failed attempts
+  clearFailedAttempts(input.email);
+
   if (!user.isEmailVerified) {
     const code = generateOTP();
     const expiry = new Date(Date.now() + 15 * 60 * 1000);
     await db.update(users).set({
-      emailVerificationCode: code,
+      emailVerificationCode: hashToken(code),
       emailVerificationExpiry: expiry,
     }).where(eq(users.id, user.id));
 
@@ -265,9 +326,10 @@ export async function loginUser(input: LoginInput): Promise<AuthResponse> {
   const [company] = await db.select().from(companies).where(eq(companies.userId, user.id));
   const [uni] = await db.select().from(universities).where(eq(universities.userId, user.id));
 
-  const token = signToken(user.id, user.role);
+  const { accessToken: token, refreshToken } = signTokens(user.id, user.role);
   return {
     token,
+    refreshToken,
     user: {
       id: user.id,
       email: user.email,
@@ -286,28 +348,20 @@ export async function loginUser(input: LoginInput): Promise<AuthResponse> {
 export async function verifyEmail(email: string, code: string): Promise<AuthResult> {
   const [user] = await db.select().from(users).where(eq(users.email, email));
   if (!user) {
-    const err = new Error('User not found') as Error & { code: string; status: number };
-    err.code = 'NOT_FOUND';
-    err.status = 404;
-    throw err;
+    // Generic message to prevent email enumeration
+    throwError('Invalid or expired verification code', 'INVALID_CODE', 400);
   }
 
   if (user.isEmailVerified) {
-    const err = new Error('Email already verified') as Error & { code: string; status: number };
-    err.code = 'ALREADY_VERIFIED';
-    err.status = 400;
-    throw err;
+    throwError('Email already verified', 'ALREADY_VERIFIED', 400);
   }
 
   if (
-    user.emailVerificationCode !== code ||
+    user.emailVerificationCode !== hashToken(code) ||
     !user.emailVerificationExpiry ||
     user.emailVerificationExpiry < new Date()
   ) {
-    const err = new Error('Invalid or expired verification code') as Error & { code: string; status: number };
-    err.code = 'INVALID_CODE';
-    err.status = 400;
-    throw err;
+    throwError('Invalid or expired verification code', 'INVALID_CODE', 400);
   }
 
   await db.update(users).set({
@@ -319,9 +373,10 @@ export async function verifyEmail(email: string, code: string): Promise<AuthResu
   const [company] = await db.select().from(companies).where(eq(companies.userId, user.id));
   const [uni] = await db.select().from(universities).where(eq(universities.userId, user.id));
 
-  const token = signToken(user.id, user.role);
+  const { accessToken: token, refreshToken } = signTokens(user.id, user.role);
   return {
     token,
+    refreshToken,
     user: {
       id: user.id,
       email: user.email,
@@ -337,25 +392,14 @@ export async function verifyEmail(email: string, code: string): Promise<AuthResu
 
 export async function resendVerificationCode(email: string): Promise<void> {
   const [user] = await db.select().from(users).where(eq(users.email, email));
-  if (!user) {
-    const err = new Error('User not found') as Error & { code: string; status: number };
-    err.code = 'NOT_FOUND';
-    err.status = 404;
-    throw err;
-  }
-
-  if (user.isEmailVerified) {
-    const err = new Error('Email already verified') as Error & { code: string; status: number };
-    err.code = 'ALREADY_VERIFIED';
-    err.status = 400;
-    throw err;
-  }
+  // Silently return to prevent email enumeration
+  if (!user || user.isEmailVerified) return;
 
   const code = generateOTP();
   const expiry = new Date(Date.now() + 15 * 60 * 1000);
 
   await db.update(users).set({
-    emailVerificationCode: code,
+    emailVerificationCode: hashToken(code),
     emailVerificationExpiry: expiry,
   }).where(eq(users.id, user.id));
 
@@ -372,8 +416,9 @@ export async function requestPasswordReset(email: string): Promise<void> {
   const resetToken = crypto.randomBytes(32).toString('hex');
   const expiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
 
+  // Store hash of token in DB, send plaintext to user
   await db.update(users).set({
-    passwordResetToken: resetToken,
+    passwordResetToken: hashToken(resetToken),
     passwordResetExpiry: expiry,
   }).where(eq(users.id, user.id));
 
@@ -381,14 +426,21 @@ export async function requestPasswordReset(email: string): Promise<void> {
 }
 
 export async function resetPassword(token: string, newPassword: string): Promise<void> {
-  const allUsers = await db.select().from(users);
-  const user = allUsers.find((u) => u.passwordResetToken === token);
+  validatePassword(newPassword);
 
-  if (!user || !user.passwordResetExpiry || user.passwordResetExpiry < new Date()) {
-    const err = new Error('Invalid or expired reset token') as Error & { code: string; status: number };
-    err.code = 'INVALID_TOKEN';
-    err.status = 400;
-    throw err;
+  // Hash the incoming token to compare against stored hash
+  const [user] = await db
+    .select()
+    .from(users)
+    .where(
+      and(
+        eq(users.passwordResetToken, hashToken(token)),
+        gt(users.passwordResetExpiry, new Date()),
+      ),
+    );
+
+  if (!user) {
+    throwError('Invalid or expired reset token', 'INVALID_TOKEN', 400);
   }
 
   const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
@@ -399,6 +451,37 @@ export async function resetPassword(token: string, newPassword: string): Promise
     passwordResetExpiry: null,
   }).where(eq(users.id, user.id));
 }
+
+/* ── Refresh Token ── */
+
+export async function refreshAccessToken(refreshToken: string): Promise<{ accessToken: string; refreshToken: string }> {
+  let payload: { sub: string; type: string };
+  try {
+    payload = jwt.verify(refreshToken, getJwtSecret()) as { sub: string; type: string };
+  } catch {
+    throwError('Invalid or expired refresh token', 'INVALID_REFRESH_TOKEN', 401);
+  }
+
+  if (payload.type !== 'refresh') {
+    throwError('Invalid token type', 'INVALID_TOKEN_TYPE', 401);
+  }
+
+  const [user] = await db.select().from(users).where(eq(users.id, payload.sub));
+  if (!user) {
+    throwError('User not found', 'USER_NOT_FOUND', 401);
+  }
+
+  if (user.deactivatedAt) {
+    throwError('This account has been deactivated', 'ACCOUNT_DEACTIVATED', 403);
+  }
+
+  return {
+    accessToken: signAccessToken(user.id, user.role),
+    refreshToken: signRefreshToken(user.id),
+  };
+}
+
+/* ── Internal helpers ── */
 
 async function notifyAdmins(
   type: 'company_pending_approval' | 'university_pending_approval',
@@ -411,12 +494,4 @@ async function notifyAdmins(
   for (const admin of [...admins, ...superadmins]) {
     sendNotification(admin.id, type, title, message, relatedId).catch(() => {});
   }
-}
-
-function signToken(userId: string, role: string): string {
-  return jwt.sign(
-    { sub: userId, role },
-    process.env.JWT_SECRET!,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
-  );
 }

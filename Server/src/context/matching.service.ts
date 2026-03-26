@@ -149,7 +149,9 @@ export interface MatchedOffer {
   duration: string;
   location: string;
   type: string;
+  bannerUrl: string | null;
   companyName: string;
+  companyLogoUrl: string | null;
   companyIndustry: string | null;
   companyLocation: string | null;
   matchScore: number;
@@ -178,6 +180,7 @@ export async function getSmartMatches(userId: string, limit: number = 10): Promi
       duration: internshipOffers.duration,
       location: internshipOffers.location,
       type: internshipOffers.type,
+      bannerUrl: internshipOffers.bannerUrl,
       companyId: internshipOffers.companyId,
     })
     .from(internshipOffers)
@@ -214,7 +217,9 @@ export async function getSmartMatches(userId: string, limit: number = 10): Promi
       duration: offer.duration,
       location: offer.location,
       type: offer.type,
+      bannerUrl: offer.bannerUrl ?? null,
       companyName: company?.companyName ?? '',
+      companyLogoUrl: company?.logoUrl ?? null,
       companyIndustry: company?.industry ?? null,
       companyLocation: company?.location ?? null,
       matchScore: Math.round(finalScore * 100),

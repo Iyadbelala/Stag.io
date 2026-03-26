@@ -9,6 +9,7 @@ export interface CreateOfferInput {
   duration: string;
   location: string;
   type: 'remote' | 'onsite' | 'hybrid';
+  bannerUrl?: string;
 }
 
 export interface OfferResult {
@@ -20,8 +21,10 @@ export interface OfferResult {
   location: string;
   type: string;
   status: string;
+  bannerUrl: string | null;
   companyId: string;
   companyName: string;
+  companyLogoUrl: string | null;
   companyIndustry: string | null;
   companyLocation: string | null;
   applicationCount: number;
@@ -49,8 +52,10 @@ async function toOfferResult(offer: typeof internshipOffers.$inferSelect): Promi
     location: offer.location,
     type: offer.type,
     status: offer.status,
+    bannerUrl: offer.bannerUrl ?? null,
     companyId: offer.companyId,
     companyName: company?.companyName ?? '',
+    companyLogoUrl: company?.logoUrl ?? null,
     companyIndustry: company?.industry ?? null,
     companyLocation: company?.location ?? null,
     applicationCount: appCount?.value ?? 0,
@@ -83,6 +88,7 @@ export async function createOffer(userId: string, input: CreateOfferInput): Prom
     duration: input.duration,
     location: input.location,
     type: input.type,
+    bannerUrl: input.bannerUrl ?? null,
   }).returning();
 
   return toOfferResult(offer);
@@ -140,6 +146,7 @@ export async function updateOffer(
   if (input.duration !== undefined) updateData.duration = input.duration;
   if (input.location !== undefined) updateData.location = input.location;
   if (input.type !== undefined) updateData.type = input.type;
+  if (input.bannerUrl !== undefined) updateData.bannerUrl = input.bannerUrl;
 
   const [updated] = await db
     .update(internshipOffers)

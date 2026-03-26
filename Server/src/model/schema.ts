@@ -29,6 +29,7 @@ export const users = pgTable('users', {
   emailVerificationExpiry: timestamp('emailVerificationExpiry', { withTimezone: true }),
   passwordResetToken: text('passwordResetToken'),
   passwordResetExpiry: timestamp('passwordResetExpiry', { withTimezone: true }),
+  deactivatedAt: timestamp('deactivatedAt', { withTimezone: true }),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
 });
@@ -90,6 +91,7 @@ export const internshipOffers = pgTable('internship_offers', {
   location: text('location').notNull(),
   type: offerTypeEnum('type').default('onsite').notNull(),
   status: offerStatusEnum('status').default('active').notNull(),
+  bannerUrl: text('bannerUrl'),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
 });

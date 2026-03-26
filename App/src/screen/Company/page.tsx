@@ -15,6 +15,7 @@ import {
   HiOutlineClock,
   HiOutlinePencil,
   HiOutlineExclamationCircle,
+  HiOutlinePhotograph,
 } from "react-icons/hi";
 import { useAuth } from "@/Components/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -59,6 +60,7 @@ interface Offer {
   location: string;
   type: string;
   status: string;
+  bannerUrl: string | null;
   applicationCount: number;
   createdAt: string;
 }
@@ -184,8 +186,18 @@ function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
     location: "",
     type: "onsite" as "remote" | "onsite" | "hybrid",
   });
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setBannerFile(file);
+      setBannerPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -196,7 +208,18 @@ function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { data } = await api.post<{ success: true; data: Offer }>("/api/offers", form);
+      const fd = new FormData();
+      fd.append("title", form.title);
+      fd.append("description", form.description);
+      fd.append("requirements", form.requirements);
+      fd.append("duration", form.duration);
+      fd.append("location", form.location);
+      fd.append("type", form.type);
+      if (bannerFile) fd.append("banner", bannerFile);
+
+      const { data } = await api.post<{ success: true; data: Offer }>("/api/offers", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       onCreated(data.data);
     } catch {
       setError(t("companyDash.createFailed"));
@@ -306,6 +329,30 @@ function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
             />
           </div>
 
+          {/* Banner Image */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-text-primary">Banner Image (optional)</label>
+            {bannerPreview && (
+              <div className="relative mb-2 overflow-hidden rounded-xl border border-surface-sand">
+                <img src={bannerPreview} alt="Banner preview" className="h-32 w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => { setBannerFile(null); setBannerPreview(null); }}
+                  className="absolute top-2 right-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70 cursor-pointer"
+                >
+                  <HiOutlineX size={14} />
+                </button>
+              </div>
+            )}
+            {!bannerPreview && (
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-surface-sand bg-surface-cream/30 px-4 py-6 text-sm text-text-muted transition-colors hover:border-coffee-gold/40 hover:bg-coffee-gold/5">
+                <HiOutlinePhotograph size={20} />
+                Click to upload a banner image
+                <input type="file" accept="image/*" onChange={handleBannerChange} className="hidden" />
+              </label>
+            )}
+          </div>
+
           {error && (
             <div className="rounded-button border border-status-error/20 bg-status-error/10 px-4 py-3 text-sm text-status-error">
               {error}
@@ -344,8 +391,18 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
     location: offer.location,
     type: offer.type as "remote" | "onsite" | "hybrid",
   });
+  const [bannerFile, setBannerFile] = useState<File | null>(null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(offer.bannerUrl);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handleBannerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setBannerFile(file);
+      setBannerPreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -356,7 +413,18 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
     setIsSubmitting(true);
     setError(null);
     try {
-      const { data } = await api.put<{ success: true; data: Offer }>(`/api/offers/${offer.id}`, form);
+      const fd = new FormData();
+      fd.append("title", form.title);
+      fd.append("description", form.description);
+      fd.append("requirements", form.requirements);
+      fd.append("duration", form.duration);
+      fd.append("location", form.location);
+      fd.append("type", form.type);
+      if (bannerFile) fd.append("banner", bannerFile);
+
+      const { data } = await api.put<{ success: true; data: Offer }>(`/api/offers/${offer.id}`, fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
       onUpdated(data.data);
     } catch {
       setError(t("companyDash.updateFailed"));
@@ -464,6 +532,30 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
               placeholder="Skills and qualifications needed..."
               className="w-full resize-none rounded-button border border-surface-sand bg-surface-cream/50 px-4 py-3 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted/60 focus:border-coffee-gold/60"
             />
+          </div>
+
+          {/* Banner Image */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-text-primary">Banner Image (optional)</label>
+            {bannerPreview && (
+              <div className="relative mb-2 overflow-hidden rounded-xl border border-surface-sand">
+                <img src={bannerPreview} alt="Banner preview" className="h-32 w-full object-cover" />
+                <button
+                  type="button"
+                  onClick={() => { setBannerFile(null); setBannerPreview(null); }}
+                  className="absolute top-2 right-2 rounded-full bg-black/50 p-1 text-white hover:bg-black/70 cursor-pointer"
+                >
+                  <HiOutlineX size={14} />
+                </button>
+              </div>
+            )}
+            {!bannerPreview && (
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-surface-sand bg-surface-cream/30 px-4 py-6 text-sm text-text-muted transition-colors hover:border-coffee-gold/40 hover:bg-coffee-gold/5">
+                <HiOutlinePhotograph size={20} />
+                Click to upload a banner image
+                <input type="file" accept="image/*" onChange={handleBannerChange} className="hidden" />
+              </label>
+            )}
           </div>
 
           {error && (

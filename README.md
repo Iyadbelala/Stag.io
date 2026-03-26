@@ -67,7 +67,8 @@ Built as a graduation capstone project (**Atelier TI 2025 – 2026**), it provid
 <td width="50%">
 
 ### Backend
-- JWT authentication with role-based access control (5 roles)
+- JWT authentication with refresh tokens & httpOnly cookies
+- Role-based access control (5 roles) with per-route middleware
 - RESTful API with Express 5 & strict middleware pipeline
 - PostgreSQL via Drizzle ORM on Neon (serverless)
 - Cloudinary integration for images & document uploads
@@ -194,7 +195,8 @@ A lightweight signal that checks whether the student's skills appear in the offe
 | **Language** | TypeScript (strict) | End-to-end type safety across all packages |
 | **Backend** | Express 5 | REST API, middleware pipeline |
 | **Database** | PostgreSQL (Neon) | Serverless Postgres with Drizzle ORM |
-| **Auth** | JWT + bcryptjs | Secure token-based authentication |
+| **Auth** | JWT + bcryptjs + httpOnly cookies | Access/refresh token architecture |
+| **Security** | Helmet + Turnstile + rate-limit | Headers, bot protection, abuse prevention |
 | **Real-time** | Socket.IO | Live notifications |
 | **Storage** | Cloudinary | Cloud image & document hosting |
 | **Email** | Nodemailer | Email verification & password reset |
@@ -273,6 +275,8 @@ The frontend will be available at **`http://localhost:3000`** and the API at **`
 | `CLOUDINARY_*` | Cloudinary cloud name, API key & secret |
 | `GEMINI_API_KEY` | Google Gemini API key for chatbot |
 | `SMTP_*` | SMTP host, port, user & password for emails |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key (server) |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key (frontend) |
 
 ### Available Scripts
 
@@ -399,6 +403,35 @@ All endpoints are prefixed with `/api`.
 | `/api/admin/*` | GET, PATCH, DELETE | Admin panel operations |
 | `/api/university/*` | GET, PATCH | University dashboard & agreement validation |
 | `/api/superadmin/*` | GET, PATCH, DELETE | Platform-wide administration |
+
+---
+
+## Security
+
+Stag.io implements defense-in-depth across the full stack:
+
+| Layer | Measure | Details |
+|:---|:---|:---|
+| **Authentication** | Access + refresh tokens | Short-lived access tokens (15 min) with long-lived refresh tokens (7 days) stored in httpOnly, secure, sameSite=strict cookies |
+| **Token Storage** | httpOnly cookies | Refresh tokens never exposed to JavaScript — immune to XSS token theft |
+| **Password** | bcryptjs (10 rounds) + strength validation | Minimum 8 characters enforced server-side |
+| **OTP & Reset Tokens** | SHA-256 hashed at rest | Verification codes and password reset tokens are hashed before database storage |
+| **Bot Protection** | Cloudflare Turnstile | CAPTCHA challenge on login, registration (all roles). Graceful fallback in development |
+| **Rate Limiting** | express-rate-limit | Auth: 10 req/15 min, OTP: 5 req/15 min, Global API: 100 req/min |
+| **Headers** | Helmet.js | CSP, HSTS, X-Frame-Options, X-Content-Type-Options, and more |
+| **File Uploads** | Triple validation | File extension + MIME type + magic byte verification (PNG, JPEG, WebP) |
+| **Role Authorization** | `requireRole()` middleware | Per-route enforcement — students can't manage offers, companies can't apply, etc. |
+| **Request Logging** | Morgan | Structured access logs (combined in production, dev in development) |
+| **Input Validation** | Length & type checks | Chatbot history capped (2000 chars/msg, 20 messages), body size limit (100kb) |
+| **Anti-Enumeration** | Generic responses | Password reset and resend-verification return identical responses regardless of email existence |
+| **CV Access** | Auth-gated | CV download endpoint requires authentication — no public file access |
+
+### Environment Variables (Security)
+
+| Variable | Description |
+|:---|:---|
+| `JWT_SECRET` | **Required.** Secret key for signing access and refresh tokens. Server refuses to start without it |
+| `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret. If unset, CAPTCHA verification is skipped (dev mode) |
 
 ---
 

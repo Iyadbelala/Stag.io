@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { apiLimiter } from '../middleware/rate-limit.middleware';
+import { csrfProtection } from '../middleware/csrf.middleware';
 import authRouter from './auth.routes';
 import profileRouter from './profile.routes';
 import companyProfileRouter from './company-profile.routes';
@@ -16,6 +18,12 @@ import notificationsRouter from './notifications.routes';
 import reviewsRouter from './reviews.routes';
 
 export const router = Router();
+
+// Global rate limit: 100 requests per minute per IP
+router.use(apiLimiter);
+
+// CSRF protection on all state-changing requests
+router.use(csrfProtection);
 
 // Health endpoint for the API
 router.get('/', (_req, res) => {

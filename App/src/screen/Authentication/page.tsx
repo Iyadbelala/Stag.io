@@ -18,6 +18,7 @@ import {
 import Logo from "@/Components/ui/Logo";
 import FloatingOrbs from "@/Components/ui/FloatingOrbs";
 import FieldError from "@/Components/ui/FieldError";
+import Turnstile from "@/Components/ui/Turnstile";
 import { FormField, PasswordField } from "@/Components/ui/FormField";
 import AuthBrandPanel from "@/Components/features/AuthBrandPanel";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
@@ -84,6 +85,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   /* ---- Auto-detect university from email ---- */
   const handleEmailChange = useCallback((value: string) => {
@@ -134,9 +136,11 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
       if (!agreeTerms) errs.terms = t("auth.error.termsRequired");
     }
 
+    if (!turnstileToken) errs.turnstile = "Please complete the security check";
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
-  }, [email, password, firstName, lastName, companyName, universityName, domain, confirmPassword, agreeTerms, mode, accountType, t]);
+  }, [email, password, firstName, lastName, companyName, universityName, domain, confirmPassword, agreeTerms, mode, accountType, turnstileToken, t]);
 
   const isLogin = mode === "login";
   const isCompany = accountType === "company";
@@ -152,8 +156,9 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
       setIsSubmitting(true);
       try {
         let resultUser;
+        const cfToken = turnstileToken || undefined;
         if (isLogin) {
-          resultUser = await login(email, password);
+          resultUser = await login(email, password, cfToken);
         } else if (isCompany) {
           resultUser = await registerCompany({
             email,
@@ -163,7 +168,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
             industry: industry.trim() || undefined,
             location: location.trim() || undefined,
             verificationDocument: verificationDocument || undefined,
-          });
+          }, cfToken);
         } else if (isUniversity) {
           resultUser = await registerUniversity({
             email,
@@ -172,7 +177,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
             domain: domain.trim(),
             website: uniWebsite.trim() || undefined,
             location: uniLocation.trim() || undefined,
-          });
+          }, cfToken);
         } else {
           resultUser = await register({
             email,
@@ -180,7 +185,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
             firstName: firstName.trim(),
             lastName: lastName.trim(),
             university,
-          });
+          }, cfToken);
         }
 
         // If null, email verification is required
@@ -576,6 +581,16 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
                 <FieldError message={errors.terms} />
               </div>
             )}
+
+            {/* Cloudflare Turnstile CAPTCHA */}
+            <div className="mb-5">
+              <Turnstile
+                onVerify={(token) => setTurnstileToken(token)}
+                onExpire={() => setTurnstileToken(null)}
+                className="flex justify-center"
+              />
+              <FieldError message={errors.turnstile} />
+            </div>
 
             {/* API Error */}
             {apiError && (

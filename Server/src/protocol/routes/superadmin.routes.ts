@@ -11,6 +11,7 @@ import {
 import { count, eq } from 'drizzle-orm';
 import { db } from '../../model/db';
 import { users, companies, students, internshipOffers, applications, universities } from '../../model/schema';
+import { auditLog } from '../../lib/audit';
 
 const superadminRouter = Router();
 
@@ -91,6 +92,7 @@ superadminRouter.get('/companies/pending', requireAuth, requireSuperAdmin, async
 superadminRouter.patch('/companies/:id/validate', requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
     const result = await validateCompany(req.params.id as string);
+    auditLog({ actor: req.user!.sub, role: req.user!.role, action: 'validate_company', target: req.params.id as string });
     res.json({ success: true, data: result });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };
@@ -105,6 +107,7 @@ superadminRouter.patch('/companies/:id/validate', requireAuth, requireSuperAdmin
 superadminRouter.delete('/companies/:id/reject', requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
     await rejectCompany(req.params.id as string);
+    auditLog({ actor: req.user!.sub, role: req.user!.role, action: 'reject_company', target: req.params.id as string });
     res.json({ success: true, data: { message: 'Company rejected and removed' } });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };
@@ -133,6 +136,7 @@ superadminRouter.get('/universities/pending', requireAuth, requireSuperAdmin, as
 superadminRouter.patch('/universities/:id/validate', requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
     const result = await validateUniversity(req.params.id as string);
+    auditLog({ actor: req.user!.sub, role: req.user!.role, action: 'validate_university', target: req.params.id as string });
     res.json({ success: true, data: result });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };
@@ -147,6 +151,7 @@ superadminRouter.patch('/universities/:id/validate', requireAuth, requireSuperAd
 superadminRouter.delete('/universities/:id/reject', requireAuth, requireSuperAdmin, async (req: Request, res: Response) => {
   try {
     await rejectUniversity(req.params.id as string);
+    auditLog({ actor: req.user!.sub, role: req.user!.role, action: 'reject_university', target: req.params.id as string });
     res.json({ success: true, data: { message: 'University rejected and removed' } });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };

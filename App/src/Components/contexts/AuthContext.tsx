@@ -8,7 +8,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { api } from "@/lib/api";
+import { api, setAccessToken, getAccessToken } from "@/lib/api";
 
 export interface AuthUser {
   id: string;
@@ -63,10 +63,10 @@ interface AuthContextValue {
   token: string | null;
   isLoading: boolean;
   pendingVerificationEmail: string | null;
-  login: (email: string, password: string) => Promise<AuthUser | null>;
-  register: (data: RegisterData) => Promise<AuthUser | null>;
-  registerCompany: (data: RegisterCompanyData) => Promise<AuthUser | null>;
-  registerUniversity: (data: RegisterUniversityData) => Promise<AuthUser | null>;
+  login: (email: string, password: string, turnstileToken?: string) => Promise<AuthUser | null>;
+  register: (data: RegisterData, turnstileToken?: string) => Promise<AuthUser | null>;
+  registerCompany: (data: RegisterCompanyData, turnstileToken?: string) => Promise<AuthUser | null>;
+  registerUniversity: (data: RegisterUniversityData, turnstileToken?: string) => Promise<AuthUser | null>;
   verifyEmail: (email: string, code: string) => Promise<AuthUser>;
   resendCode: (email: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
@@ -76,47 +76,53 @@ interface AuthContextValue {
   clearPendingVerification: () => void;
 }
 
-const TOKEN_KEY = "stag-token";
 const USER_KEY = "stag-user";
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [pendingVerificationEmail, setPendingVerificationEmail] = useState<string | null>(null);
 
-  // Hydrate from localStorage on mount
+  // On mount: try to restore session via refresh token cookie
   useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY);
     const storedUser = localStorage.getItem(USER_KEY);
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+
+    // Attempt a silent refresh to get a new access token from httpOnly cookie
+    api.post<{ success: true; data: { token: string } }>("/api/auth/refresh")
+      .then((res) => {
+        const newToken = res.data.data.token;
+        setAccessToken(newToken);
+        // If we have cached user data, use it; otherwise we're logged in but need profile
+        if (storedUser) {
+          try {
+            setUser(JSON.parse(storedUser));
+          } catch {
+            localStorage.removeItem(USER_KEY);
+          }
+        }
+      })
+      .catch(() => {
+        // No valid refresh token — clear stale data
+        setAccessToken(null);
+        localStorage.removeItem(USER_KEY);
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   }, []);
 
   const persist = (newToken: string, newUser: AuthUser) => {
-    localStorage.setItem(TOKEN_KEY, newToken);
+    // Token stays in memory only — never in localStorage
+    setAccessToken(newToken);
+    // User display data in localStorage (non-sensitive, for hydration)
     localStorage.setItem(USER_KEY, JSON.stringify(newUser));
-    setToken(newToken);
     setUser(newUser);
   };
 
-  const login = useCallback(async (email: string, password: string): Promise<AuthUser | null> => {
-    const { data } = await api.post<{ success: true; data: AuthResponse }>("/api/auth/login", { email, password });
-    if (isVerificationResponse(data.data)) {
-      setPendingVerificationEmail(data.data.email);
-      return null; // signals: redirect to verify-email
-    }
-    persist(data.data.token, data.data.user);
-    return data.data.user;
-  }, []);
-
-  const register = useCallback(async (payload: RegisterData): Promise<AuthUser | null> => {
-    const { data } = await api.post<{ success: true; data: AuthResponse }>("/api/auth/register", payload);
+  const login = useCallback(async (email: string, password: string, turnstileToken?: string): Promise<AuthUser | null> => {
+    const { data } = await api.post<{ success: true; data: AuthResponse }>("/api/auth/login", { email, password, turnstileToken });
     if (isVerificationResponse(data.data)) {
       setPendingVerificationEmail(data.data.email);
       return null;
@@ -125,7 +131,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.data.user;
   }, []);
 
-  const registerCompany = useCallback(async (payload: RegisterCompanyData): Promise<AuthUser | null> => {
+  const register = useCallback(async (payload: RegisterData, turnstileToken?: string): Promise<AuthUser | null> => {
+    const { data } = await api.post<{ success: true; data: AuthResponse }>("/api/auth/register", { ...payload, turnstileToken });
+    if (isVerificationResponse(data.data)) {
+      setPendingVerificationEmail(data.data.email);
+      return null;
+    }
+    persist(data.data.token, data.data.user);
+    return data.data.user;
+  }, []);
+
+  const registerCompany = useCallback(async (payload: RegisterCompanyData, turnstileToken?: string): Promise<AuthUser | null> => {
     const formData = new FormData();
     formData.append("email", payload.email);
     formData.append("password", payload.password);
@@ -134,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (payload.industry) formData.append("industry", payload.industry);
     if (payload.location) formData.append("location", payload.location);
     if (payload.verificationDocument) formData.append("verificationDocument", payload.verificationDocument);
+    if (turnstileToken) formData.append("turnstileToken", turnstileToken);
 
     const { data } = await api.post<{ success: true; data: AuthResponse }>("/api/auth/register/company", formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -146,8 +163,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.data.user;
   }, []);
 
-  const registerUniversity = useCallback(async (payload: RegisterUniversityData): Promise<AuthUser | null> => {
-    const { data } = await api.post<{ success: true; data: AuthResponse }>("/api/auth/register/university", payload);
+  const registerUniversity = useCallback(async (payload: RegisterUniversityData, turnstileToken?: string): Promise<AuthUser | null> => {
+    const { data } = await api.post<{ success: true; data: AuthResponse }>("/api/auth/register/university", { ...payload, turnstileToken });
     if (isVerificationResponse(data.data)) {
       setPendingVerificationEmail(data.data.email);
       return null;
@@ -188,9 +205,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY);
+    api.post("/api/auth/logout").catch(() => {});
+    setAccessToken(null);
     localStorage.removeItem(USER_KEY);
-    setToken(null);
     setUser(null);
     setPendingVerificationEmail(null);
   }, []);
@@ -199,7 +216,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     <AuthContext.Provider
       value={{
         user,
-        token,
+        token: getAccessToken(),
         isLoading,
         pendingVerificationEmail,
         login,

@@ -18,8 +18,10 @@ const FROM = process.env.SMTP_FROM || 'Stag.io <noreply@stagio.com>';
 const CLIENT_URL = (process.env.CLIENT_URL || 'http://localhost:3000').replace(/\/+$/, '');
 
 export async function sendVerificationEmail(to: string, code: string): Promise<void> {
-  // Always log to console so you can test without email
-  console.log(`\n📧 Verification code for ${to}: ${code}\n`);
+  // Only log in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`\nVerification code for ${to}: ${code}\n`);
+  }
 
   if (!transporter) return;
 
@@ -48,8 +50,10 @@ export async function sendVerificationEmail(to: string, code: string): Promise<v
 export async function sendPasswordResetEmail(to: string, resetToken: string): Promise<void> {
   const resetLink = `${CLIENT_URL}/reset-password?token=${resetToken}`;
 
-  // Always log to console so you can test without email
-  console.log(`\n📧 Password reset link for ${to}: ${resetLink}\n`);
+  // Only log in development
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`\nPassword reset link for ${to}: ${resetLink}\n`);
+  }
 
   if (!transporter) return;
 

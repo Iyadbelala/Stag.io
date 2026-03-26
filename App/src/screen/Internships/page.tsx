@@ -16,7 +16,7 @@ import {
   HiOutlineX,
   HiOutlineDocumentText,
   HiOutlineLink,
-  HiOutlineSparkles,
+
   HiOutlineLightningBolt,
   HiOutlineRefresh,
   HiOutlineGlobeAlt,
@@ -39,7 +39,9 @@ interface Internship {
   location: string;
   type: string;
   status: string;
+  bannerUrl: string | null;
   companyName: string;
+  companyLogoUrl: string | null;
   companyIndustry: string | null;
   companyLocation: string | null;
   applicationCount: number;
@@ -54,7 +56,19 @@ interface MatchedInternship extends Internship {
 /* ============================================
    Company Avatar
    ============================================ */
-function CompanyAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md" | "lg" }) {
+function CompanyAvatar({ name, logoUrl, size = "md" }: { name: string; logoUrl?: string | null; size?: "sm" | "md" | "lg" }) {
+  const dim = size === "sm" ? "h-10 w-10 text-xs" : size === "lg" ? "h-14 w-14 text-lg" : "h-11 w-11 text-sm";
+
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={name}
+        className={`${dim} shrink-0 rounded-xl object-cover border border-surface-sand shadow-sm`}
+      />
+    );
+  }
+
   const initials = name
     .split(/\s+/)
     .slice(0, 2)
@@ -72,8 +86,6 @@ function CompanyAvatar({ name, size = "md" }: { name: string; size?: "sm" | "md"
     "from-indigo-600 to-violet-400",
   ];
   const colorIdx = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % colors.length;
-
-  const dim = size === "sm" ? "h-9 w-9 text-xs" : size === "lg" ? "h-14 w-14 text-lg" : "h-11 w-11 text-sm";
 
   return (
     <div className={`${dim} shrink-0 rounded-xl bg-gradient-to-br ${colors[colorIdx]} flex items-center justify-center font-bold text-white shadow-sm`}>
@@ -183,7 +195,7 @@ function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, 
         <div className="mb-6 flex items-center gap-3">
           <CompanyAvatar name={companyName} size="md" />
           <div>
-            <h2 className="text-lg font-heading font-bold text-coffee-dark">{offerTitle}</h2>
+            <h2 className="text-lg font-bold text-coffee-dark">{offerTitle}</h2>
             <p className="text-sm text-text-muted">{companyName}</p>
           </div>
         </div>
@@ -340,13 +352,11 @@ export default function InternshipsPage() {
   /* ---- Toggle handler ---- */
   const handleToggleSmartMatch = useCallback(() => {
     if (smartMatchOn) {
-      // Turn off: clear matches, revert to normal list
       setSmartMatchOn(false);
       setMatchesDone(false);
       setMatches([]);
       setMatchesError(null);
     } else {
-      // Turn on: fetch matches
       setSmartMatchOn(true);
       if (!matchesDone) fetchMatches();
     }
@@ -403,7 +413,7 @@ export default function InternshipsPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  /* Auto-select first item only on desktop (lg ≥ 1024px) */
+  /* Auto-select first item only on desktop (lg >= 1024px) */
   useEffect(() => {
     if (displayList.length > 0 && !selectedId && window.innerWidth >= 1024) {
       setSelectedId(displayList[0].id);
@@ -415,7 +425,6 @@ export default function InternshipsPage() {
       router.push("/login");
       return;
     }
-    // Optimistic update
     const wasSaved = savedIds.has(id);
     setSavedIds((prev) => {
       const next = new Set(prev);
@@ -426,7 +435,6 @@ export default function InternshipsPage() {
     try {
       await api.post(`/api/saved/${id}`);
     } catch {
-      // Revert on failure
       setSavedIds((prev) => {
         const next = new Set(prev);
         if (wasSaved) next.add(id);
@@ -513,6 +521,9 @@ export default function InternshipsPage() {
     return `${Math.floor(days / 30)}mo ago`;
   };
 
+  /* ---- Mobile detail view (full page replacement) ---- */
+  const mobileSelected = selected && typeof window !== "undefined" && window.innerWidth < 1024;
+
   if (isLoading) {
     return (
       <div className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-surface-cream">
@@ -529,13 +540,168 @@ export default function InternshipsPage() {
     <section className="min-h-[calc(100vh-80px)] bg-surface-cream">
       {overlayVisible && <SmartMatchOverlay leaving={overlayLeaving} t={t} />}
 
-      {/* ---- Hero Search Area ---- */}
+      {/* ======== MOBILE DETAIL VIEW (replaces entire page on small screens) ======== */}
+      {selected && (
+        <div className="fixed inset-0 z-50 flex flex-col bg-surface-cream lg:hidden overflow-y-auto">
+          {/* Mobile top bar */}
+          <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-surface-sand bg-surface-white/95 backdrop-blur-sm px-4 py-3">
+            <button
+              onClick={() => setSelectedId(null)}
+              className="flex items-center gap-1.5 text-sm font-medium text-coffee-warm cursor-pointer"
+            >
+              <HiOutlineChevronLeft size={18} />
+              Back
+            </button>
+            <div className="ml-auto flex items-center gap-2">
+              <button
+                onClick={() => toggleSave(selected.id)}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:text-coffee-warm cursor-pointer"
+              >
+                {savedIds.has(selected.id) ? <HiBookmark size={20} className="text-coffee-warm" /> : <HiOutlineBookmark size={20} />}
+              </button>
+              <button
+                onClick={() => {
+                  const url = `${window.location.origin}/internships?id=${selected.id}`;
+                  if (navigator.share) {
+                    navigator.share({ title: selected.title, text: `${selected.title} at ${selected.companyName}`, url });
+                  } else {
+                    navigator.clipboard.writeText(url);
+                    setApplySuccess("Link copied!");
+                    setTimeout(() => setApplySuccess(null), 2000);
+                  }
+                }}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:text-coffee-warm cursor-pointer"
+              >
+                <HiOutlineShare size={20} />
+              </button>
+            </div>
+          </div>
+
+          {/* Mobile detail body */}
+          <div className="flex-1 px-4 py-5 space-y-5">
+            {/* Match banner */}
+            {"matchScore" in selected && (selected as MatchedInternship).matchScore > 0 && (
+              <div className="rounded-xl bg-gradient-to-br from-coffee-gold/8 via-surface-cream to-coffee-warm/8 border border-coffee-gold/15 p-4">
+                <div className="flex items-center gap-4">
+                  <ScoreRing score={(selected as MatchedInternship).matchScore} size={48} />
+                  <div className="flex-1">
+                    <p className="text-sm font-semibold text-coffee-dark">{t("internships.matchScore")}</p>
+                    {(selected as MatchedInternship).matchedSkills.length > 0 && (
+                      <div className="mt-1.5 flex flex-wrap gap-1.5">
+                        {(selected as MatchedInternship).matchedSkills.map((skill) => (
+                          <span key={skill} className="rounded-lg bg-coffee-gold/10 border border-coffee-gold/20 px-2 py-0.5 text-[11px] font-medium text-coffee-warm">
+                            {skill}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Banner */}
+            {selected.bannerUrl && (
+              <div className="mb-4 overflow-hidden rounded-xl border border-surface-sand">
+                <img src={selected.bannerUrl} alt="" className="h-36 w-full object-cover" />
+              </div>
+            )}
+
+            {/* Header */}
+            <div className="flex items-start gap-3.5">
+              <CompanyAvatar name={selected.companyName} logoUrl={selected.companyLogoUrl} size="lg" />
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl font-bold text-coffee-dark leading-tight">
+                  {selected.title}
+                </h1>
+                <p className="mt-1 text-sm font-medium text-text-secondary">
+                  {selected.companyName}
+                  {selected.companyIndustry && (
+                    <span className="font-normal text-text-muted"> · {selected.companyIndustry}</span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* Meta pills */}
+            <div className="flex flex-wrap gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-white border border-surface-sand px-3 py-1.5 text-xs font-medium text-text-secondary">
+                <HiOutlineLocationMarker size={13} className="text-text-muted" />
+                {selected.location}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-white border border-surface-sand px-3 py-1.5 text-xs font-medium text-text-secondary">
+                {typeIcon(selected.type)}
+                {typeLabel(selected.type)}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-white border border-surface-sand px-3 py-1.5 text-xs font-medium text-text-secondary">
+                <HiOutlineCalendar size={13} className="text-text-muted" />
+                {selected.duration}
+              </span>
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-white border border-surface-sand px-3 py-1.5 text-xs font-medium text-text-muted">
+                <HiOutlineClock size={13} />
+                {timeAgo(selected.createdAt)}
+              </span>
+            </div>
+
+            {/* Feedback */}
+            {applyError && (
+              <p className="rounded-lg bg-status-error/5 border border-status-error/15 px-3 py-2 text-sm text-status-error">{applyError}</p>
+            )}
+            {applySuccess && (
+              <p className="rounded-lg bg-status-success/5 border border-status-success/15 px-3 py-2 text-sm text-status-success">{applySuccess}</p>
+            )}
+
+            {/* Description */}
+            <div className="rounded-xl bg-surface-white border border-surface-sand p-4">
+              <h2 className="mb-3 text-sm font-semibold text-coffee-dark flex items-center gap-2">
+                <span className="h-1 w-1 rounded-full bg-coffee-warm" />
+                {t("internships.detail.description")}
+              </h2>
+              <p className="text-sm leading-relaxed text-text-secondary whitespace-pre-line">
+                {selected.description}
+              </p>
+            </div>
+
+            {/* Requirements */}
+            <div className="rounded-xl bg-surface-white border border-surface-sand p-4">
+              <h2 className="mb-3 text-sm font-semibold text-coffee-dark flex items-center gap-2">
+                <span className="h-1 w-1 rounded-full bg-coffee-gold" />
+                {t("internships.detail.requirements")}
+              </h2>
+              <p className="text-sm leading-relaxed text-text-secondary whitespace-pre-line">
+                {selected.requirements}
+              </p>
+            </div>
+          </div>
+
+          {/* Mobile sticky apply bar */}
+          <div className="sticky bottom-0 border-t border-surface-sand bg-surface-white/95 backdrop-blur-sm px-4 py-3">
+            <button
+              onClick={() => handleApplyClick(selected.id)}
+              disabled={applyingId === selected.id || appliedIds.has(selected.id)}
+              className={`w-full rounded-xl py-3 text-sm font-semibold transition-all cursor-pointer ${
+                appliedIds.has(selected.id)
+                  ? "bg-status-success text-white cursor-default"
+                  : "bg-gradient-to-r from-coffee-warm to-coffee-gold text-white shadow-md shadow-coffee-warm/15 hover:shadow-lg"
+              } disabled:opacity-60`}
+            >
+              {applyingId === selected.id
+                ? t("common.applying")
+                : appliedIds.has(selected.id)
+                ? `${t("common.applied")} ✓`
+                : t("internships.applyNow")}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ======== SEARCH BAR ======== */}
       <div className="bg-gradient-to-b from-surface-white to-surface-cream border-b border-surface-sand">
         <div className="mx-auto max-w-6xl px-4 pt-6 pb-5 sm:px-6">
           {/* Title row */}
           <div className="mb-4 flex items-center justify-between">
             <div>
-              <h1 className="text-xl sm:text-2xl font-heading font-bold text-coffee-dark">
+              <h1 className="text-xl sm:text-2xl font-bold text-coffee-dark">
                 {t("internships.title")}
               </h1>
               <p className="mt-0.5 text-sm text-text-muted">
@@ -554,30 +720,27 @@ export default function InternshipsPage() {
             {isStudent && (
               <div className="flex items-center gap-3">
                 {matchesError && (
-                  <span className="text-xs text-status-error">{matchesError}</span>
+                  <span className="hidden sm:inline text-xs text-status-error">{matchesError}</span>
                 )}
                 <button
                   onClick={handleToggleSmartMatch}
                   disabled={matchesLoading}
-                  className="group flex items-center gap-2.5 cursor-pointer disabled:cursor-wait"
+                  className="group flex items-center gap-2 cursor-pointer disabled:cursor-wait"
                   aria-label="Toggle SmartMatch"
                 >
-                  <span className={`text-xs font-medium transition-colors duration-300 ${
+                  <span className={`hidden sm:inline text-xs font-medium transition-colors duration-300 ${
                     smartMatchOn ? "text-coffee-warm" : "text-text-muted"
                   }`}>
                     SmartMatch<sup className="text-[8px]">®</sup>
                   </span>
-                  {/* Animated switch track */}
                   <span className={`relative inline-flex h-7 w-[52px] shrink-0 items-center rounded-full border-2 transition-all duration-400 ease-in-out ${
                     smartMatchOn
                       ? "border-coffee-warm bg-gradient-to-r from-coffee-warm to-coffee-gold shadow-md shadow-coffee-warm/20"
                       : "border-surface-sand bg-surface-sand/60 group-hover:border-coffee-gold/40"
                   }`}>
-                    {/* Glow ring when active */}
                     {smartMatchOn && (
                       <span className="absolute inset-0 rounded-full animate-switch-glow" />
                     )}
-                    {/* Thumb */}
                     <span className={`relative z-10 flex h-5 w-5 items-center justify-center rounded-full shadow-sm transition-all duration-400 ease-in-out ${
                       smartMatchOn
                         ? "translate-x-[26px] bg-white"
@@ -590,7 +753,6 @@ export default function InternshipsPage() {
                         }`}
                       />
                     </span>
-                    {/* Sparkle particles when active */}
                     {smartMatchOn && matchesDone && (
                       <>
                         <span className="absolute -top-1 right-0 h-1 w-1 rounded-full bg-coffee-gold animate-switch-particle" style={{ animationDelay: '0ms' }} />
@@ -663,15 +825,11 @@ export default function InternshipsPage() {
         </div>
       </div>
 
-      {/* ---- Main Content ---- */}
+      {/* ======== MAIN CONTENT (list + detail) ======== */}
       <div className="mx-auto flex max-w-6xl gap-5 px-3 sm:px-6 py-4 sm:py-5">
 
         {/* ---- LEFT: Card List ---- */}
-        <div
-          className={`w-full lg:w-[400px] shrink-0 space-y-2 sm:space-y-2.5 overflow-y-auto lg:max-h-[calc(100vh-240px)] pr-1 ${
-            selected ? "hidden lg:block" : ""
-          }`}
-        >
+        <div className="w-full lg:w-[400px] shrink-0 space-y-2.5 overflow-y-auto lg:max-h-[calc(100vh-240px)] pr-1">
           {displayList.length === 0 ? (
             <div className="flex flex-col items-center justify-center rounded-2xl bg-surface-white border border-surface-sand py-20 text-center">
               <HiOutlineSearch size={36} className="mb-3 text-text-muted/30" />
@@ -690,7 +848,7 @@ export default function InternshipsPage() {
                 <button
                   key={item.id}
                   onClick={() => setSelectedId(item.id)}
-                  className={`animate-card-slide-in group relative flex w-full cursor-pointer flex-col rounded-2xl border p-3.5 sm:p-4 text-left transition-all duration-200 ${
+                  className={`animate-card-slide-in group relative flex w-full cursor-pointer flex-col rounded-xl border p-4 text-left transition-all duration-200 ${
                     isActive
                       ? "border-coffee-warm/40 bg-surface-white shadow-md shadow-coffee-warm/8 ring-1 ring-coffee-warm/15"
                       : "border-surface-sand bg-surface-white hover:border-coffee-gold/30 hover:shadow-sm"
@@ -699,9 +857,9 @@ export default function InternshipsPage() {
                 >
                   {/* Top row: avatar + info + bookmark */}
                   <div className="flex items-start gap-3 w-full">
-                    <CompanyAvatar name={item.companyName} size="sm" />
+                    <CompanyAvatar name={item.companyName} logoUrl={item.companyLogoUrl} size="sm" />
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-[14px] font-semibold leading-tight text-coffee-dark truncate pr-7">
+                      <h3 className="text-sm font-semibold leading-tight text-coffee-dark line-clamp-2 pr-6">
                         {item.title}
                       </h3>
                       <p className="mt-0.5 text-[13px] text-text-secondary truncate">{item.companyName}</p>
@@ -711,7 +869,7 @@ export default function InternshipsPage() {
                       tabIndex={0}
                       onClick={(e) => { e.stopPropagation(); toggleSave(item.id); }}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); toggleSave(item.id); } }}
-                      className="shrink-0 rounded-lg p-1 text-text-muted/50 transition-colors hover:bg-surface-cream hover:text-coffee-warm"
+                      className="shrink-0 rounded-lg p-1.5 text-text-muted/50 transition-colors hover:bg-surface-cream hover:text-coffee-warm"
                     >
                       {savedIds.has(item.id) ? (
                         <HiBookmark size={16} className="text-coffee-warm" />
@@ -721,17 +879,17 @@ export default function InternshipsPage() {
                     </span>
                   </div>
 
-                  {/* Meta tags row */}
+                  {/* Meta tags */}
                   <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-surface-cream px-2 py-0.5 text-[11px] font-medium text-text-muted">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-surface-cream px-2 py-0.5 text-[11px] font-medium text-text-muted">
                       <HiOutlineLocationMarker size={11} />
                       {item.location}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-surface-cream px-2 py-0.5 text-[11px] font-medium text-text-muted">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-surface-cream px-2 py-0.5 text-[11px] font-medium text-text-muted">
                       {typeIcon(item.type)}
                       {typeLabel(item.type)}
                     </span>
-                    <span className="inline-flex items-center gap-1 rounded-lg bg-surface-cream px-2 py-0.5 text-[11px] font-medium text-text-muted">
+                    <span className="inline-flex items-center gap-1 rounded-md bg-surface-cream px-2 py-0.5 text-[11px] font-medium text-text-muted">
                       <HiOutlineClock size={11} />
                       {item.duration}
                     </span>
@@ -739,7 +897,7 @@ export default function InternshipsPage() {
 
                   {/* Match section */}
                   {matchData ? (
-                    <div className="mt-3 flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-coffee-gold/5 to-coffee-warm/5 border border-coffee-gold/15 px-3 py-2">
+                    <div className="mt-3 flex items-center gap-2.5 rounded-lg bg-gradient-to-r from-coffee-gold/5 to-coffee-warm/5 border border-coffee-gold/15 px-3 py-2">
                       <ScoreRing score={matchData.matchScore} size={36} />
                       <div className="flex-1 min-w-0">
                         <div className="flex flex-wrap gap-1">
@@ -771,42 +929,16 @@ export default function InternshipsPage() {
           )}
         </div>
 
-        {/* ---- RIGHT: Detail Panel (desktop inline / mobile slide-up) ---- */}
-        {/* Mobile overlay backdrop */}
-        {selected && (
-          <div
-            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden animate-fade-in"
-            onClick={() => setSelectedId(null)}
-          />
-        )}
+        {/* ---- RIGHT: Detail Panel (desktop only) ---- */}
         <div
-          className={`
-            ${selected
-              ? "fixed inset-x-0 bottom-0 z-50 max-h-[90vh] rounded-t-3xl shadow-2xl lg:relative lg:inset-auto lg:z-auto lg:max-h-none lg:rounded-2xl lg:shadow-sm"
-              : "hidden lg:flex lg:items-center lg:justify-center lg:rounded-2xl lg:shadow-sm"
-            }
-            flex-1 overflow-y-auto border border-surface-sand bg-surface-white lg:max-h-[calc(100vh-240px)]
-          `}
-          style={selected ? { animation: "chatbot-slide-up 0.3s ease-out" } : undefined}
+          className={`hidden lg:block flex-1 overflow-y-auto rounded-xl border border-surface-sand bg-surface-white lg:max-h-[calc(100vh-240px)] ${
+            !selected ? "lg:flex lg:items-center lg:justify-center" : ""
+          }`}
         >
           {selected ? (
             <div>
-              {/* Mobile drag handle */}
-              <div className="sticky top-0 z-10 flex items-center justify-center pt-3 pb-1 bg-surface-white rounded-t-3xl lg:hidden">
-                <div className="h-1 w-10 rounded-full bg-surface-sand" />
-              </div>
-
-              {/* Mobile back */}
-              <button
-                onClick={() => setSelectedId(null)}
-                className="mx-4 mb-1 flex items-center gap-1 text-sm text-coffee-warm hover:text-coffee-gold lg:hidden cursor-pointer"
-              >
-                <HiOutlineChevronLeft size={16} />
-                {t("internships.backToList")}
-              </button>
-
               {/* Detail Header */}
-              <div className="p-4 sm:p-6 lg:p-8 pb-0 sm:pb-0">
+              <div className="p-8 pb-0">
                 {/* Match banner */}
                 {"matchScore" in selected && (selected as MatchedInternship).matchScore > 0 && (
                   <div className="mb-5 rounded-xl bg-gradient-to-br from-coffee-gold/8 via-surface-cream to-coffee-warm/8 border border-coffee-gold/15 p-4">
@@ -833,11 +965,18 @@ export default function InternshipsPage() {
                   </div>
                 )}
 
+                {/* Banner */}
+                {selected.bannerUrl && (
+                  <div className="mb-5 overflow-hidden rounded-xl border border-surface-sand">
+                    <img src={selected.bannerUrl} alt="" className="h-44 w-full object-cover" />
+                  </div>
+                )}
+
                 {/* Company + title */}
                 <div className="flex items-start gap-4">
-                  <CompanyAvatar name={selected.companyName} size="lg" />
+                  <CompanyAvatar name={selected.companyName} logoUrl={selected.companyLogoUrl} size="lg" />
                   <div className="flex-1 min-w-0">
-                    <h1 className="text-xl sm:text-2xl font-heading font-bold text-coffee-dark leading-tight">
+                    <h1 className="text-2xl font-bold text-coffee-dark leading-tight">
                       {selected.title}
                     </h1>
                     <p className="mt-1 text-sm font-medium text-text-secondary">
@@ -925,7 +1064,7 @@ export default function InternshipsPage() {
               </div>
 
               {/* Content area */}
-              <div className="p-4 sm:p-6 lg:p-8 pt-5 sm:pt-5 space-y-5 sm:space-y-6 pb-8">
+              <div className="p-8 pt-5 space-y-6 pb-8">
                 <div className="h-px bg-surface-sand" />
 
                 {/* Description */}

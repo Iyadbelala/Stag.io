@@ -3,9 +3,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
-import path from 'path';
 import { router } from './protocol/routes';
-import { requireAuth } from './protocol/middleware/auth.middleware';
 
 const app = express();
 
@@ -28,9 +26,6 @@ app.use(cookieParser());
 // Body parsing with size limits
 app.use(express.json({ limit: '100kb' }));
 app.use(express.urlencoded({ extended: true, limit: '100kb' }));
-
-// Serve uploaded files behind auth (verification documents are sensitive)
-app.use('/uploads', requireAuth, express.static(path.join(__dirname, '../uploads')));
 
 // Routes
 app.use('/api', router);

@@ -11,11 +11,22 @@ import {
   refreshAccessToken,
 } from '../../context/auth.service';
 import type { AuthResponse } from '../../context/auth.service';
-import { uploadDocument } from '../middleware/upload.middleware';
 import { authLimiter, otpLimiter } from '../middleware/rate-limit.middleware';
+import { uploadDocumentToCloudinary } from '../../lib/cloudinary';
+import multer from 'multer';
 import { verifyTurnstile } from '../middleware/turnstile.middleware';
 import { blacklistToken } from '../../lib/token-blacklist';
 import jwt from 'jsonwebtoken';
+
+const uploadVerificationDoc = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg', 'application/pdf'];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Only PDF and image files are allowed'));
+  },
+});
 
 const authRouter = Router();
 
@@ -92,7 +103,7 @@ authRouter.post('/login', authLimiter, verifyTurnstile, async (req: Request, res
 });
 
 /* POST /api/auth/register/company */
-authRouter.post('/register/company', authLimiter, uploadDocument.single('verificationDocument'), verifyTurnstile, async (req: Request, res: Response) => {
+authRouter.post('/register/company', authLimiter, uploadVerificationDoc.single('verificationDocument'), verifyTurnstile, async (req: Request, res: Response) => {
   const { email, password, companyName, contactPerson, industry, location } = req.body;
 
   if (!email || !password || !companyName) {
@@ -103,11 +114,13 @@ authRouter.post('/register/company', authLimiter, uploadDocument.single('verific
     return;
   }
 
-  const verificationDocumentUrl = req.file
-    ? `/uploads/${req.file.filename}`
-    : undefined;
-
   try {
+    let verificationDocumentUrl: string | undefined;
+    if (req.file) {
+      const uploaded = await uploadDocumentToCloudinary(req.file.buffer, 'stag-io/verification-documents');
+      verificationDocumentUrl = uploaded.url;
+    }
+
     const result = await registerCompany({ email, password, companyName, contactPerson, industry, location, verificationDocumentUrl });
     sendAuthResponse(res, result, 201);
   } catch (err: unknown) {

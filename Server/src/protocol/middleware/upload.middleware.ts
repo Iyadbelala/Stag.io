@@ -1,36 +1,9 @@
 import multer from 'multer';
 import path from 'path';
-import { randomUUID } from 'crypto';
 import { Request, Response, NextFunction } from 'express';
 
 /* ── Allowed MIME types ── */
 const IMAGE_MIMES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
-const DOCUMENT_MIMES = [...IMAGE_MIMES, 'application/pdf'];
-
-/* ── Disk storage for verification documents ── */
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    cb(null, path.join(__dirname, '../../../uploads'));
-  },
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    cb(null, `${randomUUID()}${ext}`);
-  },
-});
-
-export const uploadDocument = multer({
-  storage,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-  fileFilter: (_req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const allowedExts = ['.pdf', '.png', '.jpg', '.jpeg'];
-    if (!allowedExts.includes(ext) || !DOCUMENT_MIMES.includes(file.mimetype)) {
-      cb(new Error('Only PDF and image files are allowed'));
-      return;
-    }
-    cb(null, true);
-  },
-});
 
 /* ── Memory storage for Cloudinary uploads ── */
 export const uploadMemory = multer({

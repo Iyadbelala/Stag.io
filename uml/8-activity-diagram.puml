@@ -1,0 +1,107 @@
+@startuml
+title Activity Diagram — Complete Application Journey
+
+|#LightGreen|Student|
+|#LightBlue|Company|
+|#LightYellow|University|
+
+|Student|
+start
+
+:1. Visit Stag.io;
+
+if (Has an account?) then (No)
+  :2. Register with\nuniversity email;
+  :3. Receive OTP by email;
+  :4. Enter OTP code;
+  if (Valid code + not expired?) then (Yes)
+    :5. Email verified;
+  else (No)
+    :5. Resend code;
+    stop
+  endif
+else (Yes)
+  :2. Log in;
+  if (Account locked?) then (Yes)
+    :3. Account locked for 15 min\n(after 5 failed attempts);
+    stop
+  else (No)
+  endif
+  if (Correct credentials?) then (No)
+    :3. Record failed attempt;
+    :4. Display error;
+    stop
+  else (Yes)
+  endif
+  if (Email verified?) then (No)
+    :3. Send new OTP;
+    :4. Verify email first;
+  else (Yes)
+  endif
+endif
+
+:6. Access dashboard;
+
+fork
+  :7a. Complete profile\n(skills, bio, photo);
+  :7b. Upload / Generate CV;
+fork again
+  :7c. Browse internship offers;
+end fork
+
+if (SmartMatch enabled?) then (Yes)
+  :8. Activate SmartMatch;
+  :9. Analyze skills match (50%)\nExact=1.0, Partial>=50%=0.7;
+  :10. Evaluate department\nrelevance (25%);
+  :11. Calculate location\nproximity (15%);
+  :12. Check title relevance (10%);
+  :13. Compute weighted score (0-100);
+  :14. Display offers sorted\nby compatibility score;
+else (No)
+  :8. Browse / Filter\noffers manually;
+endif
+
+:15. Select an offer;
+
+fork
+  :16a. Toggle save offer\n(bookmark);
+fork again
+  :16b. Apply to offer;
+  :16c. Submit application;
+end fork
+
+:17. Application sent\n(status: pending);
+
+|Company|
+:18. Receive real-time notification\n"New application" (Socket.IO);
+:19. Review application;
+
+if (Application retained?) then (Accepted)
+  :20. Accept application\nPATCH /applications/:id/status;
+
+  |Student|
+  :21. Real-time notification\n"Application accepted!";
+
+  |University|
+  :22. Notification "Agreement to validate";
+  :23. Review and validate\ninternship agreement;
+  :24. Download agreement PDF;
+
+  |Student|
+  :25. Internship confirmed\n(status: validated);
+  :26. Write a review on the company;
+
+  |Company|
+  :27. Write a review on the student;
+
+else (Rejected)
+  :20. Reject application;
+
+  |Student|
+  :21. Notification "Application rejected";
+  :22. Apply to other offers;
+endif
+
+stop
+
+@enduml

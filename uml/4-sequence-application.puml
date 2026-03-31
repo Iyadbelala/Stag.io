@@ -1,0 +1,52 @@
+@startuml SequenceApplication
+title Sequence Diagram — Application Process
+skinparam sequenceMessageAlign center
+
+actor Student as S
+actor Company as C
+participant "Frontend\n(Next.js)" as FE
+participant "Backend\n(Express)" as BE
+database "PostgreSQL\n(Neon)" as DB
+participant "Socket.IO" as WS
+
+== Application Submission ==
+
+S -> FE : Click "Apply" on an offer
+FE -> FE : Display application form\n(cover letter)
+S -> FE : Fill and submit
+FE -> BE : POST /api/applications\n{offerId, coverLetter, cvUrl}\n(Authorization: Bearer token)
+BE -> BE : requireAuth + requireRole('student')
+BE -> DB : Check offer exists and status = 'active'
+BE -> DB : Check no duplicate application\n(same student + offer)
+BE -> DB : INSERT application\n(status='pending', appliedAt=now)
+BE -> DB : Get company userId for offer
+BE -> DB : INSERT notification\n(type='new_application',\nuserId=companyUserId)
+BE -> WS : getIO().to(companyUserId)\n.emit('notification', data)
+WS --> C : Real-time notification\n"New application received"
+BE --> FE : {application}
+FE --> S : Confirmation "Application sent"
+
+== Company Reviews Application ==
+
+C -> FE : View company dashboard
+FE -> BE : GET /api/company/dashboard\n(Authorization: Bearer token)
+BE -> BE : requireAuth
+BE -> DB : SELECT applications + offers\nWHERE companyId = ?
+DB --> BE : Dashboard data
+BE --> FE : {dashboard with applications}
+FE --> C : Display applications list
+
+C -> FE : Accept an application
+FE -> BE : PATCH /api/applications/:id/status\n{status: "accepted"}\n(Authorization: Bearer token)
+BE -> BE : requireAuth + requireRole('company')
+BE -> DB : UPDATE application\nSET status='accepted'
+BE -> DB : INSERT notification\n(type='application_status_changed',\nuserId=studentUserId)
+BE -> WS : getIO().to(studentUserId)\n.emit('notification', data)
+WS --> S : Real-time notification\n"Application accepted!"
+BE -> DB : Lookup university by\nstudent email domain
+BE -> DB : INSERT notification\n(type='agreement_needs_validation',\nuserId=universityUserId)
+BE -> WS : getIO().to(universityUserId)\n.emit('notification', data)
+BE --> FE : {updatedApplication}
+FE --> C : Status updated
+
+@enduml

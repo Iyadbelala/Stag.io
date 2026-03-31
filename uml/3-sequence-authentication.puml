@@ -1,0 +1,99 @@
+@startuml SequenceAuth
+title Sequence Diagram — Authentication (Registration + Login)
+skinparam sequenceMessageAlign center
+
+actor User as U
+participant "Frontend\n(Next.js)" as FE
+participant "Turnstile\n(Cloudflare)" as CF
+participant "Backend\n(Express)" as BE
+database "PostgreSQL\n(Neon)" as DB
+participant "SMTP\n(Gmail)" as SMTP
+
+== Student Registration ==
+
+U -> FE : Fill registration form
+FE -> CF : Bot verification (widget)
+CF --> FE : turnstileToken
+FE -> BE : POST /api/auth/register\n{email, password, firstName,\nlastName, university, turnstileToken}
+BE -> CF : Verify turnstileToken
+CF --> BE : {success: true}
+BE -> DB : Check university domain\nis registered and validated
+DB --> BE : University validated
+BE -> BE : Hash password (bcrypt, 12 rounds)
+BE -> DB : INSERT users (role=student)
+BE -> DB : INSERT students\n(skills=[], portfolioPhotos=[])
+BE -> BE : Generate 6-digit OTP (15 min expiry)
+BE -> DB : Store OTP hashed (SHA-256)
+BE -> SMTP : Send verification email with OTP
+SMTP --> U : Email received
+BE --> FE : {requiresVerification: true, email}
+FE --> U : Display verification form
+
+== Email Verification ==
+
+U -> FE : Enter OTP code
+FE -> BE : POST /api/auth/verify-email\n{email, code}
+BE -> DB : Retrieve hashed OTP + expiry
+BE -> BE : Compare SHA-256(code) + check expiry
+BE -> DB : UPDATE isEmailVerified = true
+BE -> BE : Generate Access Token JWT (15 min)\n{sub: userId, role, type: 'access'}
+BE -> BE : Generate Refresh Token JWT (7 days)\n{sub: userId, type: 'refresh'}
+BE --> FE : {token: accessToken, user}\n+ Set-Cookie: refreshToken\n(httpOnly, secure, sameSite=strict)
+FE -> FE : Store accessToken in memory\nStore user in localStorage
+FE --> U : Redirect to /internships
+
+== Login ==
+
+U -> FE : Enter email + password
+FE -> CF : Bot verification
+CF --> FE : turnstileToken
+FE -> BE : POST /api/auth/login\n{email, password, turnstileToken}
+BE -> CF : Verify turnstileToken
+CF --> BE : {success: true}
+BE -> BE : Check account lock\n(in-memory login-limiter)
+alt Account locked (5 failed attempts)
+  BE --> FE : 429 Account locked for 15 min
+  FE --> U : Display error
+else Not locked
+  BE -> DB : Retrieve user by email
+  alt Account deactivated
+    BE --> FE : 403 Account deactivated
+    FE --> U : Display error
+  else Incorrect password
+    BE -> BE : Record failed attempt\n(login-limiter in memory)
+    BE --> FE : 401 Invalid credentials
+  else Email not verified
+    BE -> BE : Generate new OTP
+    BE -> SMTP : Resend OTP email
+    BE --> FE : {requiresVerification: true, email}
+  else Success
+    BE -> BE : Clear failed attempts
+    BE -> BE : Generate Access + Refresh Token
+    BE --> FE : {token: accessToken, user}\n+ Set-Cookie: refreshToken
+    FE --> U : Redirect based on role
+  end
+end
+
+== Token Refresh ==
+
+FE -> BE : GET /api/protected-resource
+BE --> FE : 401 Token expired
+FE -> FE : Axios interceptor detects 401
+FE -> BE : POST /api/auth/refresh\n(Cookie: refreshToken)
+BE -> BE : Verify JWT refresh token\n(type must be 'refresh')
+BE -> BE : Generate new Access + Refresh Token
+BE --> FE : {token: accessToken}\n+ Set-Cookie: new refreshToken
+FE -> FE : Update token in memory
+FE -> BE : Replay original request\nwith new token
+BE --> FE : 200 Successful response
+
+== Logout ==
+
+U -> FE : Click logout
+FE -> BE : POST /api/auth/logout\n(Authorization: Bearer token)
+BE -> BE : Blacklist access token\n(in-memory map, TTL = token expiry)
+BE --> FE : 200 + Clear-Cookie: refreshToken
+FE -> FE : Clear token from memory\nClear user from localStorage
+FE --> U : Redirect to /login
+
+@enduml

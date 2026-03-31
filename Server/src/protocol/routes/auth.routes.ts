@@ -190,7 +190,7 @@ authRouter.post('/resend-verification', authLimiter, async (req: Request, res: R
 });
 
 /* POST /api/auth/forgot-password */
-authRouter.post('/forgot-password', authLimiter, async (req: Request, res: Response) => {
+authRouter.post('/forgot-password', authLimiter, verifyTurnstile, async (req: Request, res: Response) => {
   const { email } = req.body;
 
   if (!email) {

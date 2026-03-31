@@ -278,6 +278,24 @@ The frontend will be available at **`http://localhost:3000`** and the API at **`
 | `TURNSTILE_SECRET_KEY` | Cloudflare Turnstile secret key (server) |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile site key (frontend) |
 
+### Turnstile Setup (Important)
+
+To enable Cloudflare Turnstile correctly, configure both apps:
+
+1. In `Server/.env`, set `TURNSTILE_SECRET_KEY` to your Turnstile secret key.
+2. In `App/.env.local`, set `NEXT_PUBLIC_TURNSTILE_SITE_KEY` to your Turnstile site key.
+3. Restart both dev servers after editing env files.
+
+Example:
+
+```bash
+# Server/.env
+TURNSTILE_SECRET_KEY=your_turnstile_secret_key
+
+# App/.env.local
+NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_site_key
+```
+
 ### Available Scripts
 
 | Command | Description |

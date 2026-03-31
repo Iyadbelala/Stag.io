@@ -69,7 +69,7 @@ interface AuthContextValue {
   registerUniversity: (data: RegisterUniversityData, turnstileToken?: string) => Promise<AuthUser | null>;
   verifyEmail: (email: string, code: string) => Promise<AuthUser>;
   resendCode: (email: string) => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
+  forgotPassword: (email: string, turnstileToken?: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (updatedUser: AuthUser) => void;
@@ -187,8 +187,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await api.post("/api/auth/resend-verification", { email });
   }, []);
 
-  const forgotPassword = useCallback(async (email: string): Promise<void> => {
-    await api.post("/api/auth/forgot-password", { email });
+  const forgotPassword = useCallback(async (email: string, turnstileToken?: string): Promise<void> => {
+    await api.post("/api/auth/forgot-password", { email, turnstileToken });
   }, []);
 
   const resetPasswordFn = useCallback(async (resetToken: string, password: string): Promise<void> => {

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { HiOutlineMail } from "react-icons/hi";
 import FloatingOrbs from "@/Components/ui/FloatingOrbs";
 import AuthBrandPanel from "@/Components/features/AuthBrandPanel";
+import Turnstile from "@/Components/ui/Turnstile";
 import { useAuth } from "@/Components/contexts/AuthContext";
 
 export default function ForgotPasswordPage() {
@@ -13,6 +14,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {
@@ -21,11 +23,15 @@ export default function ForgotPasswordPage() {
         setError("Email is required");
         return;
       }
+      if (!turnstileToken) {
+        setError("Please complete the security check");
+        return;
+      }
 
       setIsSubmitting(true);
       setError(null);
       try {
-        await forgotPassword(email);
+        await forgotPassword(email, turnstileToken);
         setSent(true);
       } catch {
         setError("Something went wrong. Please try again.");
@@ -33,7 +39,7 @@ export default function ForgotPasswordPage() {
         setIsSubmitting(false);
       }
     },
-    [email, forgotPassword]
+    [email, forgotPassword, turnstileToken]
   );
 
   return (
@@ -90,6 +96,20 @@ export default function ForgotPasswordPage() {
               {error && (
                 <p className="text-sm text-status-error">{error}</p>
               )}
+
+              <div>
+                <Turnstile
+                  onVerify={(token) => {
+                    setTurnstileToken(token);
+                    setError(null);
+                  }}
+                  onExpire={() => setTurnstileToken(null)}
+                  className="flex justify-center"
+                />
+                {error === "Please complete the security check" && (
+                  <p className="mt-2 text-sm text-status-error">{error}</p>
+                )}
+              </div>
 
               <button
                 type="submit"

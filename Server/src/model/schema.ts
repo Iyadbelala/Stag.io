@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp, pgEnum, integer, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, timestamp, pgEnum, integer, jsonb, unique, index } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 
 /* ── Enums ── */
@@ -94,7 +94,10 @@ export const internshipOffers = pgTable('internship_offers', {
   bannerUrl: text('bannerUrl'),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (table) => [
+  index('idx_offers_company').on(table.companyId),
+  index('idx_offers_status').on(table.status),
+]);
 
 /* ── Saved Offers (bookmarks) ── */
 export const savedOffers = pgTable('saved_offers', {
@@ -102,7 +105,10 @@ export const savedOffers = pgTable('saved_offers', {
   studentId: text('studentId').notNull().references(() => students.id, { onDelete: 'cascade' }),
   offerId: text('offerId').notNull().references(() => internshipOffers.id, { onDelete: 'cascade' }),
   savedAt: timestamp('savedAt', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (table) => [
+  unique('uq_saved_student_offer').on(table.studentId, table.offerId),
+  index('idx_saved_student').on(table.studentId),
+]);
 
 /* ── Applications ── */
 export const applications = pgTable('applications', {
@@ -114,7 +120,12 @@ export const applications = pgTable('applications', {
   status: applicationStatusEnum('status').default('pending').notNull(),
   appliedAt: timestamp('appliedAt', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (table) => [
+  unique('uq_application_student_offer').on(table.studentId, table.offerId),
+  index('idx_applications_student').on(table.studentId),
+  index('idx_applications_offer').on(table.offerId),
+  index('idx_applications_status').on(table.status),
+]);
 
 /* ── Reviews ── */
 export const reviewerRoleEnum = pgEnum('ReviewerRole', ['student', 'company']);
@@ -140,7 +151,10 @@ export const notifications = pgTable('notifications', {
   isRead: boolean('isRead').default(false).notNull(),
   relatedId: text('relatedId'),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
-});
+}, (table) => [
+  index('idx_notifications_user').on(table.userId),
+  index('idx_notifications_read').on(table.userId, table.isRead),
+]);
 
 /* ── Audit Logs ── */
 export const auditLogs = pgTable('audit_logs', {

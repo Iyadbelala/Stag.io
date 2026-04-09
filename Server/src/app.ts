@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -36,6 +36,37 @@ app.get('/health', (_req, res) => {
     success: true,
     message: 'Stag.io API is healthy',
     timestamp: new Date().toISOString(),
+  });
+});
+
+/* ── 404 Handler — Unknown routes ── */
+app.use((_req: Request, res: Response) => {
+  res.status(404).json({
+    success: false,
+    error: { code: 'NOT_FOUND', message: 'The requested endpoint does not exist' },
+  });
+});
+
+/* ── Global Error Handler — Catches all unhandled errors ── */
+app.use((err: Error & { status?: number; code?: string }, _req: Request, res: Response, _next: NextFunction) => {
+  // Log the error for debugging (visible in server console)
+  console.error(`[ERROR] ${err.code ?? 'UNKNOWN'}: ${err.message}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(err.stack);
+  }
+
+  // Determine status code (use error's status if set, otherwise 500)
+  const status = err.status ?? 500;
+
+  // Send clean JSON response — never leak stack traces in production
+  res.status(status).json({
+    success: false,
+    error: {
+      code: err.code ?? 'SERVER_ERROR',
+      message: status === 500 && process.env.NODE_ENV === 'production'
+        ? 'An unexpected error occurred'   // Hide details in production
+        : err.message,                      // Show details in development
+    },
   });
 });
 

@@ -3,17 +3,17 @@ import { db } from '../model/db';
 import { students, users, internshipOffers, companies } from '../model/schema';
 
 /* ── Normalize helper ── */
-function norm(s: string): string {
+export function norm(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9+#]/g, ' ').replace(/\s+/g, ' ').trim();
 }
 
 /* ── Tokenize text into meaningful words ── */
-function tokenize(text: string): string[] {
+export function tokenize(text: string): string[] {
   return norm(text).split(' ').filter(w => w.length > 1);
 }
 
 /* ── Skill matching (50% weight) ── */
-function scoreSkills(
+export function scoreSkills(
   studentSkills: string[],
   requirements: string,
   description: string,
@@ -55,7 +55,7 @@ function scoreSkills(
 }
 
 /* ── Department-to-industry relevance map (25% weight) ── */
-const DEPT_KEYWORDS: Record<string, string[]> = {
+export const DEPT_KEYWORDS: Record<string, string[]> = {
   'computer science': ['software', 'web', 'mobile', 'data', 'cloud', 'devops', 'ai', 'machine learning', 'full stack', 'frontend', 'backend', 'developer', 'engineer', 'programming', 'it', 'tech', 'digital', 'cyber', 'security', 'database', 'api'],
   'information technology': ['software', 'web', 'it', 'network', 'system', 'admin', 'cloud', 'devops', 'tech', 'digital', 'support', 'infrastructure', 'database'],
   'electrical engineering': ['electronics', 'embedded', 'iot', 'hardware', 'circuit', 'power', 'automation', 'control', 'signal', 'telecom', 'firmware'],
@@ -75,7 +75,7 @@ const DEPT_KEYWORDS: Record<string, string[]> = {
   'design': ['design', 'ui', 'ux', 'graphic', 'creative', 'visual', 'branding', 'illustration', 'figma', 'adobe'],
 };
 
-function scoreDepartment(department: string | null, offerText: string, industry: string | null): number {
+export function scoreDepartment(department: string | null, offerText: string, industry: string | null): number {
   if (!department) return 0.3; // Neutral score when no department
 
   const deptNorm = norm(department);
@@ -103,7 +103,7 @@ function scoreDepartment(department: string | null, offerText: string, industry:
 }
 
 /* ── Location matching (15% weight) ── */
-function scoreLocation(studentUniversity: string | null, offerLocation: string, companyLocation: string | null): number {
+export function scoreLocation(studentUniversity: string | null, offerLocation: string, companyLocation: string | null): number {
   if (!studentUniversity) return 0.3;
 
   const uniNorm = norm(studentUniversity);
@@ -124,7 +124,7 @@ function scoreLocation(studentUniversity: string | null, offerLocation: string, 
 }
 
 /* ── Title relevance to student skills (10% weight) ── */
-function scoreTitleRelevance(studentSkills: string[], title: string): number {
+export function scoreTitleRelevance(studentSkills: string[], title: string): number {
   if (studentSkills.length === 0) return 0.2;
 
   const titleNorm = norm(title);

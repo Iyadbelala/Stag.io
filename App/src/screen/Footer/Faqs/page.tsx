@@ -51,7 +51,7 @@ export default function FaqsPage() {
 
   return (
     <section className="mx-auto max-w-3xl px-6 py-20">
-      <h1 className="text-4xl font-heading font-bold tracking-tight text-coffee-dark">
+      <h1 className="font-heading text-4xl font-bold tracking-tight text-coffee-dark">
         Frequently Asked Questions
       </h1>
       <p className="mt-3 text-text-secondary">

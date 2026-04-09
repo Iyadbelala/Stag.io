@@ -51,7 +51,7 @@ export default function HowItWorksPage() {
         <div className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-logo-sage/10 blur-3xl" />
 
         <div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 py-28 text-center lg:py-36">
-          <h1 className="max-w-3xl text-4xl font-heading font-bold leading-tight text-coffee-dark sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-3xl font-heading text-4xl font-bold leading-tight text-coffee-dark sm:text-5xl lg:text-6xl">
             {t("hiw.hero.title1")}
             <span className="text-coffee-gold">{t("hiw.hero.titleAccent")}</span>
             {t("hiw.hero.title2")}
@@ -82,7 +82,7 @@ export default function HowItWorksPage() {
                 }`}
               >
                 <div className="flex shrink-0 flex-col items-center">
-                  <span className="font-heading text-5xl font-bold text-coffee-gold/30">
+                  <span className="text-5xl font-bold text-coffee-gold/30">
                     {step.number}
                   </span>
                   <div className="mt-3 flex h-16 w-16 items-center justify-center rounded-full bg-coffee-gold/15 text-coffee-warm">
@@ -91,7 +91,7 @@ export default function HowItWorksPage() {
                 </div>
 
                 <div className={`max-w-lg ${idx % 2 !== 0 ? "lg:text-right" : ""}`}>
-                  <h3 className="mb-2 font-heading text-xl font-semibold text-coffee-dark">
+                  <h3 className="mb-2 text-xl font-semibold text-coffee-dark">
                     {step.title}
                   </h3>
                   <p className="text-sm leading-relaxed text-text-secondary">
@@ -123,7 +123,7 @@ export default function HowItWorksPage() {
                 <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-coffee-gold/15 text-coffee-warm transition-colors group-hover:bg-coffee-gold/30">
                   {role.icon}
                 </div>
-                <h3 className="mb-4 text-center font-heading text-lg font-semibold text-coffee-dark">
+                <h3 className="mb-4 text-center text-lg font-semibold text-coffee-dark">
                   {role.title}
                 </h3>
                 <ul className="flex flex-col gap-2.5">

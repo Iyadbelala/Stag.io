@@ -34,7 +34,7 @@ const posts = [
 export default function BlogPage() {
   return (
     <section className="mx-auto max-w-4xl px-6 py-20">
-      <h1 className="text-4xl font-heading font-bold tracking-tight text-coffee-dark">
+      <h1 className="font-heading text-4xl font-bold tracking-tight text-coffee-dark">
         Blog
       </h1>
       <p className="mt-3 text-text-secondary">
@@ -53,7 +53,7 @@ export default function BlogPage() {
               </span>
               <time>{post.date}</time>
             </div>
-            <h2 className="mt-3 text-xl font-heading font-semibold text-coffee-dark">
+            <h2 className="mt-3 text-xl font-semibold text-coffee-dark">
               {post.title}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-text-secondary">

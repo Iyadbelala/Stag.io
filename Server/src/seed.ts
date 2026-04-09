@@ -33,6 +33,21 @@ async function seed() {
     console.log('Superadmin: admin@stag.io / admin123');
   }
 
+  // ── Ensure admin exists ──
+  const [existingAdmin] = await db.select().from(users).where(eq(users.email, 'admin-staff@stag.io'));
+  if (!existingAdmin) {
+    const adminHash = await bcrypt.hash('admin123', 12);
+    await db.insert(users).values({
+      email: 'admin-staff@stag.io',
+      passwordHash: adminHash,
+      role: 'admin',
+      firstName: 'Admin',
+      lastName: 'Staff',
+      isEmailVerified: true,
+    });
+    console.log('Admin: admin-staff@stag.io / admin123');
+  }
+
   // ── Ensure university exists ──
   const [existingUni] = await db.select().from(users).where(eq(users.email, 'admin@univ-constantine2.dz'));
   if (!existingUni) {
@@ -388,6 +403,7 @@ async function seed() {
 
   console.log('\nSeed complete! Test accounts:\n');
   console.log('  Superadmin:  admin@stag.io / admin123');
+  console.log('  Admin:       admin-staff@stag.io / admin123');
   console.log('  University:  admin@univ-constantine2.dz / university123');
   console.log('  Student:     iyad@univ-constantine2.dz / student123');
   console.log('  Yassir:      lovefling385@gmail.com / iyad2005');

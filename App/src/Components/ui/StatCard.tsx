@@ -13,7 +13,7 @@ export default function StatCard({ icon, label, value, color }: StatCardProps) {
       >
         {icon}
       </div>
-      <p className="text-2xl font-heading font-bold text-coffee-dark">
+      <p className="text-2xl font-bold text-coffee-dark">
         {value}
       </p>
       <p className="mt-1 text-sm text-text-muted">{label}</p>

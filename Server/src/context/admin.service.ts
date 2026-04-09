@@ -1,8 +1,18 @@
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, ilike, or, and, count } from 'drizzle-orm';
 import { db } from '../model/db';
 import { users, companies, students, internshipOffers, applications, universities } from '../model/schema';
 import PDFDocument from 'pdfkit';
 import { sendNotification } from './notifications.service';
+
+/* ──────────────────────────────────────────────
+   Helper
+   ────────────────────────────────────────────── */
+function serviceError(message: string, code: string, status: number): never {
+  const err = new Error(message) as Error & { code: string; status: number };
+  err.code = code;
+  err.status = status;
+  throw err;
+}
 
 /* ──────────────────────────────────────────────
    Company validation types & functions
@@ -118,15 +128,73 @@ export async function getAcceptedApplications(): Promise<AdminApplication[]> {
 }
 
 /* ──────────────────────────────────────────────
-   List all applications (for overview)
+   List all applications (with search/filter/pagination)
    ────────────────────────────────────────────── */
-export async function getAllApplications(): Promise<AdminApplication[]> {
-  const apps = await db
+export interface ApplicationListResult {
+  applications: AdminApplication[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export async function getAllApplications(opts?: {
+  q?: string;
+  status?: string;
+  company?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}): Promise<ApplicationListResult> {
+  const page = Math.max(opts?.page ?? 1, 1);
+  const limit = Math.min(Math.max(opts?.limit ?? 20, 1), 100);
+
+  const allApps = await db
     .select()
     .from(applications)
     .orderBy(desc(applications.updatedAt));
 
-  return buildAdminApplications(apps);
+  const enriched = await buildAdminApplications(allApps);
+
+  // Apply filters on enriched data (we need student/company names)
+  let filtered = enriched;
+
+  if (opts?.status) {
+    filtered = filtered.filter((a) => a.status === opts.status);
+  }
+
+  if (opts?.q) {
+    const q = opts.q.toLowerCase();
+    filtered = filtered.filter(
+      (a) =>
+        a.studentName.toLowerCase().includes(q) ||
+        a.studentEmail.toLowerCase().includes(q) ||
+        a.offerTitle.toLowerCase().includes(q) ||
+        a.companyName.toLowerCase().includes(q),
+    );
+  }
+
+  if (opts?.company) {
+    const c = opts.company.toLowerCase();
+    filtered = filtered.filter((a) => a.companyName.toLowerCase().includes(c));
+  }
+
+  if (opts?.from) {
+    const fromDate = new Date(opts.from);
+    filtered = filtered.filter((a) => new Date(a.appliedAt) >= fromDate);
+  }
+
+  if (opts?.to) {
+    const toDate = new Date(opts.to);
+    toDate.setHours(23, 59, 59, 999);
+    filtered = filtered.filter((a) => new Date(a.appliedAt) <= toDate);
+  }
+
+  const total = filtered.length;
+  const offset = (page - 1) * limit;
+  const paginated = filtered.slice(offset, offset + limit);
+
+  return { applications: paginated, total, page, limit };
 }
 
 async function buildAdminApplications(apps: (typeof applications.$inferSelect)[]): Promise<AdminApplication[]> {
@@ -196,6 +264,77 @@ export async function validateApplication(applicationId: string): Promise<{ id: 
   }
 
   return { id: updated.id, status: updated.status };
+}
+
+/* ──────────────────────────────────────────────
+   Batch-validate multiple accepted applications
+   ────────────────────────────────────────────── */
+export async function batchValidateApplications(ids: string[]): Promise<{ validated: string[]; skipped: string[] }> {
+  if (!ids.length) serviceError('No application IDs provided', 'BAD_REQUEST', 400);
+
+  const validated: string[] = [];
+  const skipped: string[] = [];
+
+  for (const id of ids) {
+    const [app] = await db.select().from(applications).where(eq(applications.id, id));
+    if (!app || app.status !== 'accepted') {
+      skipped.push(id);
+      continue;
+    }
+
+    await db.update(applications).set({ status: 'validated' }).where(eq(applications.id, id));
+    validated.push(id);
+
+    // Notify student
+    const [student] = await db.select().from(students).where(eq(students.id, app.studentId));
+    if (student) {
+      const [offer] = await db.select().from(internshipOffers).where(eq(internshipOffers.id, app.offerId));
+      sendNotification(
+        student.userId,
+        'application_status_changed',
+        'Application Validated',
+        `Your application for "${offer?.title ?? 'an internship'}" has been validated by the admin`,
+        id,
+      ).catch(() => {});
+    }
+  }
+
+  return { validated, skipped };
+}
+
+/* ──────────────────────────────────────────────
+   Export applications as CSV
+   ────────────────────────────────────────────── */
+export async function exportApplicationsCsv(opts?: {
+  status?: string;
+  company?: string;
+  from?: string;
+  to?: string;
+}): Promise<string> {
+  const { applications: apps } = await getAllApplications({ ...opts, limit: 100, page: 1 });
+
+  // Also fetch all if > 100
+  const allResult = await getAllApplications({ ...opts, limit: 10000, page: 1 });
+  const rows = allResult.applications;
+
+  const header = ['ID', 'Student Name', 'Student Email', 'Offer Title', 'Company', 'Status', 'Applied At'];
+  const csvLines = [header.join(',')];
+
+  for (const a of rows) {
+    csvLines.push(
+      [
+        a.id,
+        `"${a.studentName.replace(/"/g, '""')}"`,
+        a.studentEmail,
+        `"${a.offerTitle.replace(/"/g, '""')}"`,
+        `"${a.companyName.replace(/"/g, '""')}"`,
+        a.status,
+        a.appliedAt,
+      ].join(','),
+    );
+  }
+
+  return csvLines.join('\n');
 }
 
 /* ──────────────────────────────────────────────

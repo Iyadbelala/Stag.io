@@ -41,7 +41,7 @@ const sections = [
 export default function PrivacyPage() {
   return (
     <section className="mx-auto max-w-3xl px-6 py-20">
-      <h1 className="text-4xl font-heading font-bold tracking-tight text-coffee-dark">
+      <h1 className="font-heading text-4xl font-bold tracking-tight text-coffee-dark">
         Privacy Policy
       </h1>
       <p className="mt-3 text-sm text-text-muted">
@@ -56,7 +56,7 @@ export default function PrivacyPage() {
       <div className="mt-12 flex flex-col gap-8">
         {sections.map((s) => (
           <div key={s.title}>
-            <h2 className="text-lg font-heading font-semibold text-coffee-dark">
+            <h2 className="text-lg font-semibold text-coffee-dark">
               {s.title}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-text-secondary">

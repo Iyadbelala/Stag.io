@@ -6,7 +6,6 @@ import {
   HiOutlineUsers,
   HiOutlineCheckCircle,
   HiOutlineBriefcase,
-  HiOutlineLogout,
   HiOutlineUser,
   HiOutlinePlus,
   HiOutlineTrash,
@@ -74,7 +73,7 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
       <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full ${color}`}>
         {icon}
       </div>
-      <p className="text-2xl font-heading font-bold text-coffee-dark">{value}</p>
+      <p className="text-2xl font-bold text-coffee-dark">{value}</p>
       <p className="mt-1 text-sm text-text-muted">{label}</p>
     </div>
   );
@@ -244,7 +243,7 @@ function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
           <HiOutlineX size={20} />
         </button>
 
-        <h2 className="mb-6 text-xl font-heading font-bold text-coffee-dark">
+        <h2 className="mb-6 text-xl font-bold text-coffee-dark">
           {t("companyDash.postNewInternship")}
         </h2>
 
@@ -449,7 +448,7 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
           <HiOutlineX size={20} />
         </button>
 
-        <h2 className="mb-6 text-xl font-heading font-bold text-coffee-dark">
+        <h2 className="mb-6 text-xl font-bold text-coffee-dark">
           {t("companyDash.editInternship")}
         </h2>
 
@@ -581,7 +580,7 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
    Dashboard
    ============================================ */
 export default function CompanyDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
@@ -615,11 +614,6 @@ export default function CompanyDashboard() {
     }
     fetchData();
   }, []);
-
-  const handleLogout = () => {
-    logout();
-    router.push("/login");
-  };
 
   const handleOfferCreated = useCallback((offer: Offer) => {
     setOffers((prev) => [offer, ...prev]);
@@ -714,7 +708,7 @@ export default function CompanyDashboard() {
         {/* ---- Welcome Header ---- */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-heading font-bold text-coffee-dark sm:text-3xl">
+            <h1 className="text-2xl font-bold text-coffee-dark sm:text-3xl">
               {t("companyDash.welcomeBack").replace("{name}", user?.companyName || user?.email || "")}
             </h1>
             <p className="mt-1 text-sm text-text-muted">{t("companyDash.dashboard")}</p>
@@ -736,13 +730,6 @@ export default function CompanyDashboard() {
               <HiOutlineUser size={16} />
               {t("common.editProfile")}
             </Link>
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 rounded-button border border-surface-sand bg-surface-white px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-status-error hover:text-status-error cursor-pointer"
-            >
-              <HiOutlineLogout size={16} />
-              {t("common.signOut")}
-            </button>
           </div>
         </div>
 
@@ -790,7 +777,7 @@ export default function CompanyDashboard() {
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="mb-1 font-heading text-lg font-semibold text-coffee-dark">{t("companyDash.myListings")}</h2>
+              <h2 className="mb-1 text-lg font-semibold text-coffee-dark">{t("companyDash.myListings")}</h2>
               <p className="text-sm text-text-muted">{t("companyDash.myListingsDesc")}</p>
             </div>
             <button
@@ -862,7 +849,7 @@ export default function CompanyDashboard() {
 
         {/* ---- Recent Applicants ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-1 font-heading text-lg font-semibold text-coffee-dark">{t("companyDash.recentApplicants")}</h2>
+          <h2 className="mb-1 text-lg font-semibold text-coffee-dark">{t("companyDash.recentApplicants")}</h2>
           <p className="mb-6 text-sm text-text-muted">{t("companyDash.recentApplicantsDesc")}</p>
 
           {recentApplicants.length === 0 ? (

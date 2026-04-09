@@ -63,7 +63,7 @@ export default function AboutPage() {
 
         <div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 py-28 text-center lg:py-36">
 
-          <h1 className="max-w-3xl text-4xl font-heading font-bold leading-tight text-coffee-dark sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-3xl font-heading text-4xl font-bold leading-tight text-coffee-dark sm:text-5xl lg:text-6xl">
             {t("about.hero.title")}
             <span className="text-coffee-gold">{t("about.hero.titleAccent")}</span>
           </h1>
@@ -93,7 +93,7 @@ export default function AboutPage() {
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-coffee-gold/15 text-coffee-warm transition-colors group-hover:bg-coffee-gold/30">
                   {pillar.icon}
                 </div>
-                <h3 className="mb-2 font-heading text-base font-semibold text-coffee-dark">
+                <h3 className="mb-2 text-base font-semibold text-coffee-dark">
                   {pillar.title}
                 </h3>
                 <p className="text-sm leading-relaxed text-text-secondary">
@@ -129,7 +129,7 @@ export default function AboutPage() {
                 <span className="mb-1 inline-block rounded-full bg-coffee-gold/15 px-3 py-0.5 text-xs font-semibold tracking-wide text-coffee-warm">
                   {milestone.year}
                 </span>
-                <h3 className="mt-1 font-heading text-lg font-semibold text-coffee-dark">
+                <h3 className="mt-1 text-lg font-semibold text-coffee-dark">
                   {milestone.title}
                 </h3>
                 <p className="mt-1 text-sm leading-relaxed text-text-secondary">
@@ -160,7 +160,7 @@ export default function AboutPage() {
                 <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-coffee-gold/15 text-coffee-warm transition-colors group-hover:bg-coffee-gold/30">
                   {audience.icon}
                 </div>
-                <h3 className="mb-2 font-heading text-lg font-semibold text-coffee-dark">
+                <h3 className="mb-2 text-lg font-semibold text-coffee-dark">
                   {audience.title}
                 </h3>
                 <p className="text-sm leading-relaxed text-text-secondary">

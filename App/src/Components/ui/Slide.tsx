@@ -48,7 +48,7 @@ export default function Slide({ slides, autoPlayMs = 5000 }: SlideProps) {
             <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-coffee-gold/20 text-coffee-warm">
               {slide.icon}
             </div>
-            <h3 className="mb-3 font-heading text-xl font-semibold text-coffee-dark">
+            <h3 className="mb-3 text-xl font-semibold text-coffee-dark">
               {slide.title}
             </h3>
           </div>

@@ -7,7 +7,7 @@ import {
 export default function ContactPage() {
   return (
     <section className="mx-auto max-w-4xl px-6 py-20">
-      <h1 className="text-4xl font-heading font-bold tracking-tight text-coffee-dark">
+      <h1 className="font-heading text-4xl font-bold tracking-tight text-coffee-dark">
         Contact Us
       </h1>
       <p className="mt-3 text-text-secondary">
@@ -88,7 +88,7 @@ export default function ContactPage() {
         {/* Contact Info */}
         <div className="flex flex-col gap-8">
           <div className="rounded-[--radius-card] border border-surface-sand bg-surface-white p-6 shadow-sm">
-            <h2 className="text-lg font-heading font-semibold text-coffee-dark">
+            <h2 className="text-lg font-semibold text-coffee-dark">
               Get in Touch
             </h2>
             <div className="mt-4 flex flex-col gap-3 text-sm text-text-secondary">
@@ -107,7 +107,7 @@ export default function ContactPage() {
           </div>
 
           <div className="rounded-[--radius-card] border border-surface-sand bg-surface-sand/40 p-6">
-            <h2 className="text-lg font-heading font-semibold text-coffee-dark">
+            <h2 className="text-lg font-semibold text-coffee-dark">
               Office Hours
             </h2>
             <div className="mt-3 flex flex-col gap-1 text-sm text-text-secondary">

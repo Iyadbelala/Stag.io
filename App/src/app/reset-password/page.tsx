@@ -141,7 +141,7 @@ export default function ResetPasswordPage() {
             <HiOutlineLockClosed className="h-7 w-7 text-coffee-warm" />
           </div>
 
-          <h2 className="mb-2 text-center font-heading text-2xl font-semibold text-coffee-dark">
+          <h2 className="mb-2 text-center text-2xl font-semibold text-coffee-dark">
             Reset your password
           </h2>
           <p className="mb-6 text-center text-sm text-text-muted">

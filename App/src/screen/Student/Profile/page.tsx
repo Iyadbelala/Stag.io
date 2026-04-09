@@ -285,7 +285,7 @@ export default function StudentProfile() {
               <HiOutlineArrowLeft size={18} />
             </Link>
             <div>
-              <h1 className="text-2xl font-heading font-bold text-coffee-dark">
+              <h1 className="text-2xl font-bold text-coffee-dark">
                 {t("studentProfile.title")}
               </h1>
               <p className="text-sm text-text-muted">
@@ -297,7 +297,7 @@ export default function StudentProfile() {
 
         {/* ---- Profile Photo Section ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-6 flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
+          <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-coffee-dark">
             <HiOutlineCamera size={20} className="text-coffee-warm" />
             {t("studentProfile.profilePhoto")}
           </h2>
@@ -372,7 +372,7 @@ export default function StudentProfile() {
 
         {/* ---- Personal Information ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-6 flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
+          <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-coffee-dark">
             <HiOutlineUser size={20} className="text-coffee-warm" />
             {t("studentProfile.personalInfo")}
           </h2>
@@ -432,7 +432,7 @@ export default function StudentProfile() {
 
         {/* ---- Academic Information ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-6 flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
+          <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-coffee-dark">
             <HiOutlineBookOpen size={20} className="text-coffee-warm" />
             {t("studentProfile.academicInfo")}
           </h2>
@@ -454,7 +454,7 @@ export default function StudentProfile() {
 
         {/* ---- About Me ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-6 font-heading text-lg font-semibold text-coffee-dark">
+          <h2 className="mb-6 text-lg font-semibold text-coffee-dark">
             {t("studentProfile.aboutMe")}
           </h2>
 
@@ -478,7 +478,7 @@ export default function StudentProfile() {
 
         {/* ---- Skills ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-6 font-heading text-lg font-semibold text-coffee-dark">
+          <h2 className="mb-6 text-lg font-semibold text-coffee-dark">
             {t("studentProfile.skills")}
           </h2>
 
@@ -534,7 +534,7 @@ export default function StudentProfile() {
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h2 className="flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-coffee-dark">
                 <HiOutlinePhotograph size={20} className="text-coffee-warm" />
                 {t("studentProfile.portfolio")}
               </h2>
@@ -682,7 +682,7 @@ export default function StudentProfile() {
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-coffee-dark">
                 <HiOutlineDocument size={20} className="text-coffee-warm" />
                 {t("studentProfile.cvBuilder")}
               </h2>

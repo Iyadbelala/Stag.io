@@ -59,7 +59,7 @@ function StatCard({ icon, label, value, color }: StatCardProps) {
       >
         {icon}
       </div>
-      <p className="text-2xl font-heading font-bold text-coffee-dark">
+      <p className="text-2xl font-bold text-coffee-dark">
         {value}
       </p>
       <p className="mt-1 text-sm text-text-muted">{label}</p>
@@ -188,7 +188,7 @@ export default function StudentDashboard() {
         {/* ---- Welcome Header ---- */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-heading font-bold text-coffee-dark sm:text-3xl">
+            <h1 className="text-2xl font-bold text-coffee-dark sm:text-3xl">
               {t("student.welcomeBack").replace("{name}", user?.firstName || user?.email || "")}
             </h1>
             <p className="mt-1 text-sm text-text-muted">
@@ -287,7 +287,7 @@ export default function StudentDashboard() {
 
         {/* ---- Recent Activity ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-1 font-heading text-lg font-semibold text-coffee-dark">
+          <h2 className="mb-1 text-lg font-semibold text-coffee-dark">
             {t("student.recentApplications")}
           </h2>
           <p className="mb-6 text-sm text-text-muted">

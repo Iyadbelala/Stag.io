@@ -176,7 +176,7 @@ export default function CompanyProfile() {
               <HiOutlineArrowLeft size={18} />
             </Link>
             <div>
-              <h1 className="text-2xl font-heading font-bold text-coffee-dark">
+              <h1 className="text-2xl font-bold text-coffee-dark">
                 {t("companyProfile.title")}
               </h1>
               <p className="text-sm text-text-muted">
@@ -188,7 +188,7 @@ export default function CompanyProfile() {
 
         {/* ---- Company Logo ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-6 flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
+          <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-coffee-dark">
             <HiOutlineCamera size={20} className="text-coffee-warm" />
             {t("companyProfile.logo")}
           </h2>
@@ -263,7 +263,7 @@ export default function CompanyProfile() {
 
         {/* ---- Company Information ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-6 flex items-center gap-2 font-heading text-lg font-semibold text-coffee-dark">
+          <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-coffee-dark">
             <HiOutlineOfficeBuilding size={20} className="text-coffee-warm" />
             {t("companyProfile.companyInfo")}
           </h2>
@@ -363,7 +363,7 @@ export default function CompanyProfile() {
 
         {/* ---- About the Company ---- */}
         <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-          <h2 className="mb-6 font-heading text-lg font-semibold text-coffee-dark">
+          <h2 className="mb-6 text-lg font-semibold text-coffee-dark">
             {t("companyProfile.aboutCompany")}
           </h2>
 

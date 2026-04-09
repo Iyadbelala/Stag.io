@@ -67,7 +67,7 @@ export default function Homepage() {
 
         <div className="relative mx-auto flex max-w-7xl flex-col items-center px-6 py-28 text-center lg:py-36">
 
-          <h1 className="max-w-3xl text-4xl font-heading font-bold leading-tight text-coffee-dark sm:text-5xl lg:text-6xl">
+          <h1 className="max-w-3xl font-heading text-4xl font-bold leading-tight text-coffee-dark sm:text-5xl lg:text-6xl">
             {t("hero.title")}
             <span className="text-coffee-gold">{t("hero.titleAccent")}</span>
           </h1>
@@ -98,7 +98,7 @@ export default function Homepage() {
         <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-6 py-12 sm:grid-cols-4">
           {statKeys.map((key, i) => (
             <div key={key} className="text-center">
-              <p className="font-heading text-3xl font-bold text-coffee-dark">
+              <p className="text-3xl font-bold text-coffee-dark">
                 {statValues[i]}
               </p>
               <p className="mt-1 text-xs tracking-wide text-text-muted">
@@ -141,7 +141,7 @@ export default function Homepage() {
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-coffee-gold/15 text-coffee-warm transition-colors group-hover:bg-coffee-gold/30">
                   {f.icon}
                 </div>
-                <h3 className="mb-2 font-heading text-base font-semibold text-coffee-dark">
+                <h3 className="mb-2 text-base font-semibold text-coffee-dark">
                   {f.title}
                 </h3>
                 <p className="text-sm leading-relaxed text-text-secondary">

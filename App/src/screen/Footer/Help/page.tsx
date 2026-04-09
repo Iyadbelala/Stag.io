@@ -37,7 +37,7 @@ const topics = [
 export default function HelpPage() {
   return (
     <section className="mx-auto max-w-4xl px-6 py-20">
-      <h1 className="text-4xl font-heading font-bold tracking-tight text-coffee-dark">
+      <h1 className="font-heading text-4xl font-bold tracking-tight text-coffee-dark">
         Help Center
       </h1>
       <p className="mt-3 text-text-secondary">
@@ -50,7 +50,7 @@ export default function HelpPage() {
             key={topic.title}
             className="rounded-[--radius-card] border border-surface-sand bg-surface-white p-6 shadow-sm"
           >
-            <h2 className="text-lg font-heading font-semibold text-coffee-dark">
+            <h2 className="text-lg font-semibold text-coffee-dark">
               {topic.title}
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-text-secondary">
@@ -61,7 +61,7 @@ export default function HelpPage() {
       </div>
 
       <div className="mt-16 rounded-[--radius-card] border border-surface-sand bg-surface-sand/40 p-8 text-center">
-        <h2 className="text-xl font-heading font-semibold text-coffee-dark">
+        <h2 className="text-xl font-semibold text-coffee-dark">
           Still need help?
         </h2>
         <p className="mt-2 text-sm text-text-secondary">

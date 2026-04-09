@@ -245,7 +245,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
         <div className="relative z-10 w-full max-w-[440px]">
           {/* Header */}
           <div className="mb-8 text-center lg:text-left">
-            <h1 className="text-2xl font-heading font-bold text-coffee-dark sm:text-3xl">
+            <h1 className="font-heading text-2xl font-bold text-coffee-dark sm:text-3xl">
               {isLogin ? t("auth.welcomeBack") : t("auth.createAccount")}
             </h1>
             <p className="mt-2 text-sm text-text-muted">

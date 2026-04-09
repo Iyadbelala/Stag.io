@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp, pgEnum, integer } from 'drizzle-orm/pg-core';
+import { pgTable, text, boolean, timestamp, pgEnum, integer, jsonb } from 'drizzle-orm/pg-core';
 import { createId } from '@paralleldrive/cuid2';
 
 /* ── Enums ── */
@@ -139,5 +139,16 @@ export const notifications = pgTable('notifications', {
   message: text('message').notNull(),
   isRead: boolean('isRead').default(false).notNull(),
   relatedId: text('relatedId'),
+  createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
+});
+
+/* ── Audit Logs ── */
+export const auditLogs = pgTable('audit_logs', {
+  id: text('id').primaryKey().$defaultFn(() => createId()),
+  actorId: text('actorId').notNull(),
+  actorRole: text('actorRole').notNull(),
+  action: text('action').notNull(),
+  targetId: text('targetId'),
+  metadata: jsonb('metadata'),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
 });

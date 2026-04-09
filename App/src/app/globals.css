@@ -51,19 +51,16 @@ body {
 }
 
 h1 {
-  font-family: var(--font-heading);
   font-weight: 600;
   color: var(--color-coffee-dark);
 }
 
 h2 {
-  font-family: var(--font-heading);
   font-weight: 500;
   color: var(--color-coffee-dark);
 }
 
 h3 {
-  font-family: var(--font-heading);
   font-weight: 400;
   color: var(--color-coffee-dark);
 }

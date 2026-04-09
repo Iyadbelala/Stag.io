@@ -176,7 +176,7 @@ export default function SavedPage() {
           >
             <HiOutlineArrowLeft size={18} />
           </button>
-          <h1 className="text-xl sm:text-2xl font-heading font-bold text-coffee-dark">
+          <h1 className="text-xl sm:text-2xl font-bold text-coffee-dark">
             Saved Internships
           </h1>
           <p className="mt-0.5 text-sm text-text-muted">

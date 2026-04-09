@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import {
   HiOutlineAcademicCap,
-  HiOutlineLogout,
   HiOutlineUsers,
   HiOutlineGlobe,
   HiOutlineMail,
@@ -99,7 +98,7 @@ function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label:
       <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full ${color}`}>
         {icon}
       </div>
-      <p className="text-2xl font-heading font-bold text-coffee-dark">{value}</p>
+      <p className="text-2xl font-bold text-coffee-dark">{value}</p>
       <p className="mt-1 text-sm text-text-muted">{label}</p>
     </div>
   );
@@ -128,7 +127,7 @@ function StatusBadge({ status, t }: { status: string; t: (k: string) => string }
    University Dashboard
    ============================================ */
 export default function UniversityDashboard() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
 
@@ -271,41 +270,20 @@ export default function UniversityDashboard() {
 
   return (
     <section className="min-h-screen bg-surface-cream">
-      {/* ---- Header ---- */}
-      <div className="border-b border-surface-sand bg-surface-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
-          <div>
-            <h1 className="text-2xl font-heading font-bold text-coffee-dark">{t("university.dashboard")}</h1>
-            <p className="mt-1 text-sm text-text-muted">
-              {stats?.universityName ?? t("university.dashboardDesc")}
-              {stats && <span className="ml-2 text-xs text-text-muted">@{stats.domain}</span>}
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            {stats && !stats.isValidated && (
-              <div className="flex items-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-xs font-medium text-amber-700">
-                <HiOutlineExclamationCircle size={16} />
-                {t("university.pendingValidation")}
-              </div>
-            )}
-            {stats && stats.isValidated && (
-              <div className="flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-xs font-medium text-emerald-700">
-                <HiOutlineCheckCircle size={16} />
-                {t("university.validated")}
-              </div>
-            )}
-            <button
-              onClick={() => { logout(); router.push("/login"); }}
-              className="flex items-center gap-2 rounded-button border border-surface-sand px-4 py-2 text-sm text-text-secondary transition-colors hover:bg-surface-cream cursor-pointer"
-            >
-              <HiOutlineLogout size={16} />
-              {t("common.signOut")}
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div className="mx-auto max-w-7xl px-6 py-8">
+        {/* ---- Validation Status Badge ---- */}
+        {stats && !stats.isValidated && (
+          <div className="mb-6 flex items-center gap-2 rounded-full bg-amber-50 px-4 py-2 text-xs font-medium text-amber-700 w-fit">
+            <HiOutlineExclamationCircle size={16} />
+            {t("university.pendingValidation")}
+          </div>
+        )}
+        {stats && stats.isValidated && (
+          <div className="mb-6 flex items-center gap-2 rounded-full bg-emerald-50 px-4 py-2 text-xs font-medium text-emerald-700 w-fit">
+            <HiOutlineCheckCircle size={16} />
+            {t("university.validated")}
+          </div>
+        )}
         {/* ---- Action feedback ---- */}
         {actionMsg && (
           <div className={`mb-6 rounded-button border px-4 py-3 text-sm ${actionMsg.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : "border-status-error/20 bg-status-error/10 text-status-error"}`}>
@@ -354,7 +332,7 @@ export default function UniversityDashboard() {
             {activeTab === "students" && !selectedStudent && (
               <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
                 <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                  <h2 className="font-heading text-lg font-semibold text-coffee-dark">{t("university.studentsTitle")}</h2>
+                  <h2 className="text-lg font-semibold text-coffee-dark">{t("university.studentsTitle")}</h2>
                   <div className="relative">
                     <HiOutlineSearch size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
                     <input
@@ -439,7 +417,7 @@ export default function UniversityDashboard() {
                     </div>
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <h2 className="text-xl font-heading font-bold text-coffee-dark">
+                      <h2 className="text-xl font-bold text-coffee-dark">
                         {`${selectedStudent.firstName ?? ""} ${selectedStudent.lastName ?? ""}`.trim() || "—"}
                       </h2>
                       <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-text-muted">
@@ -505,7 +483,7 @@ export default function UniversityDashboard() {
 
                 {/* Student Applications */}
                 <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-                  <h3 className="font-heading text-lg font-semibold text-coffee-dark mb-4">{t("university.studentApplications")}</h3>
+                  <h3 className="text-lg font-semibold text-coffee-dark mb-4">{t("university.studentApplications")}</h3>
 
                   {appsLoading ? (
                     <div className="flex items-center justify-center py-12">
@@ -575,7 +553,7 @@ export default function UniversityDashboard() {
             {/* ======== PENDING VALIDATIONS TAB ======== */}
             {activeTab === "pending" && (
               <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-                <h2 className="font-heading text-lg font-semibold text-coffee-dark mb-6">{t("university.pendingTitle")}</h2>
+                <h2 className="text-lg font-semibold text-coffee-dark mb-6">{t("university.pendingTitle")}</h2>
 
                 {pendingLoading ? (
                   <div className="flex items-center justify-center py-16">
@@ -642,7 +620,7 @@ export default function UniversityDashboard() {
             {/* ======== CONTRACTS / ACTIVE INTERNSHIPS TAB ======== */}
             {activeTab === "contracts" && (
               <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
-                <h2 className="font-heading text-lg font-semibold text-coffee-dark mb-6">{t("university.contractsTitle")}</h2>
+                <h2 className="text-lg font-semibold text-coffee-dark mb-6">{t("university.contractsTitle")}</h2>
 
                 {contractsLoading ? (
                   <div className="flex items-center justify-center py-16">

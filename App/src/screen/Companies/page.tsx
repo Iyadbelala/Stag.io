@@ -8,15 +8,14 @@ import {
   HiOutlineLocationMarker,
   HiOutlineBookmark,
   HiBookmark,
-  HiOutlineOfficeBuilding,
   HiOutlineBriefcase,
   HiOutlineChevronRight,
   HiOutlineUser,
   HiOutlineGlobe,
+  HiOutlineX,
 } from "react-icons/hi";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
 import { api } from "@/lib/api";
-import { Reveal } from "@/Components/ui/Motion";
 
 /* ============================================
    Types
@@ -99,8 +98,6 @@ export default function CompaniesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [location, setLocation] = useState("");
-  const [committedSearch, setCommittedSearch] = useState("");
-  const [committedLocation, setCommittedLocation] = useState("");
   const [locationOpen, setLocationOpen] = useState(false);
   const locationRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -186,15 +183,10 @@ export default function CompaniesPage() {
     });
   };
 
-  const handleSearch = () => {
-    setCommittedSearch(search);
-    setCommittedLocation(location);
-    setUserSuggestionsOpen(false);
-  };
-
+  /* ---- Live filtering ---- */
   const filtered = useMemo(() => {
-    const q = committedSearch.trim().toLowerCase();
-    const loc = committedLocation.trim().toLowerCase();
+    const q = search.trim().toLowerCase();
+    const loc = location.trim().toLowerCase();
     return companies.filter((c) => {
       const matchesSearch =
         !q ||
@@ -204,7 +196,7 @@ export default function CompaniesPage() {
       const matchesLocation = !loc || (c.location?.toLowerCase().includes(loc) ?? false);
       return matchesSearch && matchesLocation;
     });
-  }, [committedSearch, committedLocation, companies]);
+  }, [search, location, companies]);
 
   if (isLoading) {
     return (
@@ -221,46 +213,35 @@ export default function CompaniesPage() {
   return (
     <section className="min-h-[calc(100vh-80px)] bg-surface-cream">
 
-      {/* ======== SEARCH BAR ======== */}
-      <div className="relative bg-gradient-to-b from-surface-white to-surface-cream border-b border-surface-sand overflow-hidden">
-        {/* Decorative blobs */}
-        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-coffee-gold/5 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-logo-sage/5 blur-3xl" />
-
-        <div className="relative mx-auto max-w-6xl px-4 pt-8 pb-6 sm:px-6">
-          <Reveal variant="fade-up" duration={500}>
-            <div className="mb-5">
-              <h1 className="text-2xl sm:text-3xl font-bold text-coffee-dark">
-                {t("companies.title")}
-              </h1>
-              <p className="mt-1 text-sm text-text-muted">
-                {filtered.length} {t("companies.results")}
-              </p>
-            </div>
-          </Reveal>
-
-          {/* Search Inputs */}
-          <div className="flex flex-col gap-2.5 sm:flex-row">
-            <div className="relative flex-1" ref={searchRef}>
-              <HiOutlineSearch
-                size={18}
-                className="absolute top-1/2 left-3.5 -translate-y-1/2 text-text-muted/60"
-              />
+      {/* ======== COMPACT SEARCH BAR ======== */}
+      <div className="sticky top-0 z-30 border-b border-surface-sand bg-surface-white/95 backdrop-blur-sm">
+        <div className="mx-auto max-w-6xl px-3 sm:px-6 py-3">
+          <div className="flex items-center gap-2.5">
+            {/* Search input */}
+            <div className="relative flex-1 min-w-0" ref={searchRef}>
+              <HiOutlineSearch size={16} className="absolute top-1/2 left-3 -translate-y-1/2 text-text-muted/50" />
               <input
                 type="text"
                 value={search}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                 onFocus={() => { if (userSuggestions.length > 0) setUserSuggestionsOpen(true); }}
                 placeholder={t("companies.searchPlaceholder")}
-                className="w-full rounded-xl border border-surface-sand bg-surface-white py-3 pl-11 pr-4 text-sm text-text-primary shadow-sm placeholder:text-text-muted/50 focus:border-coffee-gold focus:outline-none focus:ring-2 focus:ring-coffee-gold/10 transition-all"
+                className="w-full rounded-lg border border-surface-sand bg-surface-cream/50 py-2 pl-9 pr-8 text-sm text-text-primary placeholder:text-text-muted/40 focus:border-coffee-gold focus:bg-surface-white focus:outline-none focus:ring-1 focus:ring-coffee-gold/15 transition-all"
               />
+              {search && (
+                <button
+                  onClick={() => { setSearch(""); setUserSuggestions([]); setUserSuggestionsOpen(false); }}
+                  className="absolute top-1/2 right-2.5 -translate-y-1/2 text-text-muted/40 hover:text-text-muted cursor-pointer"
+                >
+                  <HiOutlineX size={14} />
+                </button>
+              )}
 
               {/* User Suggestions Dropdown */}
               {userSuggestionsOpen && userSuggestions.length > 0 && (
-                <ul className="absolute left-0 top-full z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-surface-sand bg-surface-white shadow-xl">
-                  <li className="px-3.5 py-2 text-[11px] font-semibold uppercase tracking-wider text-text-muted/60 border-b border-surface-sand bg-surface-cream/50">
-                    <HiOutlineUser size={12} className="inline mr-1.5 -mt-0.5" />
+                <ul className="absolute left-0 top-full z-50 mt-1 w-full overflow-hidden rounded-lg border border-surface-sand bg-surface-white shadow-lg">
+                  <li className="px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-text-muted/50 border-b border-surface-sand bg-surface-cream/50">
+                    <HiOutlineUser size={10} className="inline mr-1 -mt-0.5" />
                     Students
                   </li>
                   {userSuggestions.map((u) => (
@@ -269,50 +250,39 @@ export default function CompaniesPage() {
                         type="button"
                         onClick={() => {
                           setUserSuggestionsOpen(false);
-                          router.push(`/student/profile?id=${u.userId}`);
+                          router.push(`/student/profile/${u.userId}`);
                         }}
-                        className="flex w-full cursor-pointer items-center gap-3 px-3.5 py-2.5 text-left transition-colors hover:bg-coffee-gold/5"
+                        className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-coffee-gold/5"
                       >
                         {u.profilePhotoUrl ? (
-                          <img
-                            src={u.profilePhotoUrl}
-                            alt=""
-                            className="h-8 w-8 rounded-lg object-cover"
-                          />
+                          <img src={u.profilePhotoUrl} alt="" className="h-7 w-7 rounded-md object-cover" />
                         ) : (
-                          <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-coffee-warm/20 to-coffee-gold/20 flex items-center justify-center">
-                            <HiOutlineUser size={14} className="text-coffee-warm" />
+                          <div className="h-7 w-7 rounded-md bg-gradient-to-br from-coffee-warm/20 to-coffee-gold/20 flex items-center justify-center">
+                            <HiOutlineUser size={12} className="text-coffee-warm" />
                           </div>
                         )}
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-coffee-dark truncate">
-                            {u.firstName} {u.lastName}
-                          </p>
-                          <p className="text-[11px] text-text-muted truncate">
-                            {[u.department, u.university].filter(Boolean).join(" · ")}
-                          </p>
+                          <p className="text-sm font-medium text-coffee-dark truncate">{u.firstName} {u.lastName}</p>
+                          <p className="text-[10px] text-text-muted truncate">{[u.department, u.university].filter(Boolean).join(" · ")}</p>
                         </div>
                         {u.skills.length > 0 && (
                           <div className="hidden sm:flex gap-1">
                             {u.skills.slice(0, 2).map((s) => (
-                              <span key={s} className="rounded-md bg-coffee-gold/10 px-1.5 py-0.5 text-[10px] font-medium text-coffee-warm">
-                                {s}
-                              </span>
+                              <span key={s} className="rounded-md bg-coffee-gold/10 px-1.5 py-0.5 text-[10px] font-medium text-coffee-warm">{s}</span>
                             ))}
                           </div>
                         )}
-                        <HiOutlineChevronRight size={14} className="shrink-0 text-text-muted/30" />
+                        <HiOutlineChevronRight size={12} className="shrink-0 text-text-muted/30" />
                       </button>
                     </li>
                   ))}
                 </ul>
               )}
             </div>
-            <div className="relative sm:w-52" ref={locationRef}>
-              <HiOutlineLocationMarker
-                size={18}
-                className="absolute top-1/2 left-3.5 -translate-y-1/2 text-text-muted/60 z-10"
-              />
+
+            {/* Location input */}
+            <div className="relative hidden sm:block w-44" ref={locationRef}>
+              <HiOutlineLocationMarker size={15} className="absolute top-1/2 left-3 -translate-y-1/2 text-text-muted/50 z-10" />
               <input
                 type="text"
                 value={location}
@@ -322,18 +292,26 @@ export default function CompaniesPage() {
                 }}
                 onFocus={() => setLocationOpen(true)}
                 placeholder={t("companies.locationPlaceholder")}
-                className="w-full rounded-xl border border-surface-sand bg-surface-white py-3 pl-11 pr-4 text-sm text-text-primary shadow-sm placeholder:text-text-muted/50 focus:border-coffee-gold focus:outline-none focus:ring-2 focus:ring-coffee-gold/10 transition-all"
+                className="w-full rounded-lg border border-surface-sand bg-surface-cream/50 py-2 pl-9 pr-8 text-sm text-text-primary placeholder:text-text-muted/40 focus:border-coffee-gold focus:bg-surface-white focus:outline-none focus:ring-1 focus:ring-coffee-gold/15 transition-all"
               />
+              {location && (
+                <button
+                  onClick={() => setLocation("")}
+                  className="absolute top-1/2 right-2.5 -translate-y-1/2 text-text-muted/40 hover:text-text-muted cursor-pointer"
+                >
+                  <HiOutlineX size={14} />
+                </button>
+              )}
               {locationOpen && filteredLocations.length > 0 && (
-                <ul className="absolute left-0 top-full z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-surface-sand bg-surface-white shadow-xl">
+                <ul className="absolute left-0 top-full z-50 mt-1 w-full overflow-hidden rounded-lg border border-surface-sand bg-surface-white shadow-lg max-h-48 overflow-y-auto">
                   {filteredLocations.map((loc) => (
                     <li key={loc}>
                       <button
                         type="button"
                         onClick={() => { setLocation(loc); setLocationOpen(false); }}
-                        className="flex w-full cursor-pointer items-center gap-2.5 px-4 py-2.5 text-left text-sm text-text-primary transition-colors hover:bg-coffee-gold/5"
+                        className="flex w-full cursor-pointer items-center gap-2 px-3 py-2 text-left text-sm text-text-primary transition-colors hover:bg-coffee-gold/5"
                       >
-                        <HiOutlineLocationMarker size={14} className="shrink-0 text-text-muted/60" />
+                        <HiOutlineLocationMarker size={13} className="shrink-0 text-text-muted/50" />
                         {loc}
                       </button>
                     </li>
@@ -341,12 +319,35 @@ export default function CompaniesPage() {
                 </ul>
               )}
             </div>
-            <button
-              onClick={handleSearch}
-              className="rounded-xl bg-gradient-to-r from-coffee-warm to-coffee-gold px-7 py-3 text-sm font-semibold text-white shadow-md shadow-coffee-warm/15 transition-all hover:shadow-lg hover:shadow-coffee-warm/25 cursor-pointer"
-            >
-              {t("companies.searchBtn")}
-            </button>
+
+            {/* Divider */}
+            <div className="hidden sm:block h-5 w-px bg-surface-sand" />
+
+            {/* Result count */}
+            <span className="hidden sm:inline shrink-0 text-xs text-text-muted tabular-nums">
+              {filtered.length} {t("companies.results")}
+            </span>
+          </div>
+
+          {/* Mobile: location + count row */}
+          <div className="flex items-center gap-2.5 mt-2 sm:hidden">
+            <div className="relative flex-1">
+              <HiOutlineLocationMarker size={15} className="absolute top-1/2 left-3 -translate-y-1/2 text-text-muted/50 z-10" />
+              <input
+                type="text"
+                value={location}
+                onChange={(e) => {
+                  setLocation(e.target.value);
+                  setLocationOpen(true);
+                }}
+                onFocus={() => setLocationOpen(true)}
+                placeholder={t("companies.locationPlaceholder")}
+                className="w-full rounded-lg border border-surface-sand bg-surface-cream/50 py-2 pl-9 pr-4 text-sm text-text-primary placeholder:text-text-muted/40 focus:border-coffee-gold focus:bg-surface-white focus:outline-none focus:ring-1 focus:ring-coffee-gold/15 transition-all"
+              />
+            </div>
+            <span className="shrink-0 text-xs text-text-muted tabular-nums">
+              {filtered.length} {t("companies.results")}
+            </span>
           </div>
         </div>
       </div>
@@ -363,7 +364,7 @@ export default function CompaniesPage() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map((item, idx) => (
               <Link
                 key={item.id}

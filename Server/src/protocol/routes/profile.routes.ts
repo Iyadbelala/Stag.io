@@ -255,4 +255,33 @@ profileRouter.get('/cv/:userId', requireAuth, async (req: Request, res: Response
   }
 });
 
+/* GET /api/profile/:id — public read-only student profile (must be last to avoid catching other routes) */
+profileRouter.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const profile = await getStudentProfile(req.params.id as string);
+    res.json({
+      success: true,
+      data: {
+        id: profile.id,
+        firstName: profile.firstName,
+        lastName: profile.lastName,
+        university: profile.university,
+        department: profile.department,
+        bio: profile.bio,
+        skills: profile.skills,
+        profilePhotoUrl: profile.profilePhotoUrl,
+        portfolioPhotos: profile.portfolioPhotos,
+        linkedinUrl: profile.linkedinUrl,
+        githubUrl: profile.githubUrl,
+      },
+    });
+  } catch (err: unknown) {
+    const e = err as { code?: string; status?: number; message: string };
+    res.status(e.status ?? 500).json({
+      success: false,
+      error: { code: e.code ?? 'INTERNAL_ERROR', message: e.status === 404 ? 'Student not found' : e.message },
+    });
+  }
+});
+
 export default profileRouter;

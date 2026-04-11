@@ -293,6 +293,17 @@ export async function getOfferApplicants(
   return result;
 }
 
+export async function getPublicOfferById(offerId: string): Promise<OfferResult | null> {
+  const [row] = await db
+    .select({ offer: internshipOffers })
+    .from(internshipOffers)
+    .innerJoin(companies, eq(internshipOffers.companyId, companies.id))
+    .where(and(eq(internshipOffers.id, offerId), eq(internshipOffers.status, 'active'), eq(companies.isValidated, true)));
+
+  if (!row) return null;
+  return toOfferResult(row.offer);
+}
+
 export async function listPublicOffers(): Promise<OfferResult[]> {
   const rows = await db
     .select({ offer: internshipOffers })

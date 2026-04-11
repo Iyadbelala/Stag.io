@@ -5,292 +5,34 @@ import { useSearchParams, useRouter } from "next/navigation";
 import {
   HiOutlineSearch,
   HiOutlineLocationMarker,
-  HiOutlineBookmark,
-  HiBookmark,
-  HiOutlineClock,
-  HiOutlineBriefcase,
-  HiOutlineOfficeBuilding,
-  HiOutlineShare,
-  HiOutlineCalendar,
-  HiOutlineChevronLeft,
-  HiOutlineX,
-  HiOutlineDocumentText,
-  HiOutlineLink,
-
   HiOutlineLightningBolt,
-  HiOutlineRefresh,
-  HiOutlineGlobeAlt,
-  HiOutlineChevronRight,
-  HiOutlineDocument,
 } from "react-icons/hi";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
 import { useAuth } from "@/Components/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { Reveal } from "@/Components/ui/Motion";
+import type { Internship, MatchedInternship } from "./types";
+import { SmartMatchOverlay } from "./components/SmartMatchOverlay";
+import { InternshipCard } from "./components/InternshipCard";
 
-/* ============================================
-   Types
-   ============================================ */
-interface Internship {
-  id: string;
-  title: string;
-  description: string;
-  requirements: string;
-  duration: string;
-  location: string;
-  type: string;
-  status: string;
-  bannerUrl: string | null;
-  companyName: string;
-  companyLogoUrl: string | null;
-  companyIndustry: string | null;
-  companyLocation: string | null;
-  applicationCount: number;
-  createdAt: string;
-}
-
-interface MatchedInternship extends Internship {
-  matchScore: number;
-  matchedSkills: string[];
-}
-
-/* ============================================
-   Company Avatar
-   ============================================ */
-function CompanyAvatar({ name, logoUrl, size = "md" }: { name: string; logoUrl?: string | null; size?: "sm" | "md" | "lg" }) {
-  const dim = size === "sm" ? "h-10 w-10 text-xs" : size === "lg" ? "h-14 w-14 text-lg" : "h-11 w-11 text-sm";
-
-  if (logoUrl) {
-    return (
-      <img
-        src={logoUrl}
-        alt={name}
-        className={`${dim} shrink-0 rounded-xl object-cover border border-surface-sand shadow-sm`}
-      />
-    );
-  }
-
-  const initials = name
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase();
-
-  const colors = [
-    "from-coffee-warm to-coffee-gold",
-    "from-amber-600 to-orange-400",
-    "from-emerald-600 to-teal-400",
-    "from-blue-600 to-cyan-400",
-    "from-purple-600 to-pink-400",
-    "from-rose-600 to-red-400",
-    "from-indigo-600 to-violet-400",
-  ];
-  const colorIdx = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % colors.length;
-
-  return (
-    <div className={`${dim} shrink-0 rounded-xl bg-gradient-to-br ${colors[colorIdx]} flex items-center justify-center font-bold text-white shadow-sm`}>
-      {initials}
-    </div>
-  );
-}
-
-/* ============================================
-   Circular Score Ring
-   ============================================ */
-function ScoreRing({ score, size = 44 }: { score: number; size?: number }) {
-  const r = (size - 6) / 2;
-  const circ = 2 * Math.PI * r;
-  const offset = circ - (score / 100) * circ;
-  const color =
-    score >= 50 ? "#4A7C59" :
-    score >= 35 ? "#C8A96A" :
-    "#7A4E3A";
-
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} className="-rotate-90">
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--color-surface-sand)" strokeWidth={3} />
-        <circle
-          cx={size / 2} cy={size / 2} r={r}
-          fill="none" stroke={color} strokeWidth={3}
-          strokeLinecap="round"
-          strokeDasharray={circ}
-          strokeDashoffset={offset}
-          className="animate-score-ring"
-        />
-      </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-[11px] font-bold text-coffee-dark tabular-nums">
-        {score}
-      </span>
-    </div>
-  );
-}
-
-/* ============================================
-   Smart Matching Overlay
-   ============================================ */
-function SmartMatchOverlay({ leaving, t }: { leaving: boolean; t: (k: string) => string }) {
-  return (
-    <div
-      className={`fixed inset-0 z-[60] flex flex-col items-center justify-center bg-surface-cream/95 backdrop-blur-md transition-opacity duration-500 ${
-        leaving ? "opacity-0 pointer-events-none" : "opacity-100"
-      }`}
-    >
-      <span className="animate-logo-breathe font-heading text-4xl font-bold tracking-tight select-none">
-        <span className="text-coffee-dark">Smart</span>
-        <span className="text-coffee-gold">Match</span>
-        <sup className="text-xs text-coffee-warm">®</sup>
-      </span>
-      <p className="mt-3 text-sm text-text-muted animate-fade-in max-w-xs text-center" style={{ animationDelay: "150ms" }}>
-        {t("internships.loadingMatches")}
-      </p>
-    </div>
-  );
-}
-
-/* ============================================
-   Application Form Modal
-   ============================================ */
-interface ApplicationFormModalProps {
-  offerTitle: string;
-  companyName: string;
-  isSubmitting: boolean;
-  onClose: () => void;
-  onSubmit: (coverLetter: string, cvUrl: string) => void;
-  t: (key: string) => string;
-}
-
-function ApplicationFormModal({ offerTitle, companyName, isSubmitting, onClose, onSubmit, t }: ApplicationFormModalProps) {
-  const [coverLetter, setCoverLetter] = useState("");
-  const [cvUrl, setCvUrl] = useState("");
-  const [isGeneratingCv, setIsGeneratingCv] = useState(false);
-
-  const handleGenerateCv = async () => {
-    setIsGeneratingCv(true);
-    try {
-      const { data } = await api.post<{ success: true; data: { url: string } }>("/api/profile/cv/generate");
-      setCvUrl(data.data.url);
-    } catch {
-      /* ignore */
-    } finally {
-      setIsGeneratingCv(false);
-    }
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(coverLetter, cvUrl);
-  };
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-      <div className="relative w-full max-w-lg rounded-2xl border border-surface-sand bg-surface-white p-6 shadow-2xl sm:p-8 max-h-[90vh] overflow-y-auto animate-modal-enter">
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 rounded-lg p-1.5 text-text-muted hover:bg-surface-cream hover:text-coffee-dark cursor-pointer transition-colors"
-        >
-          <HiOutlineX size={18} />
-        </button>
-
-        <div className="mb-6 flex items-center gap-3">
-          <CompanyAvatar name={companyName} size="md" />
-          <div>
-            <h2 className="text-lg font-bold text-coffee-dark">{offerTitle}</h2>
-            <p className="text-sm text-text-muted">{companyName}</p>
-          </div>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div>
-            <label htmlFor="cvUrl" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-text-primary">
-              <HiOutlineLink size={16} className="text-text-muted" />
-              {t("internships.cvResumeLink")}
-            </label>
-            <input
-              id="cvUrl"
-              type="url"
-              value={cvUrl}
-              onChange={(e) => setCvUrl(e.target.value)}
-              placeholder="https://drive.google.com/your-cv or LinkedIn URL"
-              className="w-full rounded-xl border border-surface-sand bg-surface-cream/40 px-4 py-3 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted/50 focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10"
-            />
-            <div className="mt-2 flex items-center gap-2">
-              <p className="text-xs text-text-muted">{t("internships.cvHint")}</p>
-              <button
-                type="button"
-                onClick={handleGenerateCv}
-                disabled={isGeneratingCv}
-                className="shrink-0 flex items-center gap-1.5 rounded-lg border border-coffee-gold/30 bg-coffee-gold/5 px-3 py-1.5 text-xs font-medium text-coffee-warm transition-colors hover:bg-coffee-gold/15 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-              >
-                {isGeneratingCv ? (
-                  <>
-                    <div className="h-3 w-3 animate-spin rounded-full border-2 border-coffee-warm border-t-transparent" />
-                    {t("studentProfile.generatingCv")}
-                  </>
-                ) : (
-                  <>
-                    <HiOutlineDocument size={14} />
-                    {t("internships.useStagCv")}
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label htmlFor="coverLetter" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-text-primary">
-              <HiOutlineDocumentText size={16} className="text-text-muted" />
-              {t("internships.coverLetter")}
-            </label>
-            <textarea
-              id="coverLetter"
-              rows={5}
-              value={coverLetter}
-              onChange={(e) => setCoverLetter(e.target.value)}
-              placeholder="Tell the company why you're a great fit..."
-              className="w-full resize-none rounded-xl border border-surface-sand bg-surface-cream/40 px-4 py-3 text-sm text-text-primary outline-none transition-all placeholder:text-text-muted/50 focus:border-coffee-gold focus:ring-2 focus:ring-coffee-gold/10"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full rounded-xl bg-gradient-to-r from-coffee-warm to-coffee-gold py-3.5 text-sm font-semibold text-white shadow-lg shadow-coffee-warm/15 transition-all hover:shadow-xl hover:shadow-coffee-warm/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? t("common.submitting") : t("common.submitApplication")}
-          </button>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-/* ============================================
-   Component
-   ============================================ */
 export default function InternshipsPage() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const companyParam = searchParams.get("company") ?? "";
+  const qParam = searchParams.get("q") ?? "";
+  const locParam = searchParams.get("loc") ?? "";
 
   const [internships, setInternships] = useState<Internship[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [search, setSearch] = useState(companyParam);
-  const [location, setLocation] = useState("");
-  const [committedSearch, setCommittedSearch] = useState(companyParam);
-  const [committedLocation, setCommittedLocation] = useState("");
+  const [search, setSearch] = useState(companyParam || qParam);
+  const [location, setLocation] = useState(locParam);
+  const [committedSearch, setCommittedSearch] = useState(companyParam || qParam);
+  const [committedLocation, setCommittedLocation] = useState(locParam);
   const [locationOpen, setLocationOpen] = useState(false);
   const locationRef = useRef<HTMLDivElement>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
-  const [appliedIds, setAppliedIds] = useState<Set<string>>(new Set());
-  const [applyingId, setApplyingId] = useState<string | null>(null);
-  const [applyError, setApplyError] = useState<string | null>(null);
-  const [applySuccess, setApplySuccess] = useState<string | null>(null);
-  const [applyModalOfferId, setApplyModalOfferId] = useState<string | null>(null);
 
   /* ---- Smart Matching state ---- */
   const [matches, setMatches] = useState<MatchedInternship[]>([]);
@@ -414,13 +156,6 @@ export default function InternshipsPage() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  /* Auto-select first item only on desktop (lg >= 1024px) */
-  useEffect(() => {
-    if (displayList.length > 0 && !selectedId && window.innerWidth >= 1024) {
-      setSelectedId(displayList[0].id);
-    }
-  }, [displayList, selectedId]);
-
   const toggleSave = async (id: string) => {
     if (!user) {
       router.push("/login");
@@ -448,82 +183,13 @@ export default function InternshipsPage() {
   const handleSearch = () => {
     setCommittedSearch(search);
     setCommittedLocation(location);
+    // Persist filters in URL for back-navigation
+    const params = new URLSearchParams();
+    if (search.trim()) params.set("q", search.trim());
+    if (location.trim()) params.set("loc", location.trim());
+    const qs = params.toString();
+    router.replace(`/internships${qs ? `?${qs}` : ""}`, { scroll: false });
   };
-
-  const handleApplyClick = (offerId: string) => {
-    if (!user) {
-      router.push("/login");
-      return;
-    }
-    if (user.role !== "student") {
-      setApplyError(t("internships.onlyStudents"));
-      setTimeout(() => setApplyError(null), 4000);
-      return;
-    }
-    setApplyModalOfferId(offerId);
-  };
-
-  const handleSubmitApplication = async (offerId: string, coverLetter: string, cvUrl: string) => {
-    setApplyingId(offerId);
-    setApplyError(null);
-    setApplySuccess(null);
-
-    try {
-      await api.post("/api/applications", {
-        offerId,
-        coverLetter: coverLetter || undefined,
-        cvUrl: cvUrl || undefined,
-      });
-      setAppliedIds((prev) => new Set(prev).add(offerId));
-      setApplySuccess(t("internships.applicationSuccess"));
-      setTimeout(() => setApplySuccess(null), 4000);
-      setApplyModalOfferId(null);
-    } catch (err: unknown) {
-      const e = err as { response?: { data?: { error?: { message?: string } } } };
-      const msg = e.response?.data?.error?.message ?? t("internships.applicationFailed");
-      setApplyError(msg);
-      setTimeout(() => setApplyError(null), 4000);
-    } finally {
-      setApplyingId(null);
-    }
-  };
-
-  const selected = useMemo(() => {
-    if (smartMatchOn) {
-      const fromMatches = matchMap.get(selectedId ?? "");
-      if (fromMatches) return fromMatches;
-    }
-    return internships.find((i) => i.id === selectedId) ?? null;
-  }, [selectedId, internships, smartMatchOn, matchMap]);
-
-  const typeLabel = (type: string) => {
-    switch (type) {
-      case "remote": return "Remote";
-      case "hybrid": return "Hybrid";
-      default: return "On-site";
-    }
-  };
-
-  const typeIcon = (type: string) => {
-    switch (type) {
-      case "remote": return <HiOutlineGlobeAlt size={12} />;
-      case "hybrid": return <HiOutlineRefresh size={12} />;
-      default: return <HiOutlineOfficeBuilding size={12} />;
-    }
-  };
-
-  const timeAgo = (dateStr: string) => {
-    const diff = Date.now() - new Date(dateStr).getTime();
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-    if (days === 0) return "Today";
-    if (days === 1) return "Yesterday";
-    if (days < 7) return `${days}d ago`;
-    if (days < 30) return `${Math.floor(days / 7)}w ago`;
-    return `${Math.floor(days / 30)}mo ago`;
-  };
-
-  /* ---- Mobile detail view (full page replacement) ---- */
-  const mobileSelected = selected && typeof window !== "undefined" && window.innerWidth < 1024;
 
   if (isLoading) {
     return (
@@ -540,161 +206,6 @@ export default function InternshipsPage() {
   return (
     <section className="min-h-[calc(100vh-80px)] bg-surface-cream">
       {overlayVisible && <SmartMatchOverlay leaving={overlayLeaving} t={t} />}
-
-      {/* ======== MOBILE DETAIL VIEW (replaces entire page on small screens) ======== */}
-      {selected && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-surface-cream lg:hidden overflow-y-auto">
-          {/* Mobile top bar */}
-          <div className="sticky top-0 z-10 flex items-center gap-3 border-b border-surface-sand bg-surface-white/95 backdrop-blur-sm px-4 py-3">
-            <button
-              onClick={() => setSelectedId(null)}
-              className="flex items-center gap-1.5 text-sm font-medium text-coffee-warm cursor-pointer"
-            >
-              <HiOutlineChevronLeft size={18} />
-              Back
-            </button>
-            <div className="ml-auto flex items-center gap-2">
-              <button
-                onClick={() => toggleSave(selected.id)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:text-coffee-warm cursor-pointer"
-              >
-                {savedIds.has(selected.id) ? <HiBookmark size={20} className="text-coffee-warm" /> : <HiOutlineBookmark size={20} />}
-              </button>
-              <button
-                onClick={() => {
-                  const url = `${window.location.origin}/internships?id=${selected.id}`;
-                  if (navigator.share) {
-                    navigator.share({ title: selected.title, text: `${selected.title} at ${selected.companyName}`, url });
-                  } else {
-                    navigator.clipboard.writeText(url);
-                    setApplySuccess("Link copied!");
-                    setTimeout(() => setApplySuccess(null), 2000);
-                  }
-                }}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-text-muted transition-colors hover:text-coffee-warm cursor-pointer"
-              >
-                <HiOutlineShare size={20} />
-              </button>
-            </div>
-          </div>
-
-          {/* Mobile detail body */}
-          <div className="flex-1 px-4 py-5 space-y-5">
-            {/* Match banner */}
-            {"matchScore" in selected && (selected as MatchedInternship).matchScore > 0 && (
-              <div className="rounded-xl bg-gradient-to-br from-coffee-gold/8 via-surface-cream to-coffee-warm/8 border border-coffee-gold/15 p-4">
-                <div className="flex items-center gap-4">
-                  <ScoreRing score={(selected as MatchedInternship).matchScore} size={48} />
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-coffee-dark">{t("internships.matchScore")}</p>
-                    {(selected as MatchedInternship).matchedSkills.length > 0 && (
-                      <div className="mt-1.5 flex flex-wrap gap-1.5">
-                        {(selected as MatchedInternship).matchedSkills.map((skill) => (
-                          <span key={skill} className="rounded-lg bg-coffee-gold/10 border border-coffee-gold/20 px-2 py-0.5 text-[11px] font-medium text-coffee-warm">
-                            {skill}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Banner */}
-            {selected.bannerUrl && (
-              <div className="mb-4 overflow-hidden rounded-xl border border-surface-sand">
-                <img src={selected.bannerUrl} alt="" className="h-36 w-full object-cover" />
-              </div>
-            )}
-
-            {/* Header */}
-            <div className="flex items-start gap-3.5">
-              <CompanyAvatar name={selected.companyName} logoUrl={selected.companyLogoUrl} size="lg" />
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl font-bold text-coffee-dark leading-tight">
-                  {selected.title}
-                </h1>
-                <p className="mt-1 text-sm font-medium text-text-secondary">
-                  {selected.companyName}
-                  {selected.companyIndustry && (
-                    <span className="font-normal text-text-muted"> · {selected.companyIndustry}</span>
-                  )}
-                </p>
-              </div>
-            </div>
-
-            {/* Meta pills */}
-            <div className="flex flex-wrap gap-2">
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-white border border-surface-sand px-3 py-1.5 text-xs font-medium text-text-secondary">
-                <HiOutlineLocationMarker size={13} className="text-text-muted" />
-                {selected.location}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-white border border-surface-sand px-3 py-1.5 text-xs font-medium text-text-secondary">
-                {typeIcon(selected.type)}
-                {typeLabel(selected.type)}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-white border border-surface-sand px-3 py-1.5 text-xs font-medium text-text-secondary">
-                <HiOutlineCalendar size={13} className="text-text-muted" />
-                {selected.duration}
-              </span>
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-surface-white border border-surface-sand px-3 py-1.5 text-xs font-medium text-text-muted">
-                <HiOutlineClock size={13} />
-                {timeAgo(selected.createdAt)}
-              </span>
-            </div>
-
-            {/* Feedback */}
-            {applyError && (
-              <p className="rounded-lg bg-status-error/5 border border-status-error/15 px-3 py-2 text-sm text-status-error">{applyError}</p>
-            )}
-            {applySuccess && (
-              <p className="rounded-lg bg-status-success/5 border border-status-success/15 px-3 py-2 text-sm text-status-success">{applySuccess}</p>
-            )}
-
-            {/* Description */}
-            <div className="rounded-xl bg-surface-white border border-surface-sand p-4">
-              <h2 className="mb-3 text-sm font-semibold text-coffee-dark flex items-center gap-2">
-                <span className="h-1 w-1 rounded-full bg-coffee-warm" />
-                {t("internships.detail.description")}
-              </h2>
-              <p className="text-sm leading-relaxed text-text-secondary whitespace-pre-line">
-                {selected.description}
-              </p>
-            </div>
-
-            {/* Requirements */}
-            <div className="rounded-xl bg-surface-white border border-surface-sand p-4">
-              <h2 className="mb-3 text-sm font-semibold text-coffee-dark flex items-center gap-2">
-                <span className="h-1 w-1 rounded-full bg-coffee-gold" />
-                {t("internships.detail.requirements")}
-              </h2>
-              <p className="text-sm leading-relaxed text-text-secondary whitespace-pre-line">
-                {selected.requirements}
-              </p>
-            </div>
-          </div>
-
-          {/* Mobile sticky apply bar */}
-          <div className="sticky bottom-0 border-t border-surface-sand bg-surface-white/95 backdrop-blur-sm px-4 py-3">
-            <button
-              onClick={() => handleApplyClick(selected.id)}
-              disabled={applyingId === selected.id || appliedIds.has(selected.id)}
-              className={`w-full rounded-xl py-3 text-sm font-semibold transition-all cursor-pointer ${
-                appliedIds.has(selected.id)
-                  ? "bg-status-success text-white cursor-default"
-                  : "bg-gradient-to-r from-coffee-warm to-coffee-gold text-white shadow-md shadow-coffee-warm/15 hover:shadow-lg"
-              } disabled:opacity-60`}
-            >
-              {applyingId === selected.id
-                ? t("common.applying")
-                : appliedIds.has(selected.id)
-                ? `${t("common.applied")} ✓`
-                : t("internships.applyNow")}
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* ======== SEARCH BAR ======== */}
       <div className="relative bg-gradient-to-b from-surface-white to-surface-cream border-b border-surface-sand overflow-hidden">
@@ -832,302 +343,35 @@ export default function InternshipsPage() {
         </div>
       </div>
 
-      {/* ======== MAIN CONTENT (list + detail) ======== */}
-      <div className="mx-auto flex max-w-6xl gap-5 px-3 sm:px-6 py-4 sm:py-5">
-
-        {/* ---- LEFT: Card List ---- */}
-        <div className="w-full lg:w-[400px] shrink-0 space-y-2.5 overflow-y-auto lg:max-h-[calc(100vh-240px)] pr-1">
-          {displayList.length === 0 ? (
-            <div className="flex flex-col items-center justify-center rounded-2xl bg-surface-white border border-surface-sand py-20 text-center">
-              <HiOutlineSearch size={36} className="mb-3 text-text-muted/30" />
-              <p className="text-sm text-text-muted">
-                {internships.length === 0
-                  ? t("internships.noInternshipsYet")
-                  : t("internships.noResults")}
-              </p>
-            </div>
-          ) : (
-            displayList.map((item, idx) => {
+      {/* ======== CARD GRID ======== */}
+      <div className="mx-auto max-w-6xl px-3 sm:px-6 py-4 sm:py-5">
+        {displayList.length === 0 ? (
+          <div className="flex flex-col items-center justify-center rounded-2xl bg-surface-white border border-surface-sand py-20 text-center">
+            <HiOutlineSearch size={36} className="mb-3 text-text-muted/30" />
+            <p className="text-sm text-text-muted">
+              {internships.length === 0
+                ? t("internships.noInternshipsYet")
+                : t("internships.noResults")}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {displayList.map((item, idx) => {
               const matchData = smartMatchOn ? matchMap.get(item.id) : undefined;
-              const isActive = selectedId === item.id;
-
               return (
-                <button
+                <InternshipCard
                   key={item.id}
-                  onClick={() => setSelectedId(item.id)}
-                  className={`animate-card-slide-in group relative flex w-full cursor-pointer flex-col rounded-xl border p-4 text-left transition-all duration-300 ${
-                    isActive
-                      ? "border-coffee-warm/40 bg-surface-white shadow-lg shadow-coffee-warm/10 ring-1 ring-coffee-warm/15 -translate-y-0.5"
-                      : "border-surface-sand bg-surface-white hover:border-coffee-gold/30 hover:shadow-md hover:shadow-coffee-warm/5 hover:-translate-y-0.5"
-                  }`}
-                  style={{ animationDelay: `${idx * 40}ms` }}
-                >
-                  {/* Top row: avatar + info + bookmark */}
-                  <div className="flex items-start gap-3 w-full">
-                    <CompanyAvatar name={item.companyName} logoUrl={item.companyLogoUrl} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <h3 className="text-sm font-semibold leading-tight text-coffee-dark line-clamp-2 pr-6">
-                        {item.title}
-                      </h3>
-                      <p className="mt-0.5 text-[13px] text-text-secondary truncate">{item.companyName}</p>
-                    </div>
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      onClick={(e) => { e.stopPropagation(); toggleSave(item.id); }}
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); toggleSave(item.id); } }}
-                      className="shrink-0 rounded-lg p-1.5 text-text-muted/50 transition-colors hover:bg-surface-cream hover:text-coffee-warm"
-                    >
-                      {savedIds.has(item.id) ? (
-                        <HiBookmark size={16} className="text-coffee-warm" />
-                      ) : (
-                        <HiOutlineBookmark size={16} />
-                      )}
-                    </span>
-                  </div>
-
-                  {/* Meta tags */}
-                  <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-                    <span className="inline-flex items-center gap-1 rounded-md bg-surface-cream px-2 py-0.5 text-[11px] font-medium text-text-muted">
-                      <HiOutlineLocationMarker size={11} />
-                      {item.location}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-surface-cream px-2 py-0.5 text-[11px] font-medium text-text-muted">
-                      {typeIcon(item.type)}
-                      {typeLabel(item.type)}
-                    </span>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-surface-cream px-2 py-0.5 text-[11px] font-medium text-text-muted">
-                      <HiOutlineClock size={11} />
-                      {item.duration}
-                    </span>
-                  </div>
-
-                  {/* Match section */}
-                  {matchData ? (
-                    <div className="mt-3 flex items-center gap-2.5 rounded-lg bg-gradient-to-r from-coffee-gold/5 to-coffee-warm/5 border border-coffee-gold/15 px-3 py-2">
-                      <ScoreRing score={matchData.matchScore} size={36} />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap gap-1">
-                          {matchData.matchedSkills.slice(0, 3).map((skill) => (
-                            <span
-                              key={skill}
-                              className="rounded-md bg-coffee-gold/12 px-1.5 py-0.5 text-[10px] font-medium text-coffee-warm"
-                            >
-                              {skill}
-                            </span>
-                          ))}
-                          {matchData.matchedSkills.length > 3 && (
-                            <span className="text-[10px] text-text-muted">
-                              +{matchData.matchedSkills.length - 3}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="mt-2.5 flex items-center justify-between">
-                      <span className="text-[11px] text-text-muted/70">{timeAgo(item.createdAt)}</span>
-                      <HiOutlineChevronRight size={14} className="text-text-muted/30 group-hover:text-coffee-warm/50 transition-colors" />
-                    </div>
-                  )}
-                </button>
+                  item={item}
+                  matchData={matchData}
+                  isSaved={savedIds.has(item.id)}
+                  onToggleSave={toggleSave}
+                  animationDelay={idx * 40}
+                />
               );
-            })
-          )}
-        </div>
-
-        {/* ---- RIGHT: Detail Panel (desktop only) ---- */}
-        <div
-          className={`hidden lg:block flex-1 overflow-y-auto rounded-xl border border-surface-sand bg-surface-white lg:max-h-[calc(100vh-240px)] ${
-            !selected ? "lg:flex lg:items-center lg:justify-center" : ""
-          }`}
-        >
-          {selected ? (
-            <div key={selected.id} className="animate-fade-in">
-              {/* Detail Header */}
-              <div className="p-8 pb-0">
-                {/* Match banner */}
-                {"matchScore" in selected && (selected as MatchedInternship).matchScore > 0 && (
-                  <div className="mb-5 rounded-xl bg-gradient-to-br from-coffee-gold/8 via-surface-cream to-coffee-warm/8 border border-coffee-gold/15 p-4">
-                    <div className="flex items-center gap-4">
-                      <ScoreRing score={(selected as MatchedInternship).matchScore} size={52} />
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-coffee-dark">
-                          {t("internships.matchScore")}
-                        </p>
-                        {(selected as MatchedInternship).matchedSkills.length > 0 && (
-                          <div className="mt-1.5 flex flex-wrap gap-1.5">
-                            {(selected as MatchedInternship).matchedSkills.map((skill) => (
-                              <span
-                                key={skill}
-                                className="rounded-lg bg-coffee-gold/10 border border-coffee-gold/20 px-2 py-0.5 text-[11px] font-medium text-coffee-warm"
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Banner */}
-                {selected.bannerUrl && (
-                  <div className="mb-5 overflow-hidden rounded-xl border border-surface-sand">
-                    <img src={selected.bannerUrl} alt="" className="h-44 w-full object-cover" />
-                  </div>
-                )}
-
-                {/* Company + title */}
-                <div className="flex items-start gap-4">
-                  <CompanyAvatar name={selected.companyName} logoUrl={selected.companyLogoUrl} size="lg" />
-                  <div className="flex-1 min-w-0">
-                    <h1 className="text-2xl font-bold text-coffee-dark leading-tight">
-                      {selected.title}
-                    </h1>
-                    <p className="mt-1 text-sm font-medium text-text-secondary">
-                      {selected.companyName}
-                      {selected.companyIndustry && (
-                        <span className="font-normal text-text-muted"> · {selected.companyIndustry}</span>
-                      )}
-                    </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1 text-[13px] text-text-muted">
-                        <HiOutlineLocationMarker size={14} />
-                        {selected.location}
-                      </span>
-                      <span className="text-surface-sand">|</span>
-                      <span className="inline-flex items-center gap-1 text-[13px] text-text-muted">
-                        {typeIcon(selected.type)}
-                        {typeLabel(selected.type)}
-                      </span>
-                      <span className="text-surface-sand">|</span>
-                      <span className="inline-flex items-center gap-1 text-[13px] text-text-muted">
-                        <HiOutlineCalendar size={14} />
-                        {selected.duration}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="mt-5 flex items-center gap-2.5">
-                  <button
-                    onClick={() => handleApplyClick(selected.id)}
-                    disabled={applyingId === selected.id || appliedIds.has(selected.id)}
-                    className={`rounded-xl px-7 py-2.5 text-sm font-semibold transition-all cursor-pointer ${
-                      appliedIds.has(selected.id)
-                        ? "bg-status-success text-white cursor-default"
-                        : "bg-gradient-to-r from-coffee-warm to-coffee-gold text-white shadow-md shadow-coffee-warm/15 hover:shadow-lg hover:shadow-coffee-warm/25"
-                    } disabled:opacity-60`}
-                  >
-                    {applyingId === selected.id
-                      ? t("common.applying")
-                      : appliedIds.has(selected.id)
-                      ? `${t("common.applied")} ✓`
-                      : t("internships.applyNow")}
-                  </button>
-                  <button
-                    onClick={() => toggleSave(selected.id)}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-surface-sand text-text-muted transition-all hover:border-coffee-gold/30 hover:bg-coffee-gold/5 hover:text-coffee-warm cursor-pointer"
-                    aria-label={t("internships.save")}
-                  >
-                    {savedIds.has(selected.id) ? (
-                      <HiBookmark size={18} className="text-coffee-warm" />
-                    ) : (
-                      <HiOutlineBookmark size={18} />
-                    )}
-                  </button>
-                  <button
-                    onClick={() => {
-                      const url = `${window.location.origin}/internships?id=${selected.id}`;
-                      if (navigator.share) {
-                        navigator.share({ title: selected.title, text: `${selected.title} at ${selected.companyName}`, url });
-                      } else {
-                        navigator.clipboard.writeText(url);
-                        setApplySuccess("Link copied to clipboard!");
-                        setTimeout(() => setApplySuccess(null), 2000);
-                      }
-                    }}
-                    className="flex h-10 w-10 items-center justify-center rounded-xl border border-surface-sand text-text-muted transition-all hover:border-coffee-gold/30 hover:bg-coffee-gold/5 hover:text-coffee-warm cursor-pointer"
-                    aria-label={t("internships.share")}
-                  >
-                    <HiOutlineShare size={18} />
-                  </button>
-                  <span className="ml-auto text-[12px] text-text-muted/60">
-                    <HiOutlineClock size={13} className="inline mr-0.5 -mt-0.5" />
-                    {timeAgo(selected.createdAt)}
-                  </span>
-                </div>
-
-                {/* Feedback */}
-                {applyError && (
-                  <p className="mt-3 rounded-lg bg-status-error/5 border border-status-error/15 px-3 py-2 text-sm text-status-error">{applyError}</p>
-                )}
-                {applySuccess && (
-                  <p className="mt-3 rounded-lg bg-status-success/5 border border-status-success/15 px-3 py-2 text-sm text-status-success">{applySuccess}</p>
-                )}
-              </div>
-
-              {/* Content area */}
-              <div className="p-8 pt-5 space-y-6 pb-8">
-                <div className="h-px bg-surface-sand" />
-
-                {/* Description */}
-                <div>
-                  <h2 className="mb-3 text-[15px] font-semibold text-coffee-dark flex items-center gap-2">
-                    <span className="h-1 w-1 rounded-full bg-coffee-warm" />
-                    {t("internships.detail.description")}
-                  </h2>
-                  <p className="text-sm leading-[1.7] text-text-secondary whitespace-pre-line">
-                    {selected.description}
-                  </p>
-                </div>
-
-                <div className="h-px bg-surface-sand" />
-
-                {/* Requirements */}
-                <div>
-                  <h2 className="mb-3 text-[15px] font-semibold text-coffee-dark flex items-center gap-2">
-                    <span className="h-1 w-1 rounded-full bg-coffee-gold" />
-                    {t("internships.detail.requirements")}
-                  </h2>
-                  <p className="text-sm leading-[1.7] text-text-secondary whitespace-pre-line">
-                    {selected.requirements}
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in">
-              <div className="h-16 w-16 rounded-2xl bg-surface-cream flex items-center justify-center mb-4">
-                <HiOutlineBriefcase size={28} className="text-text-muted/30" />
-              </div>
-              <p className="text-sm text-text-muted">
-                {t("internships.selectPrompt")}
-              </p>
-            </div>
-          )}
-        </div>
+            })}
+          </div>
+        )}
       </div>
-
-      {/* ---- Application Form Modal ---- */}
-      {applyModalOfferId && (() => {
-        const offer = internships.find((i) => i.id === applyModalOfferId);
-        return (
-          <ApplicationFormModal
-            offerTitle={offer?.title ?? ""}
-            companyName={offer?.companyName ?? ""}
-            isSubmitting={applyingId === applyModalOfferId}
-            onClose={() => setApplyModalOfferId(null)}
-            onSubmit={(coverLetter, cvUrl) =>
-              handleSubmitApplication(applyModalOfferId, coverLetter, cvUrl)
-            }
-            t={t}
-          />
-        );
-      })()}
     </section>
   );
 }

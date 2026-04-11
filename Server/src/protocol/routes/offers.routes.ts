@@ -3,7 +3,7 @@ import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
 import { uploadMemory, validateFileBytes } from '../middleware/upload.middleware';
 import { uploadToCloudinary } from '../../lib/cloudinary';
-import { createOffer, getCompanyOffers, deleteOffer, updateOffer, listPublicOffers, updateOfferStatus, getOfferApplicants } from '../../context/offers.service';
+import { createOffer, getCompanyOffers, deleteOffer, updateOffer, listPublicOffers, getPublicOfferById, updateOfferStatus, getOfferApplicants } from '../../context/offers.service';
 
 const offersRouter = Router();
 
@@ -35,6 +35,20 @@ offersRouter.get('/mine', requireAuth, requireRole('company'), async (req: Reque
   try {
     const offers = await getCompanyOffers(req.user!.sub);
     res.json({ success: true, data: offers });
+  } catch (err: unknown) {
+    handleError(res, err);
+  }
+});
+
+/* GET /api/offers/:id — public single offer detail */
+offersRouter.get('/:id', async (req: Request, res: Response) => {
+  try {
+    const offer = await getPublicOfferById(req.params.id as string);
+    if (!offer) {
+      res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Offer not found' } });
+      return;
+    }
+    res.json({ success: true, data: offer });
   } catch (err: unknown) {
     handleError(res, err);
   }

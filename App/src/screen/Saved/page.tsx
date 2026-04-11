@@ -212,14 +212,14 @@ export default function SavedPage() {
                 {/* Top row */}
                 <div className="flex items-start gap-3 w-full">
                   <button
-                    onClick={() => router.push(`/internships?company=${encodeURIComponent(item.companyName)}`)}
+                    onClick={() => router.push(`/internships/${item.id}`)}
                     className="cursor-pointer"
                   >
                     <CompanyAvatar name={item.companyName} size="sm" />
                   </button>
                   <div
                     className="flex-1 min-w-0 cursor-pointer"
-                    onClick={() => router.push(`/internships?company=${encodeURIComponent(item.companyName)}`)}
+                    onClick={() => router.push(`/internships/${item.id}`)}
                   >
                     <h3 className="text-[14px] font-semibold leading-tight text-coffee-dark truncate pr-7">
                       {item.title}
@@ -258,7 +258,7 @@ export default function SavedPage() {
                 <div className="mt-2.5 flex items-center justify-between">
                   <span className="text-[11px] text-text-muted/70">{timeAgo(item.createdAt)}</span>
                   <button
-                    onClick={() => router.push(`/internships?company=${encodeURIComponent(item.companyName)}`)}
+                    onClick={() => router.push(`/internships/${item.id}`)}
                     className="cursor-pointer"
                   >
                     <HiOutlineChevronRight size={14} className="text-text-muted/30 group-hover:text-coffee-warm/50 transition-colors" />

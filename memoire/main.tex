@@ -1,0 +1,42 @@
+\documentclass[12pt,a4paper]{report}
+
+% ── Packages ──
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[english]{babel}
+\usepackage{geometry}
+\usepackage{array}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{makecell}
+\usepackage{amssymb}
+
+% ── Page Setup ──
+\geometry{margin=2.5cm}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\renewcommand{\baselinestretch}{1.5}
+
+% ── Document ──
+\begin{document}
+
+% ── Cover Page ──
+\input{cover}
+
+% ── Chapter 1 ──
+\input{chap1}
+
+% ── Chapter 2 ──
+\setcounter{chapter}{1}
+\input{chap2}
+
+% ── Future chapters (uncomment when ready) ──
+% \setcounter{chapter}{2}
+% \input{chap3}
+% \setcounter{chapter}{3}
+% \input{chap4}
+
+\end{document}

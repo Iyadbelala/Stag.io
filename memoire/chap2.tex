@@ -1,0 +1,205 @@
+% ══════════════════════════════════════════════════════════════
+%                        CHAPTER 2
+% ══════════════════════════════════════════════════════════════
+
+\chapter{Preliminary Study and Requirements Specification}
+
+\section{Introduction}
+
+In the previous chapter, we presented the general context of the project and studied existing solutions in the field of internship management. In this second chapter, we will present the project to be developed, identify the different actors that interact with the system, and then establish the requirements specification by defining both functional and non-functional requirements. Finally, we will model the use cases along with their detailed textual descriptions.
+
+\section{Project Presentation}
+
+\subsection{Project Objective}
+
+The \textbf{Stag.io} project (\textit{stage} is the French word for \textit{internship}) aims to design and develop a modern web platform dedicated to managing the complete internship lifecycle. The platform seeks to digitize the entire process --- from the publication of internship offers by companies, through student applications, to the administrative validation of internship agreements by universities.
+
+The main objective is to provide a unified space where all stakeholders in the internship process (students, companies, universities, and administrators) can collaborate efficiently and transparently, replacing traditional methods that often rely on manual exchanges (emails, paper documents, in-person visits).
+
+\subsection{Problem Statement}
+
+The traditional internship search and management process suffers from several issues:
+
+\begin{itemize}
+    \item \textbf{Scattered offers}: Students must consult multiple sources (company websites, social media, word of mouth) to find relevant offers, which is time-consuming and inefficient.
+    \item \textbf{Profile mismatch}: Conventional platforms display a generic chronological list of offers without considering the student's profile (skills, department, location), leading to irrelevant applications.
+    \item \textbf{Administrative burden}: The validation of internship agreements between the university, the student, and the company still relies on manual and paper-based processes.
+    \item \textbf{Lack of centralized tracking}: Neither universities nor companies have centralized tools to track the status of applications and agreements in real time.
+    \item \textbf{No structured feedback}: Students lack a structured way to evaluate their internship experiences and guide future cohorts.
+\end{itemize}
+
+\subsection{Proposed Solution}
+
+To address these issues, we propose \textbf{Stag.io}, a full-stack web platform that offers the following key features:
+
+\begin{itemize}
+    \item \textbf{Intelligent offer discovery}: A proprietary recommendation engine called \textbf{SmartMatch} that ranks internship offers by relevance based on the student's profile (skills, academic department, location, job title), producing a composite score from 0 to 100 computed in real time in under 100\,ms per request.
+    \item \textbf{Complete application management}: A system allowing students to apply with one click, track their application status (pending, accepted, rejected, withdrawn), and enabling companies to manage their applicants from a dedicated dashboard.
+    \item \textbf{Administrative validation}: A dedicated space for universities to validate internship agreements and monitor student progress.
+    \item \textbf{Real-time communication}: A real-time notification system via WebSocket to inform stakeholders of application status changes, new registrations, and validation requests.
+    \item \textbf{Intelligent chatbot}: An AI-powered conversational assistant (Google Gemini) to help users navigate the platform and answer frequently asked questions.
+    \item \textbf{Review system}: A mechanism allowing students and companies to evaluate each other at the end of an internship.
+    \item \textbf{CV and agreement generation}: Built-in tools to generate CVs and internship agreements in PDF format.
+    \item \textbf{Secure authentication}: A robust authentication system based on JWT tokens (access + refresh), email verification (OTP), CAPTCHA protection (Cloudflare Turnstile), and role-based access control.
+\end{itemize}
+
+\subsection{Project Scope}
+
+The project covers the following modules:
+
+\begin{table}[H]
+\centering
+\caption{Project Modules}
+\label{tab:modules}
+\begin{tabular}{|p{4cm}|p{10cm}|}
+\hline
+\textbf{Module} & \textbf{Description} \\
+\hline
+Authentication & Registration (student, company, university), login, email verification via OTP, password reset, JWT token management \\
+\hline
+Offer Management & Creation, editing, deletion, and publication of internship offers (draft, active, closed) \\
+\hline
+Applications & Application submission with cover letter and CV, status tracking, application withdrawal \\
+\hline
+SmartMatch & Intelligent recommendation engine based on 4 dimensions: skills (50\%), department (25\%), location (15\%), title (10\%) \\
+\hline
+Profiles & Student profile management (skills, bio, portfolio, CV) and company profile management (logo, industry, verification documents) \\
+\hline
+Dashboards & Role-specific dashboards with statistics and analytics \\
+\hline
+Administration & User management, company and university approval, super admin panel \\
+\hline
+Universities & Internship agreement validation, student tracking, domain-based authentication \\
+\hline
+Notifications & Real-time notifications via Socket.IO for platform events \\
+\hline
+AI Chatbot & Integrated conversational assistant (Google Gemini) with conversation history \\
+\hline
+Reviews & Mutual evaluation system between students and companies after internships \\
+\hline
+Saved Offers & Bookmark system allowing students to save offers for later \\
+\hline
+PDF Generation & CV and internship agreement generation in PDF format \\
+\hline
+Internationalization & Full bilingual support (English / French) \\
+\hline
+\end{tabular}
+\end{table}
+
+\section{Actor Identification}
+
+An actor represents an external entity (person, system, or device) that interacts with the system to achieve a goal. Within the scope of Stag.io, we have identified \textbf{five (5) primary actors} and \textbf{four (4) secondary actors}.
+
+\subsection{Actor Summary Table}
+
+\begin{table}[H]
+\centering
+\caption{Primary Actors}
+\label{tab:actors}
+\begin{tabular}{|p{3cm}|p{2cm}|p{9cm}|}
+\hline
+\textbf{Actor} & \textbf{Type} & \textbf{Description} \\
+\hline
+Student & Primary & A user registered with the \texttt{student} role. They search for internship offers, apply to offers, manage their profile and CV, access SmartMatch recommendations, and can review companies after completing an internship. Registration requires an email belonging to a validated university's domain. \\
+\hline
+Company & Primary & A user registered with the \texttt{company} role. They publish internship offers, manage received applications, administer their company profile, and view dashboard statistics. Their registration is subject to administrator approval. \\
+\hline
+University & Primary & A user registered with the \texttt{university} role. They validate internship agreements, track the progress of students affiliated with their domain, and manage their university profile. Their registration is subject to administrator approval. \\
+\hline
+Administrator & Primary & A user with the \texttt{admin} role. They oversee platform operations, approve company and university registrations, manage users, and control system access. \\
+\hline
+Super Administrator & Primary & A user with the \texttt{superadmin} role. They possess all administrator privileges with additional system-wide management capabilities, including administrator account management. \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Detailed Actor Descriptions}
+
+\subsubsection{Student}
+
+The student is the central actor of the platform. They register using their university email address (the email domain must match that of a university previously validated on the platform). After verifying their email using a 6-digit OTP code, they can:
+
+\begin{itemize}
+    \item Browse and filter available internship offers (by type: on-site, remote, hybrid)
+    \item Activate \textbf{SmartMatch} mode to receive offers ranked by relevance to their profile
+    \item Apply to internship offers with a cover letter and CV
+    \item Track application status in real time (pending, accepted, rejected, withdrawn)
+    \item Manage their profile: skills, biography, portfolio photos, academic department
+    \item Generate and download their CV in PDF format
+    \item Save offers as bookmarks for later viewing
+    \item Review companies and internship experiences through the review system
+    \item Interact with the AI chatbot for assistance
+    \item Receive real-time notifications on application status changes
+\end{itemize}
+
+\subsubsection{Company}
+
+A company registers on the platform by providing its information (company name, industry, location, contact person) and, optionally, a verification document. The account is created upon registration, but it must be \textbf{validated by an administrator} for its offers to become fully operational. Its actions include:
+
+\begin{itemize}
+    \item Publishing internship offers with title, description, requirements, duration, location, and type (on-site, remote, hybrid)
+    \item Managing offer status (draft, active, closed)
+    \item Viewing and processing received applications (accept, reject)
+    \item Managing the company profile (logo, description, website, verification documents)
+    \item Viewing the dashboard with statistics and analytics
+    \item Reviewing student interns through the review system
+    \item Receiving real-time notifications on new applications
+\end{itemize}
+
+\subsubsection{University}
+
+A university registers by providing its name, \textbf{email domain} (e.g., \texttt{univ-constantine2.dz}), website, and location. This domain is essential as it automatically links students who register with an email address from the same domain to this university. The university's registration must be \textbf{validated by an administrator} before students can register using its domain. Its actions include:
+
+\begin{itemize}
+    \item Validating internship agreements for affiliated students
+    \item Tracking the progress and application status of students
+    \item Managing the university profile (logo, description, website)
+    \item Viewing the dashboard with statistics on students and internships
+    \item Receiving notifications regarding agreement validation requests
+\end{itemize}
+
+\subsubsection{Administrator}
+
+The administrator is responsible for the day-to-day supervision of the platform. They can:
+
+\begin{itemize}
+    \item Approve or reject company and university registrations
+    \item Manage user accounts (view, deactivate, modify roles)
+    \item View global platform statistics
+    \item Moderate content and reviews
+    \item Receive notifications on new registrations requiring approval
+\end{itemize}
+
+\subsubsection{Super Administrator}
+
+The super administrator possesses all administrator privileges with additional capabilities:
+
+\begin{itemize}
+    \item Manage administrator accounts (create, modify, delete)
+    \item Full control over all platform entities (users, companies, universities, offers)
+    \item Full access to the super administration panel
+    \item System-wide role and permission management
+\end{itemize}
+
+\subsection{Secondary Actors}
+
+In addition to the primary actors, the following secondary actors interact with the system in an automated manner:
+
+\begin{table}[H]
+\centering
+\caption{Secondary Actors}
+\label{tab:secondary-actors}
+\begin{tabular}{|p{4.5cm}|p{9.5cm}|}
+\hline
+\textbf{Secondary Actor} & \textbf{Description} \\
+\hline
+Mail Server (SMTP) & External service (via Nodemailer) used for sending account verification emails and password reset emails. \\
+\hline
+Cloud Storage Service (Cloudinary) & External service used for hosting images (logos, profile photos, portfolio) and documents (CVs, company verification documents). \\
+\hline
+AI Service (Google Gemini) & External service used by the intelligent chatbot to generate contextual responses to user queries. \\
+\hline
+CAPTCHA Service (Cloudflare Turnstile) & External service used for bot protection during authentication processes (registration and login). \\
+\hline
+\end{tabular}
+\end{table}

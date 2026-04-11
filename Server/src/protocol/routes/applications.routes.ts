@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
-import { applyToOffer, getStudentApplications, updateApplicationStatus } from '../../context/applications.service';
+import { applyToOffer, getStudentApplications, updateApplicationStatus, withdrawApplication } from '../../context/applications.service';
 
 const applicationsRouter = Router();
 
@@ -46,6 +46,16 @@ applicationsRouter.get('/', requireAuth, requireRole('student'), async (req: Req
   try {
     const apps = await getStudentApplications(req.user!.sub);
     res.json({ success: true, data: apps });
+  } catch (err: unknown) {
+    handleError(res, err);
+  }
+});
+
+/* POST /api/applications/:id/withdraw — withdraw a pending application (students only) */
+applicationsRouter.post('/:id/withdraw', requireAuth, requireRole('student'), async (req: Request, res: Response) => {
+  try {
+    const result = await withdrawApplication(req.user!.sub, req.params.id as string);
+    res.json({ success: true, data: result });
   } catch (err: unknown) {
     handleError(res, err);
   }

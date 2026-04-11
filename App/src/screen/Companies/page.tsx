@@ -17,6 +17,7 @@ import {
 } from "react-icons/hi";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
 import { api } from "@/lib/api";
+import { Reveal } from "@/Components/ui/Motion";
 
 /* ============================================
    Types
@@ -350,16 +351,22 @@ export default function CompaniesPage() {
       )}
 
       {/* ======== SEARCH BAR ======== */}
-      <div className="bg-gradient-to-b from-surface-white to-surface-cream border-b border-surface-sand">
-        <div className="mx-auto max-w-6xl px-4 pt-6 pb-5 sm:px-6">
-          <div className="mb-4">
-            <h1 className="text-xl sm:text-2xl font-bold text-coffee-dark">
-              {t("companies.title")}
-            </h1>
-            <p className="mt-0.5 text-sm text-text-muted">
-              {filtered.length} {t("companies.results")}
-            </p>
-          </div>
+      <div className="relative bg-gradient-to-b from-surface-white to-surface-cream border-b border-surface-sand overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="pointer-events-none absolute -top-20 -right-20 h-64 w-64 rounded-full bg-coffee-gold/5 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-logo-sage/5 blur-3xl" />
+
+        <div className="relative mx-auto max-w-6xl px-4 pt-8 pb-6 sm:px-6">
+          <Reveal variant="fade-up" duration={500}>
+            <div className="mb-5">
+              <h1 className="text-2xl sm:text-3xl font-bold text-coffee-dark">
+                {t("companies.title")}
+              </h1>
+              <p className="mt-1 text-sm text-text-muted">
+                {filtered.length} {t("companies.results")}
+              </p>
+            </div>
+          </Reveal>
 
           {/* Search Inputs */}
           <div className="flex flex-col gap-2.5 sm:flex-row">
@@ -495,12 +502,12 @@ export default function CompaniesPage() {
                 <button
                   key={item.id}
                   onClick={() => setSelectedId(item.id)}
-                  className={`animate-card-slide-in group relative flex w-full cursor-pointer flex-col rounded-xl border p-4 text-left transition-all duration-200 ${
+                  className={`animate-card-slide-in group relative flex w-full cursor-pointer flex-col rounded-xl border p-4 text-left transition-all duration-300 ${
                     isActive
-                      ? "border-coffee-warm/40 bg-surface-white shadow-md shadow-coffee-warm/8 ring-1 ring-coffee-warm/15"
-                      : "border-surface-sand bg-surface-white hover:border-coffee-gold/30 hover:shadow-sm"
+                      ? "border-coffee-warm/40 bg-surface-white shadow-lg shadow-coffee-warm/10 ring-1 ring-coffee-warm/15 -translate-y-0.5"
+                      : "border-surface-sand bg-surface-white hover:border-coffee-gold/30 hover:shadow-md hover:shadow-coffee-warm/5 hover:-translate-y-0.5"
                   }`}
-                  style={{ animationDelay: `${idx * 30}ms` }}
+                  style={{ animationDelay: `${idx * 40}ms` }}
                 >
                   {/* Top row: avatar + info + bookmark */}
                   <div className="flex items-start gap-3 w-full">
@@ -559,7 +566,7 @@ export default function CompaniesPage() {
           }`}
         >
           {selected ? (
-            <div>
+            <div key={selected.id} className="animate-fade-in">
               {/* Detail Header */}
               <div className="p-8 pb-0">
                 <div className="flex items-start gap-4 mb-5">
@@ -611,7 +618,7 @@ export default function CompaniesPage() {
                 <div className="flex items-center gap-3 mb-6">
                   <a
                     href={`/internships?company=${encodeURIComponent(selected.companyName)}`}
-                    className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-coffee-warm to-coffee-gold px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-coffee-warm/15 transition-all hover:shadow-lg hover:shadow-coffee-warm/25 cursor-pointer"
+                    className="group inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-coffee-warm to-coffee-gold px-6 py-2.5 text-sm font-semibold text-white shadow-md shadow-coffee-warm/15 transition-all duration-300 hover:shadow-xl hover:shadow-coffee-warm/25 hover:-translate-y-0.5 cursor-pointer"
                   >
                     {t("companies.viewInternships")}
                   </a>

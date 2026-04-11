@@ -3,7 +3,7 @@ import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
 import { uploadMemory, validateFileBytes } from '../middleware/upload.middleware';
 import { uploadToCloudinary } from '../../lib/cloudinary';
-import { createOffer, getCompanyOffers, deleteOffer, updateOffer, listPublicOffers } from '../../context/offers.service';
+import { createOffer, getCompanyOffers, deleteOffer, updateOffer, listPublicOffers, updateOfferStatus, getOfferApplicants } from '../../context/offers.service';
 
 const offersRouter = Router();
 
@@ -92,6 +92,36 @@ offersRouter.put('/:id', requireAuth, requireRole('company'), uploadMemory.singl
 
     const offer = await updateOffer(req.user!.sub, req.params.id as string, updates);
     res.json({ success: true, data: offer });
+  } catch (err: unknown) {
+    handleError(res, err);
+  }
+});
+
+/* PATCH /api/offers/:id/status — update offer status (draft/active/closed) */
+offersRouter.patch('/:id/status', requireAuth, requireRole('company'), async (req: Request, res: Response) => {
+  const { status } = req.body;
+
+  if (!status || !['draft', 'active', 'closed'].includes(status)) {
+    res.status(400).json({
+      success: false,
+      error: { code: 'INVALID_STATUS', message: 'Status must be "draft", "active", or "closed"' },
+    });
+    return;
+  }
+
+  try {
+    const offer = await updateOfferStatus(req.user!.sub, req.params.id as string, status);
+    res.json({ success: true, data: offer });
+  } catch (err: unknown) {
+    handleError(res, err);
+  }
+});
+
+/* GET /api/offers/:id/applications — all applicants for an offer */
+offersRouter.get('/:id/applications', requireAuth, requireRole('company'), async (req: Request, res: Response) => {
+  try {
+    const applicants = await getOfferApplicants(req.user!.sub, req.params.id as string);
+    res.json({ success: true, data: applicants });
   } catch (err: unknown) {
     handleError(res, err);
   }

@@ -138,6 +138,47 @@ export async function getStudentApplications(userId: string): Promise<Applicatio
 }
 
 /**
+ * A student withdraws a pending application.
+ */
+export async function withdrawApplication(
+  userId: string,
+  applicationId: string,
+): Promise<{ id: string; status: string }> {
+  const [student] = await db.select().from(students).where(eq(students.userId, userId));
+
+  if (!student) {
+    const err = new Error('Student profile not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  const [application] = await db.select().from(applications).where(eq(applications.id, applicationId));
+
+  if (!application || application.studentId !== student.id) {
+    const err = new Error('Application not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  if (application.status !== 'pending') {
+    const err = new Error('Only pending applications can be withdrawn') as Error & { code: string; status: number };
+    err.code = 'BAD_REQUEST';
+    err.status = 400;
+    throw err;
+  }
+
+  const [updated] = await db
+    .update(applications)
+    .set({ status: 'withdrawn' })
+    .where(eq(applications.id, applicationId))
+    .returning();
+
+  return { id: updated.id, status: updated.status };
+}
+
+/**
  * Company updates an application's status (accept / reject).
  */
 export async function updateApplicationStatus(

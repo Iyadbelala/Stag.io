@@ -47,10 +47,10 @@ export function FormField({
   hint,
 }: FormFieldProps) {
   return (
-    <div className="mb-5">
+    <div className="mb-4 sm:mb-5">
       <label
         htmlFor={id}
-        className="mb-1.5 block text-sm font-medium text-text-primary"
+        className="mb-1 sm:mb-1.5 block text-sm font-medium text-text-primary"
       >
         {label}
       </label>
@@ -94,10 +94,10 @@ export function PasswordField({
   const [visible, setVisible] = useState(false);
 
   return (
-    <div className="mb-5">
+    <div className="mb-4 sm:mb-5">
       <label
         htmlFor={id}
-        className="mb-1.5 block text-sm font-medium text-text-primary"
+        className="mb-1 sm:mb-1.5 block text-sm font-medium text-text-primary"
       >
         {label}
       </label>

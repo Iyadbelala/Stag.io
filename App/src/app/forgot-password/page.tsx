@@ -46,10 +46,10 @@ export default function ForgotPasswordPage() {
     <section className="relative flex min-h-[calc(100vh-80px)] overflow-hidden bg-surface-cream">
       <AuthBrandPanel />
 
-      <div className="relative flex flex-1 items-center justify-center px-6 py-12">
+      <div className="relative flex flex-1 items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
         <FloatingOrbs />
 
-        <div className="relative z-10 w-full max-w-md rounded-card border border-surface-sand bg-surface-white/80 p-8 shadow-card backdrop-blur-sm">
+        <div className="relative z-10 w-full max-w-md rounded-card border border-surface-sand bg-surface-white/80 p-5 sm:p-8 shadow-card backdrop-blur-sm">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-coffee-gold/20">
             <HiOutlineMail className="h-7 w-7 text-coffee-warm" />
           </div>

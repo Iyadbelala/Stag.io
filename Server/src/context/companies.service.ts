@@ -1,6 +1,6 @@
 import { eq, and, count, desc } from 'drizzle-orm';
 import { db } from '../model/db';
-import { companies, internshipOffers } from '../model/schema';
+import { companies, internshipOffers, applications } from '../model/schema';
 
 export interface PublicCompany {
   id: string;
@@ -13,6 +13,75 @@ export interface PublicCompany {
   contactPerson: string | null;
   openPositions: number;
   createdAt: string;
+}
+
+export interface CompanyPublicProfile extends PublicCompany {
+  offers: {
+    id: string;
+    title: string;
+    location: string;
+    type: string;
+    duration: string;
+    applicationCount: number;
+    createdAt: string;
+  }[];
+}
+
+export async function getCompanyPublicProfile(companyId: string): Promise<CompanyPublicProfile> {
+  const [company] = await db
+    .select()
+    .from(companies)
+    .where(eq(companies.id, companyId));
+
+  if (!company || !company.isValidated) {
+    const err = new Error('Company not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  const offers = await db
+    .select()
+    .from(internshipOffers)
+    .where(and(eq(internshipOffers.companyId, company.id), eq(internshipOffers.status, 'active')))
+    .orderBy(desc(internshipOffers.createdAt));
+
+  const offersWithCount = [];
+  for (const o of offers) {
+    const [appCount] = await db
+      .select({ value: count() })
+      .from(applications)
+      .where(eq(applications.offerId, o.id));
+
+    offersWithCount.push({
+      id: o.id,
+      title: o.title,
+      location: o.location,
+      type: o.type,
+      duration: o.duration,
+      applicationCount: appCount?.value ?? 0,
+      createdAt: o.createdAt.toISOString(),
+    });
+  }
+
+  const [totalActive] = await db
+    .select({ value: count() })
+    .from(internshipOffers)
+    .where(and(eq(internshipOffers.companyId, company.id), eq(internshipOffers.status, 'active')));
+
+  return {
+    id: company.id,
+    companyName: company.companyName,
+    industry: company.industry,
+    location: company.location,
+    website: company.website,
+    description: company.description,
+    logoUrl: company.logoUrl,
+    contactPerson: company.contactPerson,
+    openPositions: totalActive?.value ?? 0,
+    createdAt: company.createdAt.toISOString(),
+    offers: offersWithCount,
+  };
 }
 
 export async function listPublicCompanies(): Promise<PublicCompany[]> {

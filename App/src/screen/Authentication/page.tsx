@@ -233,22 +233,22 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
       <AuthBrandPanel />
 
       {/* ---- Right panel — form + floating orbs ---- */}
-      <div className="relative flex flex-1 items-center justify-center px-6 py-12">
+      <div className="relative flex flex-1 items-center justify-center px-4 py-8 sm:px-6 sm:py-12">
         <FloatingOrbs />
 
         {/* Mobile logo (small screens only) */}
-        <div className="absolute top-6 left-6 lg:hidden">
+        <div className="absolute top-4 left-4 lg:hidden">
           <Logo />
         </div>
 
         {/* ---- Glass card ---- */}
-        <div className="relative z-10 w-full max-w-[440px]">
+        <div className="relative z-10 w-full max-w-[440px] mt-12 sm:mt-0">
           {/* Header */}
-          <div className="mb-8 text-center lg:text-left">
+          <div className="mb-6 sm:mb-8 text-center lg:text-left">
             <h1 className="font-heading text-2xl font-bold text-coffee-dark sm:text-3xl">
               {isLogin ? t("auth.welcomeBack") : t("auth.createAccount")}
             </h1>
-            <p className="mt-2 text-sm text-text-muted">
+            <p className="mt-1.5 text-sm text-text-muted">
               {isLogin
                 ? t("auth.signInSubtitle")
                 : isCompany
@@ -262,10 +262,10 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
           <form
             onSubmit={handleSubmit}
             noValidate
-            className="rounded-card border border-white/30 bg-surface-white/60 p-8 shadow-xl shadow-coffee-dark/5 backdrop-blur-xl sm:p-10"
+            className="rounded-card border border-white/30 bg-surface-white/60 p-5 shadow-xl shadow-coffee-dark/5 backdrop-blur-xl sm:p-8 lg:p-10"
           >
             {/* Mode tabs */}
-            <div className="mb-8 flex rounded-button bg-surface-cream/80 p-1 backdrop-blur-sm">
+            <div className="mb-6 sm:mb-8 flex rounded-button bg-surface-cream/80 p-1 backdrop-blur-sm">
               {(["login", "register"] as const).map((m) => (
                 <button
                   key={m}
@@ -273,7 +273,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
                   onClick={() => {
                     if (m !== mode) switchMode();
                   }}
-                  className={`flex-1 rounded-[6px] py-2.5 text-sm font-medium transition-all cursor-pointer ${
+                  className={`flex-1 rounded-[6px] py-2 sm:py-2.5 text-sm font-medium transition-all cursor-pointer ${
                     mode === m
                       ? "bg-surface-white text-coffee-dark shadow-sm"
                       : "text-text-muted hover:text-text-secondary"
@@ -286,46 +286,27 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
 
             {/* Account type selector (register only) */}
             {!isLogin && (
-              <div className="mb-6 flex rounded-button bg-surface-cream/80 p-1 backdrop-blur-sm">
-                <button
-                  type="button"
-                  onClick={() => setAccountType("student")}
-                  className={`flex-1 rounded-[6px] py-2 text-sm font-medium transition-all cursor-pointer ${
-                    accountType === "student"
-                      ? "bg-surface-white text-coffee-dark shadow-sm"
-                      : "text-text-muted hover:text-text-secondary"
-                  }`}
-                >
-                  {t("auth.accountStudent")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAccountType("company")}
-                  className={`flex-1 rounded-[6px] py-2 text-sm font-medium transition-all cursor-pointer ${
-                    accountType === "company"
-                      ? "bg-surface-white text-coffee-dark shadow-sm"
-                      : "text-text-muted hover:text-text-secondary"
-                  }`}
-                >
-                  {t("auth.accountCompany")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAccountType("university")}
-                  className={`flex-1 rounded-[6px] py-2 text-sm font-medium transition-all cursor-pointer ${
-                    accountType === "university"
-                      ? "bg-surface-white text-coffee-dark shadow-sm"
-                      : "text-text-muted hover:text-text-secondary"
-                  }`}
-                >
-                  {t("auth.accountUniversity")}
-                </button>
+              <div className="mb-5 sm:mb-6 flex rounded-button bg-surface-cream/80 p-1 backdrop-blur-sm">
+                {(["student", "company", "university"] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setAccountType(type)}
+                    className={`flex-1 rounded-[6px] py-1.5 sm:py-2 text-xs sm:text-sm font-medium transition-all cursor-pointer ${
+                      accountType === type
+                        ? "bg-surface-white text-coffee-dark shadow-sm"
+                        : "text-text-muted hover:text-text-secondary"
+                    }`}
+                  >
+                    {t(`auth.account${type.charAt(0).toUpperCase() + type.slice(1)}`)}
+                  </button>
+                ))}
               </div>
             )}
 
             {/* ---- Student register fields ---- */}
             {!isLogin && !isCompany && !isUniversity && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
                 <FormField
                   id="firstName"
                   label={t("auth.firstName")}
@@ -371,7 +352,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
                   placeholder={t("auth.contactPersonPlaceholder")}
                   icon={<HiOutlineUser size={18} />}
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
                   <FormField
                     id="industry"
                     label={t("auth.industry")}
@@ -448,7 +429,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
                     </p>
                   }
                 />
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4">
                   <FormField
                     id="uniWebsite"
                     label={t("auth.website")}
@@ -533,8 +514,8 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
 
             {/* Remember / Forgot (login) */}
             {isLogin && (
-              <div className="mb-6 flex items-center justify-between">
-                <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
+              <div className="mb-4 sm:mb-6 flex items-center justify-between gap-2">
+                <label className="flex items-center gap-2 text-xs sm:text-sm text-text-secondary cursor-pointer">
                   <input
                     type="checkbox"
                     className="h-4 w-4 rounded border-surface-sand accent-coffee-warm"
@@ -543,7 +524,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-sm font-medium text-coffee-warm transition-colors hover:text-coffee-gold"
+                  className="text-xs sm:text-sm font-medium text-coffee-warm transition-colors hover:text-coffee-gold whitespace-nowrap"
                 >
                   {t("auth.forgotPassword")}
                 </Link>
@@ -552,7 +533,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
 
             {/* Terms checkbox (register) */}
             {!isLogin && (
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <label className="flex items-start gap-2 text-sm text-text-secondary cursor-pointer">
                   <input
                     type="checkbox"
@@ -583,7 +564,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
             )}
 
             {/* Cloudflare Turnstile CAPTCHA */}
-            <div className="mb-5">
+            <div className="mb-4 sm:mb-5">
               <Turnstile
                 onVerify={(token) => setTurnstileToken(token)}
                 onExpire={() => setTurnstileToken(null)}
@@ -603,7 +584,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-button bg-coffee-warm py-3.5 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full rounded-button bg-coffee-warm py-3 sm:py-3.5 text-sm font-semibold text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all hover:bg-coffee-gold hover:shadow-coffee-gold/25 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
               {isSubmitting
                 ? isLogin
@@ -615,7 +596,7 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
             </button>
 
             {/* Switch mode text */}
-            <p className="mt-6 text-center text-sm text-text-muted">
+            <p className="mt-4 sm:mt-6 text-center text-sm text-text-muted">
               {isLogin ? t("auth.noAccount") : t("auth.hasAccount")}
               <button
                 type="button"

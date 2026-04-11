@@ -15,9 +15,13 @@ import {
   HiOutlinePencil,
   HiOutlineExclamationCircle,
   HiOutlinePhotograph,
+  HiOutlineMail,
+  HiOutlineAcademicCap,
+  HiOutlineDocumentDownload,
 } from "react-icons/hi";
+import { FaLinkedin, FaGithub } from "react-icons/fa";
+import Image from "next/image";
 import { useAuth } from "@/Components/contexts/AuthContext";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { api } from "@/lib/api";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
@@ -64,17 +68,34 @@ interface Offer {
   createdAt: string;
 }
 
+interface OfferApplicant {
+  id: string;
+  studentId: string;
+  applicantName: string;
+  email: string;
+  department: string | null;
+  profilePhotoUrl: string | null;
+  skills: string[];
+  bio: string | null;
+  coverLetter: string | null;
+  cvUrl: string | null;
+  linkedinUrl: string | null;
+  githubUrl: string | null;
+  status: string;
+  appliedAt: string;
+}
+
 /* ============================================
    Stat Card
    ============================================ */
 function StatCard({ icon, label, value, color }: { icon: React.ReactNode; label: string; value: string | number; color: string }) {
   return (
-    <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm transition-shadow hover:shadow-md">
-      <div className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full ${color}`}>
+    <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm transition-shadow hover:shadow-md">
+      <div className={`mb-2 sm:mb-4 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full ${color}`}>
         {icon}
       </div>
-      <p className="text-2xl font-bold text-coffee-dark">{value}</p>
-      <p className="mt-1 text-sm text-text-muted">{label}</p>
+      <p className="text-xl sm:text-2xl font-bold text-coffee-dark">{value}</p>
+      <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-text-muted">{label}</p>
     </div>
   );
 }
@@ -577,12 +598,266 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
 }
 
 /* ============================================
+   Applicant Profile Preview Modal
+   ============================================ */
+function ApplicantProfileModal({
+  applicant,
+  onClose,
+  onStatusChange,
+  t,
+}: {
+  applicant: OfferApplicant;
+  onClose: () => void;
+  onStatusChange?: (id: string, status: "accepted" | "rejected") => void;
+  t: (key: string) => string;
+}) {
+  const initials =
+    applicant.applicantName
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase() || "?";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={onClose}>
+      <div
+        className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="absolute right-4 top-4 text-text-muted hover:text-coffee-dark cursor-pointer">
+          <HiOutlineX size={20} />
+        </button>
+
+        {/* Header with photo */}
+        <div className="flex items-center gap-4 mb-6">
+          {applicant.profilePhotoUrl ? (
+            <Image src={applicant.profilePhotoUrl} alt={applicant.applicantName} width={72} height={72} className="h-18 w-18 rounded-full object-cover border-2 border-surface-sand" />
+          ) : (
+            <div className="flex h-18 w-18 items-center justify-center rounded-full bg-gradient-to-br from-coffee-warm to-coffee-gold text-xl font-bold text-text-inverse" style={{ width: 72, height: 72 }}>
+              {initials}
+            </div>
+          )}
+          <div>
+            <h2 className="text-xl font-bold text-coffee-dark">{applicant.applicantName}</h2>
+            <p className="flex items-center gap-1.5 text-sm text-text-muted">
+              <HiOutlineMail size={14} />
+              <a href={`mailto:${applicant.email}`} className="hover:text-coffee-warm">{applicant.email}</a>
+            </p>
+            {applicant.department && (
+              <p className="flex items-center gap-1.5 text-sm text-text-muted mt-0.5">
+                <HiOutlineAcademicCap size={14} />
+                {applicant.department}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Bio */}
+        {applicant.bio && (
+          <div className="mb-4">
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">{t("companyDash.bio")}</p>
+            <p className="text-sm text-text-secondary">{applicant.bio}</p>
+          </div>
+        )}
+
+        {/* Skills */}
+        {applicant.skills.length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-2">{t("companyDash.skills")}</p>
+            <div className="flex flex-wrap gap-1.5">
+              {applicant.skills.map((skill) => (
+                <span key={skill} className="rounded-full bg-coffee-gold/10 px-2.5 py-1 text-xs font-medium text-coffee-dark">
+                  {skill}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Social links */}
+        {(applicant.linkedinUrl || applicant.githubUrl) && (
+          <div className="mb-4 flex items-center gap-3">
+            {applicant.linkedinUrl && (
+              <a href={applicant.linkedinUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-[#0A66C2] hover:underline">
+                <FaLinkedin size={16} /> LinkedIn
+              </a>
+            )}
+            {applicant.githubUrl && (
+              <a href={applicant.githubUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 text-sm text-[#333] hover:underline">
+                <FaGithub size={16} /> GitHub
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* Cover letter */}
+        <div className="mb-4">
+          <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">{t("companyDash.coverLetter")}</p>
+          <p className="text-sm text-text-secondary bg-surface-cream rounded-lg px-3 py-2 whitespace-pre-line">
+            {applicant.coverLetter || t("companyDash.noCoverLetter")}
+          </p>
+        </div>
+
+        {/* CV + Actions */}
+        <div className="flex items-center justify-between pt-2 border-t border-surface-sand">
+          <div>
+            {applicant.cvUrl ? (
+              <a href={applicant.cvUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:underline">
+                <HiOutlineDocumentDownload size={16} />
+                {t("companyDash.viewCV")}
+              </a>
+            ) : (
+              <span className="text-sm text-text-muted italic">{t("companyDash.noCVProvided")}</span>
+            )}
+          </div>
+          {applicant.status === "pending" && onStatusChange && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { onStatusChange(applicant.id, "accepted"); onClose(); }}
+                className="rounded-button bg-status-success/10 px-4 py-1.5 text-xs font-medium text-status-success transition-colors hover:bg-status-success/20 cursor-pointer"
+              >
+                {t("companyDash.accept")}
+              </button>
+              <button
+                onClick={() => { onStatusChange(applicant.id, "rejected"); onClose(); }}
+                className="rounded-button bg-status-error/10 px-4 py-1.5 text-xs font-medium text-status-error transition-colors hover:bg-status-error/20 cursor-pointer"
+              >
+                {t("companyDash.reject")}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================
+   All Applicants Modal (per offer)
+   ============================================ */
+function AllApplicantsModal({
+  offer,
+  onClose,
+  onStatusChange,
+  t,
+}: {
+  offer: Offer;
+  onClose: () => void;
+  onStatusChange: (id: string, status: "accepted" | "rejected") => void;
+  t: (key: string) => string;
+}) {
+  const [applicants, setApplicants] = useState<OfferApplicant[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [previewApplicant, setPreviewApplicant] = useState<OfferApplicant | null>(null);
+
+  useEffect(() => {
+    async function fetch() {
+      try {
+        const { data } = await api.get<{ success: true; data: OfferApplicant[] }>(`/api/offers/${offer.id}/applications`);
+        setApplicants(data.data);
+      } catch {
+        /* empty */
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetch();
+  }, [offer.id]);
+
+  const handleStatusChange = (appId: string, status: "accepted" | "rejected") => {
+    onStatusChange(appId, status);
+    setApplicants((prev) => prev.map((a) => (a.id === appId ? { ...a, status } : a)));
+  };
+
+  const statusConfig: Record<string, { label: string; classes: string }> = {
+    pending: { label: t("status.pending"), classes: "bg-status-warning/10 text-status-warning" },
+    accepted: { label: t("status.accepted"), classes: "bg-blue-100 text-blue-700" },
+    rejected: { label: t("status.rejected"), classes: "bg-status-error/10 text-status-error" },
+    withdrawn: { label: t("status.withdrawn"), classes: "bg-text-muted/10 text-text-muted" },
+    validated: { label: t("status.validated"), classes: "bg-status-success/10 text-status-success" },
+  };
+
+  return (
+    <>
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={onClose}>
+        <div
+          className="relative w-full max-w-2xl rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button onClick={onClose} className="absolute right-4 top-4 text-text-muted hover:text-coffee-dark cursor-pointer">
+            <HiOutlineX size={20} />
+          </button>
+
+          <h2 className="text-xl font-bold text-coffee-dark mb-1">{t("companyDash.allApplicants")}</h2>
+          <p className="text-sm text-text-muted mb-6">{t("companyDash.allApplicantsFor")} &quot;{offer.title}&quot;</p>
+
+          {isLoading ? (
+            <div className="py-8 text-center">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-coffee-warm border-t-transparent mx-auto" />
+            </div>
+          ) : applicants.length === 0 ? (
+            <div className="py-8 text-center">
+              <HiOutlineUsers size={40} className="mx-auto mb-3 text-text-muted/40" />
+              <p className="text-sm text-text-muted">{t("companyDash.noApplicantsForOffer")}</p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {applicants.map((app) => {
+                const s = statusConfig[app.status] || statusConfig.pending;
+                const initials = app.applicantName.split(" ").map((n) => n[0]).join("").toUpperCase() || "?";
+                return (
+                  <div key={app.id} className="flex items-center justify-between gap-3 rounded-card border border-surface-sand p-3 transition-colors hover:bg-surface-cream/50">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {app.profilePhotoUrl ? (
+                        <Image src={app.profilePhotoUrl} alt={app.applicantName} width={40} height={40} className="h-10 w-10 rounded-full object-cover border border-surface-sand shrink-0" />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-coffee-warm to-coffee-gold text-xs font-bold text-text-inverse shrink-0">
+                          {initials}
+                        </div>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-medium text-text-primary truncate text-sm">{app.applicantName}</p>
+                        <p className="text-xs text-text-muted">{app.email}</p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-medium ${s.classes}`}>{s.label}</span>
+                      {app.status === "pending" && (
+                        <>
+                          <button onClick={() => handleStatusChange(app.id, "accepted")} className="rounded-full bg-status-success/10 px-2.5 py-0.5 text-[11px] font-medium text-status-success hover:bg-status-success/20 cursor-pointer">{t("companyDash.accept")}</button>
+                          <button onClick={() => handleStatusChange(app.id, "rejected")} className="rounded-full bg-status-error/10 px-2.5 py-0.5 text-[11px] font-medium text-status-error hover:bg-status-error/20 cursor-pointer">{t("companyDash.reject")}</button>
+                        </>
+                      )}
+                      <button onClick={() => setPreviewApplicant(app)} className="rounded-full bg-coffee-gold/10 px-2.5 py-0.5 text-[11px] font-medium text-coffee-warm hover:bg-coffee-gold/20 cursor-pointer">
+                        {t("companyDash.viewProfile")}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {previewApplicant && (
+        <ApplicantProfileModal
+          applicant={previewApplicant}
+          onClose={() => setPreviewApplicant(null)}
+          onStatusChange={handleStatusChange}
+          t={t}
+        />
+      )}
+    </>
+  );
+}
+
+/* ============================================
    Dashboard
    ============================================ */
 export default function CompanyDashboard() {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
   const [offers, setOffers] = useState<Offer[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -590,6 +865,8 @@ export default function CompanyDashboard() {
   const [editingOffer, setEditingOffer] = useState<Offer | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [applicantsOffer, setApplicantsOffer] = useState<Offer | null>(null);
+  const [previewApplicant, setPreviewApplicant] = useState<OfferApplicant | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -653,6 +930,17 @@ export default function CompanyDashboard() {
     }
   }, [t]);
 
+  const handleOfferStatusChange = useCallback(async (offerId: string, newStatus: "draft" | "active" | "closed") => {
+    setActionError(null);
+    try {
+      const { data } = await api.patch<{ success: true; data: Offer }>(`/api/offers/${offerId}/status`, { status: newStatus });
+      setOffers((prev) => prev.map((o) => (o.id === offerId ? { ...o, status: data.data.status } : o)));
+    } catch {
+      setActionError(t("companyDash.statusUpdateFailed"));
+      setTimeout(() => setActionError(null), 4000);
+    }
+  }, [t]);
+
   const handleStatusChange = useCallback(async (applicationId: string, newStatus: "accepted" | "rejected") => {
     setActionError(null);
     try {
@@ -696,8 +984,8 @@ export default function CompanyDashboard() {
   const isValidated = data?.isValidated ?? false;
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-6 py-10">
-      <div className="mx-auto max-w-5xl space-y-10">
+    <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-5xl space-y-6 sm:space-y-10">
         {/* ---- Action error toast ---- */}
         {actionError && (
           <div className="rounded-button border border-status-error/20 bg-status-error/10 px-4 py-3 text-sm text-status-error">
@@ -713,11 +1001,11 @@ export default function CompanyDashboard() {
             </h1>
             <p className="mt-1 text-sm text-text-muted">{t("companyDash.dashboard")}</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <button
               onClick={() => setShowCreateModal(true)}
               disabled={!isValidated}
-              className="flex items-center gap-2 rounded-button bg-coffee-warm px-4 py-2 text-sm font-medium text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-button bg-coffee-warm px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-text-inverse transition-colors hover:bg-coffee-gold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               title={!isValidated ? t("companyDash.pendingValidation") : undefined}
             >
               <HiOutlinePlus size={16} />
@@ -725,16 +1013,16 @@ export default function CompanyDashboard() {
             </button>
             <Link
               href="/company/profile"
-              className="flex items-center gap-2 rounded-button border border-surface-sand bg-surface-white px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-button border border-surface-sand bg-surface-white px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm"
             >
               <HiOutlineUser size={16} />
-              {t("common.editProfile")}
+              <span className="hidden sm:inline">{t("common.editProfile")}</span>
             </Link>
           </div>
         </div>
 
         {/* ---- Stats Cards ---- */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard icon={<HiOutlineClipboardList size={22} className="text-coffee-warm" />} label={t("companyDash.activeListings")} value={stats.activeListings} color="bg-coffee-warm/10" />
           <StatCard icon={<HiOutlineUsers size={22} className="text-status-info" />} label={t("companyDash.applicationsReceived")} value={stats.applicationsReceived} color="bg-status-info/10" />
           <StatCard icon={<HiOutlineCheckCircle size={22} className="text-status-success" />} label={t("companyDash.acceptedApplications")} value={stats.acceptedApplications} color="bg-status-success/10" />
@@ -774,7 +1062,7 @@ export default function CompanyDashboard() {
         )}
 
         {/* ---- My Internship Listings ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="mb-1 text-lg font-semibold text-coffee-dark">{t("companyDash.myListings")}</h2>
@@ -802,53 +1090,92 @@ export default function CompanyDashboard() {
             </div>
           ) : (
             <div className="space-y-3">
-              {offers.map((offer) => (
-                <div key={offer.id} className="flex items-center justify-between gap-4 rounded-card border border-surface-sand p-4 transition-colors hover:bg-surface-cream/50">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="font-medium text-text-primary truncate">{offer.title}</h3>
-                    <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-text-muted">
-                      <span className="flex items-center gap-1">
-                        <HiOutlineLocationMarker size={12} />
-                        {offer.location}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <HiOutlineClock size={12} />
-                        {offer.duration}
-                      </span>
-                      <span className="rounded-full bg-coffee-gold/10 px-2 py-0.5 text-[11px] font-medium text-coffee-warm">
-                        {offer.type}
-                      </span>
-                      <span className="text-text-muted">
-                        {offer.applicationCount} {offer.applicationCount !== 1 ? t("companyDash.applications") : t("companyDash.application")}
-                      </span>
+              {offers.map((offer) => {
+                const statusLabels: Record<string, { label: string; classes: string }> = {
+                  draft: { label: t("companyDash.statusDraft"), classes: "bg-text-muted/10 text-text-muted" },
+                  active: { label: t("companyDash.statusActive"), classes: "bg-status-success/10 text-status-success" },
+                  closed: { label: t("companyDash.statusClosed"), classes: "bg-status-error/10 text-status-error" },
+                };
+                const sl = statusLabels[offer.status] || statusLabels.draft;
+                return (
+                  <div key={offer.id} className="rounded-card border border-surface-sand p-4 transition-colors hover:bg-surface-cream/50">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-medium text-text-primary truncate">{offer.title}</h3>
+                          <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium shrink-0 ${sl.classes}`}>{sl.label}</span>
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-text-muted">
+                          <span className="flex items-center gap-1">
+                            <HiOutlineLocationMarker size={12} />
+                            {offer.location}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <HiOutlineClock size={12} />
+                            {offer.duration}
+                          </span>
+                          <span className="rounded-full bg-coffee-gold/10 px-2 py-0.5 text-[11px] font-medium text-coffee-warm">
+                            {offer.type}
+                          </span>
+                          <span className="text-text-muted">
+                            {offer.applicationCount} {offer.applicationCount !== 1 ? t("companyDash.applications") : t("companyDash.application")}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-center gap-1">
+                        <button
+                          onClick={() => setEditingOffer(offer)}
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-coffee-gold/10 hover:text-coffee-warm cursor-pointer"
+                          title={t("companyDash.editOffer")}
+                          aria-label={t("companyDash.editOffer")}
+                        >
+                          <HiOutlinePencil size={16} />
+                        </button>
+                        <button
+                          onClick={() => setConfirmDeleteId(offer.id)}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-status-error/10 hover:text-status-error cursor-pointer"
+                          title={t("companyDash.deleteOffer")}
+                          aria-label={t("companyDash.deleteOffer")}
+                        >
+                          <HiOutlineTrash size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    {/* Status toggles + View Applicants */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-surface-sand pt-3">
+                      {/* Status toggles */}
+                      {(["draft", "active", "closed"] as const).map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => handleOfferStatusChange(offer.id, s)}
+                          disabled={offer.status === s}
+                          className={`rounded-full px-3 py-1 text-xs font-medium transition-colors cursor-pointer disabled:cursor-default ${
+                            offer.status === s
+                              ? sl.classes + " ring-1 ring-current"
+                              : "bg-surface-sand/50 text-text-muted hover:bg-surface-sand"
+                          }`}
+                        >
+                          {statusLabels[s].label}
+                        </button>
+                      ))}
+                      <div className="flex-1" />
+                      <button
+                        onClick={() => setApplicantsOffer(offer)}
+                        className="flex items-center gap-1.5 rounded-button border border-surface-sand px-3 py-1 text-xs font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm cursor-pointer"
+                      >
+                        <HiOutlineUsers size={14} />
+                        {t("companyDash.viewAllApplicants")} ({offer.applicationCount})
+                      </button>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-1">
-                    <button
-                      onClick={() => setEditingOffer(offer)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-coffee-gold/10 hover:text-coffee-warm cursor-pointer"
-                      title={t("companyDash.editOffer")}
-                      aria-label={t("companyDash.editOffer")}
-                    >
-                      <HiOutlinePencil size={16} />
-                    </button>
-                    <button
-                      onClick={() => setConfirmDeleteId(offer.id)}
-                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-text-muted transition-colors hover:bg-status-error/10 hover:text-status-error cursor-pointer"
-                      title={t("companyDash.deleteOffer")}
-                      aria-label={t("companyDash.deleteOffer")}
-                    >
-                      <HiOutlineTrash size={16} />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
 
         {/* ---- Recent Applicants ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <h2 className="mb-1 text-lg font-semibold text-coffee-dark">{t("companyDash.recentApplicants")}</h2>
           <p className="mb-6 text-sm text-text-muted">{t("companyDash.recentApplicantsDesc")}</p>
 
@@ -882,6 +1209,26 @@ export default function CompanyDashboard() {
           offer={editingOffer}
           onClose={() => setEditingOffer(null)}
           onUpdated={handleOfferUpdated}
+          t={t}
+        />
+      )}
+
+      {/* ---- All Applicants Modal ---- */}
+      {applicantsOffer && (
+        <AllApplicantsModal
+          offer={applicantsOffer}
+          onClose={() => setApplicantsOffer(null)}
+          onStatusChange={handleStatusChange}
+          t={t}
+        />
+      )}
+
+      {/* ---- Applicant Profile Preview Modal ---- */}
+      {previewApplicant && (
+        <ApplicantProfileModal
+          applicant={previewApplicant}
+          onClose={() => setPreviewApplicant(null)}
+          onStatusChange={handleStatusChange}
           t={t}
         />
       )}

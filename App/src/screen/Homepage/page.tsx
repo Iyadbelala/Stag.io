@@ -9,11 +9,19 @@ import {
   HiOutlineLightBulb,
   HiOutlineUserGroup,
   HiOutlineShieldCheck,
+  HiOutlineArrowRight,
 } from "react-icons/hi";
 import Slide from "@/Components/ui/Slide";
 import type { SlideData } from "@/Components/ui/Slide";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
 import { type ReactNode } from "react";
+import {
+  Reveal,
+  Stagger,
+  AnimatedCounter,
+  TiltCard,
+  Magnetic,
+} from "@/Components/ui/Motion";
 
 /* ============================================
    Icon arrays (static — no translation needed)
@@ -40,6 +48,13 @@ const statKeys = [
   "stats.universities",
 ];
 
+const statIcons = [
+  <HiOutlineBriefcase key="si1" size={22} className="text-coffee-gold" />,
+  <HiOutlineShieldCheck key="si2" size={22} className="text-coffee-gold" />,
+  <HiOutlineUserGroup key="si3" size={22} className="text-coffee-gold" />,
+  <HiOutlineAcademicCap key="si4" size={22} className="text-coffee-gold" />,
+];
+
 /* ============================================
    Component
    ============================================ */
@@ -61,154 +76,210 @@ export default function Homepage() {
     <>
       {/* ======== HERO ======== */}
       <section className="relative overflow-hidden bg-surface-cream">
-        {/* Decorative blobs */}
-        <div className="pointer-events-none absolute -top-32 -right-32 h-96 w-96 rounded-full bg-coffee-gold/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-24 -left-24 h-80 w-80 rounded-full bg-logo-sage/10 blur-3xl" />
 
-        <div className="relative mx-auto flex max-w-7xl flex-col items-center px-6 py-28 text-center lg:py-36">
+        <div className="relative mx-auto flex max-w-7xl flex-col items-center px-6 py-28 text-center lg:py-40">
+          <Reveal variant="fade-up" duration={700} delay={100}>
+            <h1 className="max-w-4xl font-heading text-4xl font-bold leading-tight text-coffee-dark sm:text-5xl lg:text-7xl">
+              {t("hero.title")}
+              <span className="animate-text-shimmer bg-[length:200%_100%] bg-clip-text text-transparent bg-gradient-to-r from-coffee-gold via-coffee-warm to-coffee-gold">
+                {t("hero.titleAccent")}
+              </span>
+            </h1>
+          </Reveal>
 
-          <h1 className="max-w-3xl font-heading text-4xl font-bold leading-tight text-coffee-dark sm:text-5xl lg:text-6xl">
-            {t("hero.title")}
-            <span className="text-coffee-gold">{t("hero.titleAccent")}</span>
-          </h1>
+          <Reveal variant="fade-up" duration={600} delay={250}>
+            <p className="mt-6 max-w-xl text-base leading-relaxed text-text-secondary sm:text-lg">
+              {t("hero.subtitle")}
+            </p>
+          </Reveal>
 
-          <p className="mt-6 max-w-xl text-base leading-relaxed text-text-secondary sm:text-lg">
-            {t("hero.subtitle")}
-          </p>
-
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/register"
-              className="rounded-button bg-coffee-warm px-7 py-3.5 text-sm font-medium text-text-inverse shadow-md transition-all hover:bg-coffee-gold hover:shadow-lg"
-            >
-              {t("hero.getStarted")}
-            </Link>
-            <Link
-              href="/about"
-              className="rounded-button border-2 border-coffee-warm px-7 py-3.5 text-sm font-medium text-coffee-warm transition-colors hover:bg-coffee-warm hover:text-text-inverse"
-            >
-              {t("hero.learnMore")}
-            </Link>
-          </div>
+          <Reveal variant="fade-up" duration={600} delay={400}>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <Magnetic strength={0.15}>
+                <Link
+                  href="/register"
+                  className="group relative inline-flex items-center gap-2 rounded-button bg-coffee-warm px-8 py-4 text-sm font-medium text-text-inverse shadow-lg shadow-coffee-warm/20 transition-all duration-300 hover:bg-coffee-gold hover:shadow-xl hover:shadow-coffee-gold/25 hover:-translate-y-0.5"
+                >
+                  {t("hero.getStarted")}
+                  <HiOutlineArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+              </Magnetic>
+              <Magnetic strength={0.15}>
+                <Link
+                  href="/about"
+                  className="rounded-button border-2 border-coffee-warm px-8 py-4 text-sm font-medium text-coffee-warm transition-all duration-300 hover:bg-coffee-warm hover:text-text-inverse hover:-translate-y-0.5"
+                >
+                  {t("hero.learnMore")}
+                </Link>
+              </Magnetic>
+            </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ======== STATS BAR ======== */}
-      <section className="border-y border-surface-sand bg-surface-white">
-        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-6 py-12 sm:grid-cols-4">
+      <section className="relative border-y border-surface-sand bg-surface-white overflow-hidden">
+        {/* Subtle gradient overlay */}
+        <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-coffee-gold/[0.03] via-transparent to-coffee-warm/[0.03]" />
+
+        <div className="relative mx-auto grid max-w-5xl grid-cols-2 gap-8 px-6 py-14 sm:grid-cols-4">
           {statKeys.map((key, i) => (
-            <div key={key} className="text-center">
-              <p className="text-3xl font-bold text-coffee-dark">
-                {statValues[i]}
-              </p>
-              <p className="mt-1 text-xs tracking-wide text-text-muted">
-                {t(key)}
-              </p>
-            </div>
+            <Reveal key={key} variant="fade-up" delay={i * 120} duration={500}>
+              <div className="group text-center">
+                <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-coffee-gold/10 transition-all duration-300 group-hover:bg-coffee-gold/20 group-hover:scale-110">
+                  {statIcons[i]}
+                </div>
+                <p className="font-heading text-3xl font-bold text-coffee-dark lg:text-4xl">
+                  <AnimatedCounter target={statValues[i]} duration={2000} />
+                </p>
+                <p className="mt-1 text-xs tracking-wide text-text-muted">
+                  {t(key)}
+                </p>
+              </div>
+            </Reveal>
           ))}
         </div>
       </section>
 
       {/* ======== HOW IT WORKS — SLIDES ======== */}
-      <section className="bg-surface-cream py-20">
+      <section className="bg-surface-cream py-24">
         <div className="mx-auto max-w-3xl px-6">
-          <h2 className="mb-2 text-center font-heading text-3xl font-semibold text-coffee-dark">
-            {t("slides.title")}
-          </h2>
-          <p className="mb-12 text-center text-sm text-text-muted">
-            {t("slides.subtitle")}
-          </p>
-          <Slide slides={slides} autoPlayMs={6000} />
+          <Reveal variant="fade-up">
+            <h2 className="mb-2 text-center font-heading text-3xl font-semibold text-coffee-dark sm:text-4xl">
+              {t("slides.title")}
+            </h2>
+          </Reveal>
+          <Reveal variant="fade-up" delay={100}>
+            <p className="mb-12 text-center text-sm text-text-muted">
+              {t("slides.subtitle")}
+            </p>
+          </Reveal>
+          <Reveal variant="zoom" delay={200}>
+            <Slide slides={slides} autoPlayMs={6000} />
+          </Reveal>
         </div>
       </section>
 
       {/* ======== FEATURES GRID ======== */}
-      <section className="border-t border-surface-sand bg-surface-white py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <h2 className="mb-2 text-center font-heading text-3xl font-semibold text-coffee-dark">
-            {t("features.title")}
-          </h2>
-          <p className="mx-auto mb-14 max-w-lg text-center text-sm text-text-muted">
-            {t("features.subtitle")}
-          </p>
+      <section className="relative border-t border-surface-sand bg-surface-white py-24 overflow-hidden">
+        {/* Decorative background */}
+        <div className="pointer-events-none absolute top-0 right-0 h-96 w-96 rounded-full bg-coffee-gold/5 blur-3xl -translate-y-1/2 translate-x-1/2" />
+
+        <div className="relative mx-auto max-w-6xl px-6">
+          <Reveal variant="fade-up">
+            <h2 className="mb-2 text-center font-heading text-3xl font-semibold text-coffee-dark sm:text-4xl">
+              {t("features.title")}
+            </h2>
+          </Reveal>
+          <Reveal variant="fade-up" delay={100}>
+            <p className="mx-auto mb-16 max-w-lg text-center text-sm text-text-muted">
+              {t("features.subtitle")}
+            </p>
+          </Reveal>
 
           <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="group rounded-card border border-surface-sand bg-surface-cream p-6 transition-shadow hover:shadow-lg"
-              >
-                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-coffee-gold/15 text-coffee-warm transition-colors group-hover:bg-coffee-gold/30">
-                  {f.icon}
-                </div>
-                <h3 className="mb-2 text-base font-semibold text-coffee-dark">
-                  {f.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-text-secondary">
-                  {f.description}
-                </p>
-              </div>
+            {features.map((f, i) => (
+              <Reveal key={f.title} variant="fade-up" delay={i * 120}>
+                <TiltCard className="h-full">
+                  <div className="group relative h-full rounded-card border border-surface-sand bg-surface-cream p-6 transition-all duration-300 hover:shadow-xl hover:shadow-coffee-warm/5 hover:border-coffee-gold/30 overflow-hidden">
+                    {/* Hover gradient overlay */}
+                    <div className="pointer-events-none absolute inset-0 rounded-card bg-gradient-to-br from-coffee-gold/0 via-transparent to-coffee-warm/0 opacity-0 transition-opacity duration-500 group-hover:opacity-100 group-hover:from-coffee-gold/5 group-hover:to-coffee-warm/5" />
+
+                    <div className="relative">
+                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-coffee-gold/15 text-coffee-warm transition-all duration-300 group-hover:bg-coffee-gold/25 group-hover:scale-110 group-hover:rotate-3">
+                        {f.icon}
+                      </div>
+                      <h3 className="mb-2 text-base font-semibold text-coffee-dark">
+                        {f.title}
+                      </h3>
+                      <p className="text-sm leading-relaxed text-text-secondary">
+                        {f.description}
+                      </p>
+                    </div>
+                  </div>
+                </TiltCard>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
       {/* ======== TRUSTED BY ======== */}
-      <section className="bg-surface-cream py-20">
+      <section className="bg-surface-cream py-24">
         <div className="mx-auto max-w-4xl px-6 text-center">
-          <h2 className="mb-2 font-heading text-3xl font-semibold text-coffee-dark">
-            {t("trustedBy.title")}
-          </h2>
-          <p className="mb-12 text-sm text-text-muted">
-            {t("trustedBy.subtitle")}
-          </p>
+          <Reveal variant="fade-up">
+            <h2 className="mb-2 font-heading text-3xl font-semibold text-coffee-dark sm:text-4xl">
+              {t("trustedBy.title")}
+            </h2>
+          </Reveal>
+          <Reveal variant="fade-up" delay={100}>
+            <p className="mb-12 text-sm text-text-muted">
+              {t("trustedBy.subtitle")}
+            </p>
+          </Reveal>
 
-          <div className="flex flex-wrap items-center justify-center gap-12">
-            <div className="flex flex-col items-center gap-3 opacity-80 transition-opacity hover:opacity-100">
-              <div className="relative h-20 w-20">
-                <Image
-                  src="/UC2-logo.png"
-                  alt="University Constantine 2"
-                  fill
-                  className="object-contain"
-                  style={{
-                    filter:
-                      "grayscale(100%) sepia(60%) saturate(200%) hue-rotate(-15deg) brightness(0.55)",
-                  }}
-                />
+          <Reveal variant="zoom" delay={200}>
+            <div className="flex flex-wrap items-center justify-center gap-12">
+              <div className="group flex flex-col items-center gap-3 opacity-80 transition-all duration-500 hover:opacity-100 hover:-translate-y-1">
+                <div className="relative h-24 w-24 transition-transform duration-500 group-hover:scale-110">
+                  <Image
+                    src="/UC2-logo.png"
+                    alt="University Constantine 2"
+                    fill
+                    className="object-contain transition-all duration-500 group-hover:drop-shadow-lg"
+                    style={{
+                      filter:
+                        "grayscale(100%) sepia(60%) saturate(200%) hue-rotate(-15deg) brightness(0.55)",
+                    }}
+                  />
+                </div>
+                <span className="text-xs font-medium tracking-wide text-text-muted">
+                  {t("trustedBy.uc2")}
+                </span>
               </div>
-              <span className="text-xs font-medium tracking-wide text-text-muted">
-                {t("trustedBy.uc2")}
-              </span>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* ======== CTA BANNER ======== */}
-      <section className="bg-coffee-dark dark-section py-20">
-        <div className="mx-auto max-w-3xl px-6 text-center">
-          <h2 className="font-heading text-3xl font-semibold text-text-inverse! sm:text-4xl">
-            {t("homeCta.title")}
-            <span className="text-coffee-gold">{t("homeCta.titleAccent")}</span>?
-          </h2>
-          <p className="mt-4 text-sm leading-relaxed text-text-inverse/90">
-            {t("homeCta.subtitle")}
-          </p>
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-            <Link
-              href="/register"
-              className="rounded-button bg-coffee-gold px-8 py-3.5 text-sm font-semibold text-coffee-dark shadow-lg transition-all hover:bg-coffee-warm hover:text-coffee-dark"
-            >
-              {t("homeCta.primary")}
-            </Link>
-            <Link
-              href="/contact"
-              className="rounded-button border-2 border-white/30 px-8 py-3.5 text-sm font-medium text-white transition-colors hover:border-coffee-gold hover:text-coffee-gold"
-            >
-              {t("homeCta.secondary")}
-            </Link>
-          </div>
+      <section className="relative bg-coffee-dark dark-section py-24 overflow-hidden">
+
+        <div className="relative mx-auto max-w-3xl px-6 text-center">
+          <Reveal variant="fade-up">
+            <h2 className="font-heading text-3xl font-semibold text-text-inverse! sm:text-4xl lg:text-5xl">
+              {t("homeCta.title")}
+              <span className="animate-text-shimmer bg-[length:200%_100%] bg-clip-text text-transparent bg-gradient-to-r from-coffee-gold via-amber-300 to-coffee-gold">
+                {t("homeCta.titleAccent")}
+              </span>?
+            </h2>
+          </Reveal>
+          <Reveal variant="fade-up" delay={150}>
+            <p className="mt-4 text-sm leading-relaxed text-text-inverse/90 sm:text-base">
+              {t("homeCta.subtitle")}
+            </p>
+          </Reveal>
+          <Reveal variant="fade-up" delay={300}>
+            <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
+              <Magnetic strength={0.15}>
+                <Link
+                  href="/register"
+                  className="group relative inline-flex items-center gap-2 rounded-button bg-coffee-gold px-8 py-4 text-sm font-semibold text-coffee-dark shadow-lg shadow-coffee-gold/25 transition-all duration-300 hover:bg-amber-400 hover:shadow-xl hover:-translate-y-0.5"
+                >
+                  {t("homeCta.primary")}
+                  <HiOutlineArrowRight size={16} className="transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+              </Magnetic>
+              <Magnetic strength={0.15}>
+                <Link
+                  href="/contact"
+                  className="rounded-button border-2 border-white/30 px-8 py-4 text-sm font-medium text-white transition-all duration-300 hover:border-coffee-gold hover:text-coffee-gold hover:-translate-y-0.5"
+                >
+                  {t("homeCta.secondary")}
+                </Link>
+              </Magnetic>
+            </div>
+          </Reveal>
         </div>
       </section>
     </>

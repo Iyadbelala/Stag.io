@@ -61,6 +61,8 @@ export const students = pgTable('students', {
   bio: text('bio'),
   profilePhotoUrl: text('profilePhotoUrl'),
   portfolioPhotos: text('portfolioPhotos').array().default([]).notNull(),
+  linkedinUrl: text('linkedinUrl'),
+  githubUrl: text('githubUrl'),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
 });

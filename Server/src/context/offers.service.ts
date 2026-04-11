@@ -1,6 +1,6 @@
 import { eq, and, desc, count } from 'drizzle-orm';
 import { db } from '../model/db';
-import { users, companies, internshipOffers, applications } from '../model/schema';
+import { users, companies, internshipOffers, applications, students } from '../model/schema';
 
 export interface CreateOfferInput {
   title: string;
@@ -180,6 +180,117 @@ export async function deleteOffer(userId: string, offerId: string): Promise<void
   }
 
   await db.delete(internshipOffers).where(eq(internshipOffers.id, offerId));
+}
+
+export async function updateOfferStatus(
+  userId: string,
+  offerId: string,
+  newStatus: 'draft' | 'active' | 'closed',
+): Promise<OfferResult> {
+  const company = await getCompanyForUser(userId);
+
+  if (!company) {
+    const err = new Error('Company not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  const [existing] = await db
+    .select()
+    .from(internshipOffers)
+    .where(and(eq(internshipOffers.id, offerId), eq(internshipOffers.companyId, company.id)));
+
+  if (!existing) {
+    const err = new Error('Offer not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  const [updated] = await db
+    .update(internshipOffers)
+    .set({ status: newStatus })
+    .where(eq(internshipOffers.id, offerId))
+    .returning();
+
+  return toOfferResult(updated);
+}
+
+export interface OfferApplicant {
+  id: string;
+  studentId: string;
+  applicantName: string;
+  email: string;
+  department: string | null;
+  profilePhotoUrl: string | null;
+  skills: string[];
+  bio: string | null;
+  coverLetter: string | null;
+  cvUrl: string | null;
+  linkedinUrl: string | null;
+  githubUrl: string | null;
+  status: string;
+  appliedAt: string;
+}
+
+export async function getOfferApplicants(
+  userId: string,
+  offerId: string,
+): Promise<OfferApplicant[]> {
+  const company = await getCompanyForUser(userId);
+
+  if (!company) {
+    const err = new Error('Company not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  const [offer] = await db
+    .select()
+    .from(internshipOffers)
+    .where(and(eq(internshipOffers.id, offerId), eq(internshipOffers.companyId, company.id)));
+
+  if (!offer) {
+    const err = new Error('Offer not found') as Error & { code: string; status: number };
+    err.code = 'NOT_FOUND';
+    err.status = 404;
+    throw err;
+  }
+
+  const apps = await db
+    .select()
+    .from(applications)
+    .where(eq(applications.offerId, offerId))
+    .orderBy(desc(applications.appliedAt));
+
+  const result: OfferApplicant[] = [];
+  for (const app of apps) {
+    const [student] = await db.select().from(students).where(eq(students.id, app.studentId));
+    if (!student) continue;
+    const [user] = await db.select().from(users).where(eq(users.id, student.userId));
+    if (!user) continue;
+
+    result.push({
+      id: app.id,
+      studentId: student.id,
+      applicantName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email,
+      email: user.email,
+      department: student.department,
+      profilePhotoUrl: student.profilePhotoUrl,
+      skills: student.skills,
+      bio: student.bio,
+      coverLetter: app.coverLetter,
+      cvUrl: app.cvUrl,
+      linkedinUrl: student.linkedinUrl,
+      githubUrl: student.githubUrl,
+      status: app.status,
+      appliedAt: app.appliedAt.toISOString(),
+    });
+  }
+
+  return result;
 }
 
 export async function listPublicOffers(): Promise<OfferResult[]> {

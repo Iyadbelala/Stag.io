@@ -15,6 +15,8 @@ export interface StudentProfile {
   cvUrl: string | null;
   profilePhotoUrl: string | null;
   portfolioPhotos: string[];
+  linkedinUrl: string | null;
+  githubUrl: string | null;
   createdAt: Date;
 }
 
@@ -24,6 +26,8 @@ export interface UpdateProfileInput {
   department?: string;
   bio?: string;
   skills?: string[];
+  linkedinUrl?: string;
+  githubUrl?: string;
 }
 
 export async function getStudentProfile(userId: string): Promise<StudentProfile> {
@@ -51,6 +55,8 @@ export async function getStudentProfile(userId: string): Promise<StudentProfile>
     cvUrl: student?.cvUrl ?? null,
     profilePhotoUrl: student?.profilePhotoUrl ?? null,
     portfolioPhotos: student?.portfolioPhotos ?? [],
+    linkedinUrl: student?.linkedinUrl ?? null,
+    githubUrl: student?.githubUrl ?? null,
     createdAt: user.createdAt,
   };
 }
@@ -67,6 +73,8 @@ export async function updateStudentProfile(
   if (input.department !== undefined) studentUpdate.department = input.department;
   if (input.bio !== undefined) studentUpdate.bio = input.bio;
   if (input.skills !== undefined) studentUpdate.skills = input.skills;
+  if (input.linkedinUrl !== undefined) studentUpdate.linkedinUrl = input.linkedinUrl;
+  if (input.githubUrl !== undefined) studentUpdate.githubUrl = input.githubUrl;
 
   if (Object.keys(userUpdate).length > 0) {
     await db.update(users).set(userUpdate).where(eq(users.id, userId));
@@ -91,6 +99,8 @@ export async function updateStudentProfile(
     cvUrl: student?.cvUrl ?? null,
     profilePhotoUrl: student?.profilePhotoUrl ?? null,
     portfolioPhotos: student?.portfolioPhotos ?? [],
+    linkedinUrl: student?.linkedinUrl ?? null,
+    githubUrl: student?.githubUrl ?? null,
     createdAt: user.createdAt,
   };
 }

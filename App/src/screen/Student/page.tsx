@@ -9,6 +9,10 @@ import {
   HiOutlineLogout,
   HiOutlineUser,
   HiOutlineXCircle,
+  HiOutlineChevronDown,
+  HiOutlineChevronUp,
+  HiOutlineExternalLink,
+  HiOutlineDocumentText,
 } from "react-icons/hi";
 import { useAuth } from "@/Components/contexts/AuthContext";
 import { useRouter } from "next/navigation";
@@ -32,6 +36,20 @@ interface RecentApplication {
   company: string;
   status: "pending" | "accepted" | "rejected" | "withdrawn" | "validated";
   appliedAt: string;
+  coverLetter?: string | null;
+  cvUrl?: string | null;
+}
+
+interface FullApplication {
+  id: string;
+  studentId: string;
+  offerId: string;
+  coverLetter: string | null;
+  cvUrl: string | null;
+  status: string;
+  appliedAt: string;
+  offerTitle: string;
+  companyName: string;
 }
 
 interface DashboardData {
@@ -53,24 +71,29 @@ interface StatCardProps {
 
 function StatCard({ icon, label, value, color }: StatCardProps) {
   return (
-    <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm transition-shadow hover:shadow-md">
+    <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm transition-shadow hover:shadow-md">
       <div
-        className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full ${color}`}
+        className={`mb-2 sm:mb-4 inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full ${color}`}
       >
         {icon}
       </div>
-      <p className="text-2xl font-bold text-coffee-dark">
+      <p className="text-xl sm:text-2xl font-bold text-coffee-dark">
         {value}
       </p>
-      <p className="mt-1 text-sm text-text-muted">{label}</p>
+      <p className="mt-0.5 sm:mt-1 text-xs sm:text-sm text-text-muted">{label}</p>
     </div>
   );
 }
 
 /* ============================================
-   Activity Row
+   Activity Row (expandable with withdraw)
    ============================================ */
-function ActivityRow({ title, company, status, appliedAt, t }: RecentApplication & { t: (key: string) => string }) {
+function ActivityRow({
+  id, title, company, status, appliedAt, coverLetter, cvUrl, t, onWithdraw,
+}: RecentApplication & { t: (key: string) => string; onWithdraw: (id: string) => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const [withdrawing, setWithdrawing] = useState(false);
+
   const statusConfig: Record<string, { label: string; classes: string }> = {
     pending: {
       label: t("status.pending"),
@@ -98,22 +121,91 @@ function ActivityRow({ title, company, status, appliedAt, t }: RecentApplication
   const dateStr = new Date(appliedAt).toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
+    year: "numeric",
   });
 
+  const handleWithdraw = async () => {
+    if (!confirm(t("student.withdrawConfirm"))) return;
+    setWithdrawing(true);
+    try {
+      await api.post(`/api/applications/${id}/withdraw`);
+      onWithdraw(id);
+    } catch {
+      alert(t("student.withdrawFailed"));
+    } finally {
+      setWithdrawing(false);
+    }
+  };
+
   return (
-    <div className="flex items-center justify-between gap-4 border-b border-surface-sand py-4 last:border-0">
-      <div className="min-w-0">
-        <p className="font-medium text-text-primary truncate">{title}</p>
-        <p className="text-sm text-text-muted">{company}</p>
-      </div>
-      <div className="flex shrink-0 items-center gap-4">
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${s.classes}`}
-        >
-          {s.label}
-        </span>
-        <span className="text-xs text-text-muted hidden sm:block">{dateStr}</span>
-      </div>
+    <div className="border-b border-surface-sand last:border-0">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex w-full items-center justify-between gap-4 py-4 text-left cursor-pointer"
+      >
+        <div className="min-w-0">
+          <p className="font-medium text-text-primary truncate">{title}</p>
+          <p className="text-sm text-text-muted">{company}</p>
+        </div>
+        <div className="flex shrink-0 items-center gap-3">
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-medium ${s.classes}`}
+          >
+            {s.label}
+          </span>
+          <span className="text-xs text-text-muted hidden sm:block">{dateStr}</span>
+          {expanded ? (
+            <HiOutlineChevronUp size={16} className="text-text-muted" />
+          ) : (
+            <HiOutlineChevronDown size={16} className="text-text-muted" />
+          )}
+        </div>
+      </button>
+
+      {expanded && (
+        <div className="pb-4 pl-1 space-y-3">
+          {/* Applied date */}
+          <div className="flex items-center gap-2 text-sm text-text-muted">
+            <HiOutlineClock size={14} />
+            <span>{t("student.appliedOn")} {dateStr}</span>
+          </div>
+
+          {/* Cover letter */}
+          <div>
+            <p className="text-xs font-medium text-text-secondary flex items-center gap-1.5 mb-1">
+              <HiOutlineDocumentText size={14} />
+              {t("student.coverLetter")}
+            </p>
+            <p className="text-sm text-text-muted bg-surface-cream rounded-lg px-3 py-2">
+              {coverLetter || t("student.noCoverLetter")}
+            </p>
+          </div>
+
+          {/* CV link */}
+          {cvUrl && (
+            <a
+              href={cvUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:underline"
+            >
+              <HiOutlineExternalLink size={14} />
+              {t("student.cvLink")}
+            </a>
+          )}
+
+          {/* Withdraw button for pending apps */}
+          {status === "pending" && (
+            <button
+              onClick={handleWithdraw}
+              disabled={withdrawing}
+              className="rounded-button border border-status-error/30 px-4 py-1.5 text-xs font-medium text-status-error transition-colors hover:bg-status-error/10 disabled:opacity-50 cursor-pointer"
+            >
+              {withdrawing ? "..." : t("student.withdraw")}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -126,6 +218,7 @@ export default function StudentDashboard() {
   const { t } = useLanguage();
   const router = useRouter();
   const [data, setData] = useState<DashboardData | null>(null);
+  const [allApplications, setAllApplications] = useState<RecentApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -143,10 +236,23 @@ export default function StudentDashboard() {
     }
     async function fetchDashboard() {
       try {
-        const res = await api.get<{ success: true; data: DashboardData }>("/api/profile/dashboard");
-        setData(res.data.data);
+        const [dashRes, appsRes] = await Promise.all([
+          api.get<{ success: true; data: DashboardData }>("/api/profile/dashboard"),
+          api.get<{ success: true; data: FullApplication[] }>("/api/applications"),
+        ]);
+        setData(dashRes.data.data);
+        setAllApplications(
+          appsRes.data.data.map((a) => ({
+            id: a.id,
+            title: a.offerTitle,
+            company: a.companyName,
+            status: a.status as RecentApplication["status"],
+            appliedAt: a.appliedAt,
+            coverLetter: a.coverLetter,
+            cvUrl: a.cvUrl,
+          })),
+        );
       } catch {
-        // Fallback to empty state
         setData({
           stats: { applicationsSent: 0, acceptedApplications: 0, pendingResponses: 0, rejectedApplications: 0 },
           recentApplications: [],
@@ -159,6 +265,24 @@ export default function StudentDashboard() {
     }
     fetchDashboard();
   }, []);
+
+  const handleWithdraw = (applicationId: string) => {
+    setAllApplications((prev) =>
+      prev.map((a) => (a.id === applicationId ? { ...a, status: "withdrawn" as const } : a)),
+    );
+    // Update stats
+    setData((prev) =>
+      prev
+        ? {
+            ...prev,
+            stats: {
+              ...prev.stats,
+              pendingResponses: Math.max(0, prev.stats.pendingResponses - 1),
+            },
+          }
+        : prev,
+    );
+  };
 
   const handleLogout = () => {
     logout();
@@ -178,13 +302,12 @@ export default function StudentDashboard() {
   }
 
   const stats = data?.stats ?? { applicationsSent: 0, acceptedApplications: 0, pendingResponses: 0, rejectedApplications: 0 };
-  const recentApplications = data?.recentApplications ?? [];
   const profileCompletion = data?.profileCompletion ?? 0;
   const missingFields = data?.missingFields ?? [];
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-6 py-10">
-      <div className="mx-auto max-w-5xl space-y-10">
+    <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-5xl space-y-6 sm:space-y-10">
         {/* ---- Welcome Header ---- */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -195,26 +318,26 @@ export default function StudentDashboard() {
               {user?.university} &middot; {t("student.dashboard")}
             </p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link
               href="/student/profile"
-              className="flex items-center gap-2 rounded-button border border-surface-sand bg-surface-white px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-button border border-surface-sand bg-surface-white px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm"
             >
               <HiOutlineUser size={16} />
-              {t("common.editProfile")}
+              <span className="hidden sm:inline">{t("common.editProfile")}</span>
             </Link>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-2 rounded-button border border-surface-sand bg-surface-white px-4 py-2 text-sm font-medium text-text-secondary transition-colors hover:border-status-error hover:text-status-error cursor-pointer"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-button border border-surface-sand bg-surface-white px-3 py-2 sm:px-4 text-xs sm:text-sm font-medium text-text-secondary transition-colors hover:border-status-error hover:text-status-error cursor-pointer"
             >
               <HiOutlineLogout size={16} />
-              {t("common.signOut")}
+              <span className="hidden sm:inline">{t("common.signOut")}</span>
             </button>
           </div>
         </div>
 
         {/* ---- Stats Cards ---- */}
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           <StatCard
             icon={
               <HiOutlineBriefcase size={22} className="text-coffee-warm" />
@@ -254,7 +377,7 @@ export default function StudentDashboard() {
 
         {/* ---- Profile Completion Banner ---- */}
         {profileCompletion < 100 && (
-          <div className="rounded-card border border-coffee-gold/30 bg-coffee-gold/5 px-6 py-5">
+          <div className="rounded-card border border-coffee-gold/30 bg-coffee-gold/5 px-4 py-4 sm:px-6 sm:py-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p className="font-medium text-coffee-dark">
@@ -286,15 +409,15 @@ export default function StudentDashboard() {
         )}
 
         {/* ---- Recent Activity ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <h2 className="mb-1 text-lg font-semibold text-coffee-dark">
             {t("student.recentApplications")}
           </h2>
-          <p className="mb-6 text-sm text-text-muted">
+          <p className="mb-4 sm:mb-6 text-sm text-text-muted">
             {t("student.recentApplicationsDesc")}
           </p>
 
-          {recentApplications.length === 0 ? (
+          {allApplications.length === 0 ? (
             <div className="py-8 text-center">
               <HiOutlineClipboardList size={40} className="mx-auto mb-3 text-text-muted/40" />
               <p className="text-sm text-text-muted">
@@ -303,12 +426,9 @@ export default function StudentDashboard() {
             </div>
           ) : (
             <>
-              {recentApplications.map((item) => (
-                <ActivityRow key={item.id} {...item} t={t} />
+              {allApplications.map((item) => (
+                <ActivityRow key={item.id} {...item} t={t} onWithdraw={handleWithdraw} />
               ))}
-              <button className="mt-6 w-full rounded-button border border-surface-sand py-2.5 text-sm font-medium text-text-secondary transition-colors hover:border-coffee-warm hover:text-coffee-warm cursor-pointer">
-                {t("student.viewAllApplications")}
-              </button>
             </>
           )}
         </div>

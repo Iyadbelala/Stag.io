@@ -19,7 +19,9 @@ import {
   HiOutlineTrash,
   HiOutlineDocumentDownload,
   HiOutlineDocument,
+  HiOutlineGlobe,
 } from "react-icons/hi";
+import { FaLinkedin, FaGithub } from "react-icons/fa";
 import { useAuth } from "@/Components/contexts/AuthContext";
 import { api } from "@/lib/api";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
@@ -37,6 +39,8 @@ interface ProfileData {
   skills: string[];
   profilePhotoUrl: string | null;
   portfolioPhotos: string[];
+  linkedinUrl: string;
+  githubUrl: string;
 }
 
 /* ============================================
@@ -56,6 +60,8 @@ export default function StudentProfile() {
     skills: [],
     profilePhotoUrl: null,
     portfolioPhotos: [],
+    linkedinUrl: "",
+    githubUrl: "",
   });
   const [newSkill, setNewSkill] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -85,6 +91,8 @@ export default function StudentProfile() {
           skills: p.skills || [],
           profilePhotoUrl: p.profilePhotoUrl || null,
           portfolioPhotos: p.portfolioPhotos || [],
+          linkedinUrl: p.linkedinUrl || "",
+          githubUrl: p.githubUrl || "",
         });
       } catch {
         if (user) {
@@ -208,6 +216,8 @@ export default function StudentProfile() {
         department: form.department,
         bio: form.bio,
         skills: form.skills,
+        linkedinUrl: form.linkedinUrl,
+        githubUrl: form.githubUrl,
       });
 
       const p = data.data;
@@ -273,8 +283,8 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-6 py-10">
-      <div className="mx-auto max-w-3xl space-y-8">
+    <div className="min-h-[calc(100vh-80px)] bg-surface-cream px-4 py-6 sm:px-6 sm:py-10">
+      <div className="mx-auto max-w-3xl space-y-6 sm:space-y-8">
         {/* ---- Header ---- */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -296,7 +306,7 @@ export default function StudentProfile() {
         </div>
 
         {/* ---- Profile Photo Section ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-coffee-dark">
             <HiOutlineCamera size={20} className="text-coffee-warm" />
             {t("studentProfile.profilePhoto")}
@@ -371,7 +381,7 @@ export default function StudentProfile() {
         </div>
 
         {/* ---- Personal Information ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-coffee-dark">
             <HiOutlineUser size={20} className="text-coffee-warm" />
             {t("studentProfile.personalInfo")}
@@ -431,7 +441,7 @@ export default function StudentProfile() {
         </div>
 
         {/* ---- Academic Information ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <h2 className="mb-6 flex items-center gap-2 text-lg font-semibold text-coffee-dark">
             <HiOutlineBookOpen size={20} className="text-coffee-warm" />
             {t("studentProfile.academicInfo")}
@@ -453,7 +463,7 @@ export default function StudentProfile() {
         </div>
 
         {/* ---- About Me ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <h2 className="mb-6 text-lg font-semibold text-coffee-dark">
             {t("studentProfile.aboutMe")}
           </h2>
@@ -477,7 +487,7 @@ export default function StudentProfile() {
         </div>
 
         {/* ---- Skills ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <h2 className="mb-6 text-lg font-semibold text-coffee-dark">
             {t("studentProfile.skills")}
           </h2>
@@ -531,7 +541,7 @@ export default function StudentProfile() {
         </div>
 
         {/* ---- Portfolio & Certificates ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <div className="mb-6 flex items-center justify-between">
             <div>
               <h2 className="flex items-center gap-2 text-lg font-semibold text-coffee-dark">
@@ -678,8 +688,51 @@ export default function StudentProfile() {
           )}
         </div>
 
+        {/* ---- Social Links ---- */}
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
+          <h2 className="mb-2 flex items-center gap-2 text-lg font-semibold text-coffee-dark">
+            <HiOutlineGlobe size={20} className="text-coffee-warm" />
+            {t("studentProfile.socialLinks")}
+          </h2>
+          <p className="mb-6 text-sm text-text-muted">
+            {t("studentProfile.socialLinksDesc")}
+          </p>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="linkedinUrl" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-text-primary">
+                <FaLinkedin size={16} className="text-[#0A66C2]" />
+                {t("studentProfile.linkedinUrl")}
+              </label>
+              <input
+                id="linkedinUrl"
+                type="url"
+                value={form.linkedinUrl}
+                onChange={(e) => updateField("linkedinUrl", e.target.value)}
+                placeholder={t("studentProfile.linkedinPlaceholder")}
+                className="w-full rounded-button border border-surface-sand bg-surface-cream/50 px-4 py-3 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted/60 focus:border-coffee-gold/60"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="githubUrl" className="mb-1.5 flex items-center gap-2 text-sm font-medium text-text-primary">
+                <FaGithub size={16} className="text-[#333]" />
+                {t("studentProfile.githubUrl")}
+              </label>
+              <input
+                id="githubUrl"
+                type="url"
+                value={form.githubUrl}
+                onChange={(e) => updateField("githubUrl", e.target.value)}
+                placeholder={t("studentProfile.githubPlaceholder")}
+                className="w-full rounded-button border border-surface-sand bg-surface-cream/50 px-4 py-3 text-sm text-text-primary outline-none transition-colors placeholder:text-text-muted/60 focus:border-coffee-gold/60"
+              />
+            </div>
+          </div>
+        </div>
+
         {/* ---- CV Builder ---- */}
-        <div className="rounded-card border border-surface-sand bg-surface-white p-6 shadow-sm">
+        <div className="rounded-card border border-surface-sand bg-surface-white p-4 sm:p-6 shadow-sm">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="flex items-center gap-2 text-lg font-semibold text-coffee-dark">

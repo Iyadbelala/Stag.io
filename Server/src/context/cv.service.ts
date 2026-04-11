@@ -124,6 +124,28 @@ export async function generateStudentCv(userId: string): Promise<Buffer> {
       sideY += 16;
     }
 
+    // ── SOCIAL LINKS ──
+    if (student.linkedinUrl || student.githubUrl) {
+      sideY += 6;
+      sideSection('Links');
+      if (student.linkedinUrl) {
+        doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#CCCCCC');
+        doc.text('LinkedIn', 16, sideY, { width: sideW - 32 });
+        sideY += 10;
+        doc.font('Helvetica').fontSize(7).fillColor('#FFFFFF');
+        doc.text(student.linkedinUrl, 16, sideY, { width: sideW - 32, lineBreak: true });
+        sideY += 16;
+      }
+      if (student.githubUrl) {
+        doc.font('Helvetica-Bold').fontSize(7.5).fillColor('#CCCCCC');
+        doc.text('GitHub', 16, sideY, { width: sideW - 32 });
+        sideY += 10;
+        doc.font('Helvetica').fontSize(7).fillColor('#FFFFFF');
+        doc.text(student.githubUrl, 16, sideY, { width: sideW - 32, lineBreak: true });
+        sideY += 16;
+      }
+    }
+
     // ── DEPARTMENT ──
     if (student.department) {
       sideY += 6;

@@ -1,8 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth.middleware';
 import { requireRole } from '../middleware/role.middleware';
-import { uploadMemory, validateFileBytes } from '../middleware/upload.middleware';
-import { uploadToCloudinary } from '../../lib/cloudinary';
+import { uploadOfferMedia, validateOfferMediaBytes } from '../middleware/upload.middleware';
+import { uploadToCloudinary, uploadDocumentToCloudinary } from '../../lib/cloudinary';
 import { createOffer, getCompanyOffers, deleteOffer, updateOffer, listPublicOffers, getPublicOfferById, updateOfferStatus, getOfferApplicants } from '../../context/offers.service';
 
 const offersRouter = Router();
@@ -54,8 +54,8 @@ offersRouter.get('/:id', async (req: Request, res: Response) => {
   }
 });
 
-/* POST /api/offers — create a new internship offer (with optional banner image) */
-offersRouter.post('/', requireAuth, requireRole('company'), uploadMemory.single('banner'), validateFileBytes, async (req: Request, res: Response) => {
+/* POST /api/offers — create a new internship offer (with optional banner image + short video) */
+offersRouter.post('/', requireAuth, requireRole('company'), uploadOfferMedia, validateOfferMediaBytes, async (req: Request, res: Response) => {
   const { title, description, requirements, duration, location, type } = req.body;
 
   if (!title || !description || !requirements || !duration || !location) {
@@ -67,16 +67,27 @@ offersRouter.post('/', requireAuth, requireRole('company'), uploadMemory.single(
   }
 
   try {
+    const files = req.files as Record<string, Express.Multer.File[]> | undefined;
+
     let bannerUrl: string | undefined;
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer, 'stag-io/offer-banners');
+    const banner = files?.banner?.[0];
+    if (banner) {
+      const result = await uploadToCloudinary(banner.buffer, 'stag-io/offer-banners');
       bannerUrl = result.url;
+    }
+
+    let videoUrl: string | undefined;
+    const video = files?.video?.[0];
+    if (video) {
+      const result = await uploadDocumentToCloudinary(video.buffer, 'stag-io/offer-videos');
+      videoUrl = result.url;
     }
 
     const offer = await createOffer(req.user!.sub, {
       title, description, requirements, duration, location,
       type: type || 'onsite',
       bannerUrl,
+      videoUrl,
     });
     res.status(201).json({ success: true, data: offer });
   } catch (err: unknown) {
@@ -84,18 +95,28 @@ offersRouter.post('/', requireAuth, requireRole('company'), uploadMemory.single(
   }
 });
 
-/* PUT /api/offers/:id — update an offer (with optional banner image) */
-offersRouter.put('/:id', requireAuth, requireRole('company'), uploadMemory.single('banner'), validateFileBytes, async (req: Request, res: Response) => {
+/* PUT /api/offers/:id — update an offer (with optional banner image + short video) */
+offersRouter.put('/:id', requireAuth, requireRole('company'), uploadOfferMedia, validateOfferMediaBytes, async (req: Request, res: Response) => {
   try {
+    const files = req.files as Record<string, Express.Multer.File[]> | undefined;
+
     let bannerUrl: string | undefined;
-    if (req.file) {
-      const result = await uploadToCloudinary(req.file.buffer, 'stag-io/offer-banners');
+    const banner = files?.banner?.[0];
+    if (banner) {
+      const result = await uploadToCloudinary(banner.buffer, 'stag-io/offer-banners');
       bannerUrl = result.url;
     }
 
+    let videoUrl: string | undefined;
+    const video = files?.video?.[0];
+    if (video) {
+      const result = await uploadDocumentToCloudinary(video.buffer, 'stag-io/offer-videos');
+      videoUrl = result.url;
+    }
+
     // Only pass allowed fields (prevent mass assignment)
-    const { title, description, requirements, duration, location, type } = req.body;
-    const updates: Record<string, string> = {};
+    const { title, description, requirements, duration, location, type, removeVideo } = req.body;
+    const updates: Record<string, string | null> = {};
     if (title !== undefined) updates.title = title;
     if (description !== undefined) updates.description = description;
     if (requirements !== undefined) updates.requirements = requirements;
@@ -103,6 +124,8 @@ offersRouter.put('/:id', requireAuth, requireRole('company'), uploadMemory.singl
     if (location !== undefined) updates.location = location;
     if (type !== undefined) updates.type = type;
     if (bannerUrl) updates.bannerUrl = bannerUrl;
+    if (videoUrl) updates.videoUrl = videoUrl;
+    else if (removeVideo === 'true') updates.videoUrl = null;
 
     const offer = await updateOffer(req.user!.sub, req.params.id as string, updates);
     res.json({ success: true, data: offer });

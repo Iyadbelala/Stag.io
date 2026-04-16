@@ -94,6 +94,7 @@ export const internshipOffers = pgTable('internship_offers', {
   type: offerTypeEnum('type').default('onsite').notNull(),
   status: offerStatusEnum('status').default('active').notNull(),
   bannerUrl: text('bannerUrl'),
+  videoUrl: text('videoUrl'),
   createdAt: timestamp('createdAt', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updatedAt', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [

@@ -15,6 +15,7 @@ import {
   HiOutlinePencil,
   HiOutlineExclamationCircle,
   HiOutlinePhotograph,
+  HiOutlineVideoCamera,
   HiOutlineMail,
   HiOutlineAcademicCap,
   HiOutlineDocumentDownload,
@@ -64,6 +65,7 @@ interface Offer {
   type: string;
   status: string;
   bannerUrl: string | null;
+  videoUrl: string | null;
   applicationCount: number;
   createdAt: string;
 }
@@ -208,6 +210,8 @@ function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
   });
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -217,6 +221,18 @@ function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
       setBannerFile(file);
       setBannerPreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+      setError("Video must be 50MB or smaller");
+      return;
+    }
+    setVideoFile(file);
+    setVideoPreview(URL.createObjectURL(file));
+    setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -236,6 +252,7 @@ function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
       fd.append("location", form.location);
       fd.append("type", form.type);
       if (bannerFile) fd.append("banner", bannerFile);
+      if (videoFile) fd.append("video", videoFile);
 
       const { data } = await api.post<{ success: true; data: Offer }>("/api/offers", fd, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -373,6 +390,35 @@ function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
             )}
           </div>
 
+          {/* Short Video */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-text-primary">
+              Short Video (optional, max 50MB)
+            </label>
+            <p className="mb-2 text-xs text-text-muted">
+              Add a short clip to introduce your team or the role (MP4, WebM, or MOV).
+            </p>
+            {videoPreview && (
+              <div className="relative mb-2 overflow-hidden rounded-xl border border-surface-sand bg-black">
+                <video src={videoPreview} controls className="h-48 w-full object-contain" />
+                <button
+                  type="button"
+                  onClick={() => { setVideoFile(null); setVideoPreview(null); }}
+                  className="absolute top-2 right-2 rounded-full bg-black/60 p-1 text-white hover:bg-black/80 cursor-pointer"
+                >
+                  <HiOutlineX size={14} />
+                </button>
+              </div>
+            )}
+            {!videoPreview && (
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-surface-sand bg-surface-cream/30 px-4 py-6 text-sm text-text-muted transition-colors hover:border-coffee-gold/40 hover:bg-coffee-gold/5">
+                <HiOutlineVideoCamera size={20} />
+                Click to upload a short video
+                <input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={handleVideoChange} className="hidden" />
+              </label>
+            )}
+          </div>
+
           {error && (
             <div className="rounded-button border border-status-error/20 bg-status-error/10 px-4 py-3 text-sm text-status-error">
               {error}
@@ -413,6 +459,9 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
   });
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(offer.bannerUrl);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState<string | null>(offer.videoUrl);
+  const [videoRemoved, setVideoRemoved] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -422,6 +471,19 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
       setBannerFile(file);
       setBannerPreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleVideoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 50 * 1024 * 1024) {
+      setError("Video must be 50MB or smaller");
+      return;
+    }
+    setVideoFile(file);
+    setVideoPreview(URL.createObjectURL(file));
+    setVideoRemoved(false);
+    setError(null);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -441,6 +503,8 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
       fd.append("location", form.location);
       fd.append("type", form.type);
       if (bannerFile) fd.append("banner", bannerFile);
+      if (videoFile) fd.append("video", videoFile);
+      else if (videoRemoved) fd.append("removeVideo", "true");
 
       const { data } = await api.put<{ success: true; data: Offer }>(`/api/offers/${offer.id}`, fd, {
         headers: { "Content-Type": "multipart/form-data" },
@@ -574,6 +638,36 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
                 <HiOutlinePhotograph size={20} />
                 Click to upload a banner image
                 <input type="file" accept="image/*" onChange={handleBannerChange} className="hidden" />
+              </label>
+            )}
+          </div>
+
+          {/* Short Video */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-text-primary">
+              Short Video (optional, max 50MB)
+            </label>
+            {videoPreview && (
+              <div className="relative mb-2 overflow-hidden rounded-xl border border-surface-sand bg-black">
+                <video src={videoPreview} controls className="h-48 w-full object-contain" />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVideoFile(null);
+                    setVideoPreview(null);
+                    setVideoRemoved(true);
+                  }}
+                  className="absolute top-2 right-2 rounded-full bg-black/60 p-1 text-white hover:bg-black/80 cursor-pointer"
+                >
+                  <HiOutlineX size={14} />
+                </button>
+              </div>
+            )}
+            {!videoPreview && (
+              <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-surface-sand bg-surface-cream/30 px-4 py-6 text-sm text-text-muted transition-colors hover:border-coffee-gold/40 hover:bg-coffee-gold/5">
+                <HiOutlineVideoCamera size={20} />
+                Click to upload a short video
+                <input type="file" accept="video/mp4,video/webm,video/quicktime" onChange={handleVideoChange} className="hidden" />
               </label>
             )}
           </div>

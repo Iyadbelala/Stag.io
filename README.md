@@ -2,9 +2,11 @@
 
 <img src="https://img.shields.io/badge/☕-Stag.io-4B2E2B?style=for-the-badge&labelColor=F5EFE6" alt="Stag.io" height="40"/>
 
-# Stag.io
+# Stag.io ✨
 
-**The modern internship management platform that connects students, companies & universities.**
+**The joyful, modern internship platform where students, companies & universities actually meet.**
+
+<sub>☕ Brewed with care · 🎓 Built by students, for students · 🚀 Ready for real-world internships</sub>
 
 [![Next.js](https://img.shields.io/badge/Next.js_16-000?style=flat-square&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React_19-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
@@ -24,11 +26,11 @@
 
 ---
 
-## Overview
+## 👋 Hey there
 
-**Stag.io** (_stage_ is French for _internship_) is a full-stack web platform that digitizes the entire internship lifecycle — from opportunity discovery and application to administrative validation and agreement tracking.
+**Stag.io** (_stage_ = French for _internship_) is a full-stack web platform that digitizes the entire internship lifecycle — from discovery and application to administrative validation and agreement tracking — without the paperwork headache.
 
-Built as a graduation capstone project (**Atelier TI 2025 – 2026**), it provides a unified experience for every stakeholder in the internship process:
+Born as a graduation capstone (**Atelier TI 2025 – 2026**), it gives every role in the journey a home that actually feels good to use:
 
 <div align="center">
 
@@ -43,51 +45,53 @@ Built as a graduation capstone project (**Atelier TI 2025 – 2026**), it provid
 
 ---
 
-## Features
+## ✨ Features
 
 <table>
 <tr>
 <td width="50%">
 
-### Frontend
-- Animated hero section with live stats & carousel
-- Glassmorphism authentication with split-layout design
-- Dark mode with explosion animation (View Transitions API)
-- Bilingual support (English / French) with full i18n
-- Fully responsive mobile-first design
-- Coffee-inspired design system with custom theme tokens
-- Accessible form components with real-time validation
-- SmartMatch — intelligent internship matching with score rings
-- AI-powered chatbot (Gemini) with theme-aware UI
-- Real-time notifications via Socket.IO
-- CV generation & download (PDF)
-- Saved offers & review system
+### 🎨 Frontend
+- 🌅 Animated hero with gradient orbs, live stats carousel & breathing pill
+- 🪟 Glassmorphism 5-step registration wizard with progress rail
+- 🌓 Dark mode with explosion animation (View Transitions API)
+- 🌍 Bilingual English / French with full i18n
+- 📱 Mobile-first, fully responsive
+- ☕ Coffee-inspired design system with custom theme tokens
+- ♿ Accessible form primitives with real-time validation
+- 🎯 SmartMatch — intelligent matching with animated score rings
+- 🤖 AI-powered chatbot (Gemini) with theme-aware UI
+- 🔔 Real-time notifications via Socket.IO
+- 📄 One-click CV generation & PDF download
+- 💾 Saved offers & company review system
 
 </td>
 <td width="50%">
 
-### Backend
-- JWT authentication with refresh tokens & httpOnly cookies
-- Role-based access control (5 roles) with per-route middleware
-- RESTful API with Express 5 & strict middleware pipeline
-- PostgreSQL via Drizzle ORM on Neon (serverless)
-- Cloudinary integration for images & document uploads
-- PDF generation for internship agreements (PDFKit)
-- AI chatbot service powered by Google Gemini
-- MCP (Model-Context-Protocol) server integration
-- Real-time notifications with Socket.IO
-- Email verification & password reset (Nodemailer)
-- Zod schema validation on all endpoints
-- SmartMatch scoring engine (< 100ms per request)
-- Database seeding for development
+### 🛠️ Backend
+- 🔐 JWT auth with refresh tokens & httpOnly cookies
+- 🧭 Role-based access (5 roles) with per-route middleware
+- ⚡ Express 5 REST API with strict middleware pipeline
+- 🐘 PostgreSQL via Drizzle ORM on Neon (serverless)
+- ☁️ Cloudinary for images, documents **and short offer videos**
+- 📜 PDF generation for agreements & CVs (PDFKit)
+- 🧠 AI chatbot service powered by Google Gemini
+- 🔌 MCP (Model-Context-Protocol) server integration
+- 📡 Real-time notifications with Socket.IO
+- ✉️ Email verification & password reset (Nodemailer)
+- 🧪 Zod schema validation on every endpoint
+- 🎯 SmartMatch scoring engine (< 100 ms per request)
+- 🌱 Database seeding for fast onboarding
 
 </td>
 </tr>
 </table>
 
+> 🆕 **What's fresh:** a playful multi-step registration wizard, **short intro videos on internship offers** (≤ 50 MB, MP4 / WebM / MOV), and a reimagined homepage hero with ambient gradient orbs.
+
 ---
 
-## SmartMatch
+## 🎯 SmartMatch
 
 > *"Stop scrolling through hundreds of offers. Let the right ones find you."*
 
@@ -184,7 +188,7 @@ A lightweight signal that checks whether the student's skills appear in the offe
 
 ---
 
-## Tech Stack
+## 🧰 Tech Stack
 
 <div align="center">
 
@@ -210,7 +214,7 @@ A lightweight signal that checks whether the student's skills appear in the offe
 
 ---
 
-## Design System
+## 🎨 Design System
 
 Stag.io features a warm **coffee-inspired** design language that evokes professionalism and approachability:
 
@@ -236,7 +240,7 @@ Stag.io features a warm **coffee-inspired** design language that evokes professi
 
 ---
 
-## Getting Started
+## 🚀 Getting Started
 
 ### Prerequisites
 
@@ -309,7 +313,7 @@ NEXT_PUBLIC_TURNSTILE_SITE_KEY=your_turnstile_site_key
 
 ---
 
-## Architecture
+## 🏗️ Architecture
 
 ```
 Stag.io/                              # Monorepo root (npm workspaces)
@@ -382,7 +386,7 @@ Stag.io/                              # Monorepo root (npm workspaces)
 
 ---
 
-## Database Schema
+## 🗄️ Database Schema
 
 The PostgreSQL database is managed with **Drizzle ORM** and uses **9 tables**:
 
@@ -400,7 +404,7 @@ The PostgreSQL database is managed with **Drizzle ORM** and uses **9 tables**:
 
 ---
 
-## API Reference
+## 📡 API Reference
 
 All endpoints are prefixed with `/api`.
 
@@ -424,7 +428,7 @@ All endpoints are prefixed with `/api`.
 
 ---
 
-## Security
+## 🔐 Security
 
 Stag.io implements defense-in-depth across the full stack:
 
@@ -453,9 +457,9 @@ Stag.io implements defense-in-depth across the full stack:
 
 ---
 
-## Contributing
+## 🤝 Contributing
 
-We welcome contributions! Here's how to get started:
+We'd love your help! Here's how to jump in:
 
 1. **Fork** the repository
 2. **Create** a feature branch: `git checkout -b feature/your-feature`
@@ -466,7 +470,7 @@ Please make sure your code follows the existing patterns and passes the build be
 
 ---
 
-## Team
+## 👥 The Team
 
 <div align="center">
 
@@ -480,9 +484,9 @@ Please make sure your code follows the existing patterns and passes the build be
 
 ---
 
-## License
+## 📄 License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE) — free to use, remix, and learn from.
 
 ---
 

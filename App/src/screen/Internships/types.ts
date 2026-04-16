@@ -8,6 +8,7 @@ export interface Internship {
   type: string;
   status: string;
   bannerUrl: string | null;
+  videoUrl: string | null;
   companyName: string;
   companyLogoUrl: string | null;
   companyIndustry: string | null;

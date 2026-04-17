@@ -1,0 +1,327 @@
+% ==============================================================
+%                        CHAPTER 3
+% ==============================================================
+
+\chapter{Design and Modeling}
+
+\section{Introduction}
+
+After defining the actors and requirements in the previous chapter, we now move to the design phase of the Stag.io platform. The objective of this chapter is to translate the functional analysis into structural and behavioral models that clarify how the system is organized and how its main workflows are executed.
+
+This chapter is structured around several complementary views. We first present the class diagram that captures the principal domain entities and their associations. We then introduce the navigation diagram to explain how users move through the interface according to their role. After that, we analyze the dynamic behavior of the platform through three activity diagrams and four sequence diagrams. Finally, we conclude with the relational model that formalizes the persistence layer used by the PostgreSQL database.
+
+\section{Class Diagram}
+
+The class diagram provides a static view of the system by identifying the main business entities, their attributes, and the associations that connect them. In Stag.io, the \texttt{User} entity forms the core of the model, while \texttt{Student}, \texttt{Company}, and \texttt{University} provide role-specific profiles. The operational center of the platform is built around internship offers, applications, reviews, saved offers, and notifications.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.88\textheight,keepaspectratio]{2-class-diagram.png}
+\caption{Class diagram of the Stag.io platform}
+\label{fig:class-diagram}
+\end{figure}
+
+The diagram highlights the following design decisions:
+
+\begin{itemize}
+    \item A single \texttt{User} table centralizes authentication data, identity information, and the role assigned to each account.
+    \item Role-specific information is isolated into dedicated entities (\texttt{Student}, \texttt{Company}, \texttt{University}) linked one-to-one to \texttt{User}.
+    \item The core internship lifecycle is modeled through the chain \texttt{Company} $\rightarrow$ \texttt{InternshipOffer} $\rightarrow$ \texttt{Application}.
+    \item Complementary services such as bookmarks, notifications, and reviews are represented by autonomous entities linked to the main operational flow.
+\end{itemize}
+
+
+
+\section{Navigation Diagram}
+
+The navigation diagram represents the main pages of the web application and the transitions available to users according to their authentication state and platform role. It is particularly useful for clarifying the separation between public navigation and role-based dashboards.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    font=\small,
+    navroot/.style={draw, rounded corners, fill=gray!15, minimum width=3.6cm, minimum height=1cm, align=center},
+    navgroup/.style={draw, rounded corners, fill=gray!8, minimum width=3.5cm, minimum height=0.95cm, align=center},
+    navblock/.style={draw, rounded corners, text width=4.8cm, minimum height=1.6cm, align=center, inner sep=5pt, font=\footnotesize},
+    navsmall/.style={draw, rounded corners, text width=3.8cm, minimum height=1.7cm, align=center, inner sep=6pt},
+    line/.style={-Latex, thick},
+    guide/.style={-Latex, thick, dashed}
+]
+    \node[navroot] (portal) {Stag.io Web Portal};
+
+    \node[navgroup] (public) at (-6.0,-2.2) {Public Navigation};
+    \node[navgroup] (auth) at (0,-2.2) {Authentication};
+    \node[navgroup] (dashboards) at (6.0,-2.2) {Authenticated Space};
+
+    \node[navsmall] (publicpages) at (-6.0,-5.0) {Home / About\\Internships / Companies\\Blog / FAQs / Contact};
+
+    \node[navsmall] (authpages) at (0,-4.8) {Login\\Register\\Verify Email\\Forgot / Reset Password};
+    \node[navsmall] (redirect) at (0,-7.6) {Successful login\\Role-based redirect};
+
+    \node[navblock] (userdash) at (6.0,-5.3) {Student Dashboard: Profile, Saved, Reviews\\Company Dashboard: Offers, Applications, Profile\\University Dashboard: Validations, Student Tracking};
+    \node[navblock] (admindash) at (6.0,-9.2) {Admin Dashboard: Users, Approvals, Reports\\Super Admin Dashboard: Admins, Global Control};
+
+    \draw[line] (portal) -- (public);
+    \draw[line] (portal) -- (auth);
+    \draw[line] (portal) -- (dashboards);
+
+    \draw[line] (public) -- (publicpages);
+
+    \draw[line] (auth) -- (authpages);
+    \draw[line] (authpages) -- (redirect);
+
+    \draw[line] (dashboards) -- (userdash);
+    \draw[line] (dashboards) -- (admindash);
+
+    \draw[guide] (redirect.east) -- ++(1.8,0) |- (dashboards.south);
+\end{tikzpicture}%
+}
+\caption{Navigation diagram of the main Stag.io pages}
+\label{fig:navigation-diagram}
+\end{figure}
+
+This navigation structure emphasizes two essential principles of the interface design:
+
+\begin{itemize}
+    \item Public pages remain accessible before authentication to facilitate discovery of the platform and internship catalog.
+    \item Once authenticated, each actor is redirected to a role-specific dashboard exposing only the pages and operations relevant to their responsibilities.
+\end{itemize}
+
+\section{Activity Diagrams}
+
+Activity diagrams describe the procedural flow of the platform's most important business processes. They are especially useful for visualizing decisions, parallel actions, and the transitions between actors during the internship lifecycle.
+
+\subsection{Activity Diagram --- Complete Application Journey}
+
+The first diagram gives a synthetic view of the complete internship journey, from authentication to company decision and university validation.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.9\textheight,keepaspectratio]{8-activity-diagram.png}
+\caption{Activity diagram of the complete internship application journey}
+\label{fig:activity-complete-journey}
+\end{figure}
+
+\subsection{Activity Diagram --- Authentication Flow}
+
+The second activity diagram focuses on the authentication logic, including registration, OTP verification, account lockout, and dashboard access.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    font=\small,
+    startstop/.style={ellipse, draw, fill=gray!12, minimum width=2.8cm, minimum height=0.9cm, align=center},
+    process/.style={rectangle, draw, rounded corners, fill=gray!5, minimum width=4.2cm, minimum height=0.95cm, align=center, text width=4.0cm},
+    decision/.style={diamond, draw, aspect=2.5, fill=gray!5, align=center, inner xsep=0.3cm},
+    flow/.style={-Latex, thick}
+]
+    % ── Top ──
+    \node[startstop] (start) at (0, 0) {Start};
+    \node[process] (open) at (0, -2) {Open authentication page};
+    \node[decision] (hasaccount) at (0, -4.5) {Existing account?};
+
+    % ── Registration Branch (Left) ──
+    \node[process] (registerflow) at (-8, -7.5) {Fill registration form\\with role-specific data};
+    \node[process] (validate) at (-8, -10) {Validate CAPTCHA and,\\for students, check the\\university domain};
+    \node[process] (otp) at (-8, -12.5) {Generate and send\\OTP code};
+    \node[decision] (validotp) at (-8, -15.5) {OTP valid and\\not expired?};
+    \node[process] (resend) at (-13, -18.5) {Resend OTP and ask\\for verification again};
+    \node[process] (verified) at (-3, -18.5) {Mark email as verified};
+
+    % ── Login Branch (Right) ──
+    \node[process] (loginflow) at (8, -7.5) {Enter email\\and password};
+    \node[decision] (locked) at (8, -10) {Account locked?};
+    \node[process] (lockmsg) at (14, -12.5) {Display temporary\\lock message};
+    \node[decision] (credentials) at (4, -13) {Credentials valid?};
+    \node[process] (failed) at (0, -16) {Record failed attempt\\and display error};
+    \node[decision] (mailverified) at (9, -16) {Email verified?};
+    \node[process] (newotp) at (5, -19) {Send new OTP and block\\login until verification};
+    \node[process] (tokens) at (14, -19) {Generate access and\\refresh JWT tokens};
+
+    % ── Convergence (Bottom) ──
+    \node[process] (dashboard) at (0, -22) {Redirect to the role-specific dashboard};
+    \node[startstop] (end) at (0, -24.5) {End};
+
+    % ── Flows: Top ──
+    \draw[flow] (start) -- (open);
+    \draw[flow] (open) -- (hasaccount);
+
+    % ── Flows: Registration Branch ──
+    \draw[flow] (hasaccount) -| node[pos=0.25, above] {No} (registerflow);
+    \draw[flow] (registerflow) -- (validate);
+    \draw[flow] (validate) -- (otp);
+    \draw[flow] (otp) -- (validotp);
+    \draw[flow] (validotp) -| node[pos=0.25, above] {No} (resend);
+    \draw[flow] (validotp) -| node[pos=0.25, above] {Yes} (verified);
+    \draw[flow] (verified) |- (dashboard);
+    \draw[flow] (resend) |- (end);
+
+    % ── Flows: Login Branch ──
+    \draw[flow] (hasaccount) -| node[pos=0.25, above] {Yes} (loginflow);
+    \draw[flow] (loginflow) -- (locked);
+    \draw[flow] (locked) -| node[pos=0.25, above] {Yes} (lockmsg);
+    \draw[flow] (lockmsg) |- (end);
+    \draw[flow] (locked) -| node[pos=0.25, above] {No} (credentials);
+    \draw[flow] (credentials) -| node[pos=0.25, above] {No} (failed);
+    \draw[flow] (failed) |- (end);
+    \draw[flow] (credentials) -| node[pos=0.25, above] {Yes} (mailverified);
+    \draw[flow] (mailverified) -| node[pos=0.25, above] {No} (newotp);
+    \draw[flow] (newotp) |- (end);
+    \draw[flow] (mailverified) -| node[pos=0.25, above] {Yes} (tokens);
+    \draw[flow] (tokens) |- (dashboard);
+    \draw[flow] (dashboard) -- (end);
+\end{tikzpicture}%
+}
+\caption{Activity diagram of the authentication and verification flow}
+\label{fig:activity-authentication}
+\end{figure}
+
+\subsection{Activity Diagram --- Validation and Review Flow}
+
+The third activity diagram concentrates on the post-application phase in which universities validate agreements and both parties can leave reviews after internship completion.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    font=\small,
+    node distance=1cm and 1.5cm,
+    startstop/.style={ellipse, draw, fill=gray!12, minimum width=3cm, minimum height=0.9cm, align=center},
+    process/.style={rectangle, draw, rounded corners, fill=gray!5, minimum width=4.3cm, minimum height=0.95cm, align=center},
+    decision/.style={diamond, draw, aspect=2.2, fill=gray!5, align=center, inner xsep=0.35cm},
+    flow/.style={-Latex, thick}
+]
+    \node[startstop] (start) {Accepted application};
+    \node[process, below=of start] (notifyuni) {Notify the university responsible\\for the student's domain};
+    \node[process, below=of notifyuni] (reviewagreement) {University reviews the agreement\\and the student's application data};
+    \node[decision, below=of reviewagreement] (valid) {Agreement complete and valid?};
+
+    \node[process, below left=1.4cm and 2.6cm of valid] (reject) {Reject validation request\\and notify stakeholders};
+    \node[process, below right=1.4cm and 2.6cm of valid] (approve) {Approve agreement and set\\application status to \texttt{validated}};
+
+    \node[process, below=2.0cm of valid] (internship) {Internship is carried out};
+    \node[decision, below=of internship] (completed) {Internship completed?};
+    \node[process, below left=1.4cm and 2.4cm of completed] (studentreview) {Student submits a review\\about the company};
+    \node[process, below right=1.4cm and 2.4cm of completed] (companyreview) {Company submits a review\\about the student};
+    \node[process, below=2.2cm of completed] (store) {Store ratings, comments,\\and related notifications};
+    \node[startstop, below=of store] (end) {End};
+
+    \draw[flow] (start) -- (notifyuni);
+    \draw[flow] (notifyuni) -- (reviewagreement);
+    \draw[flow] (reviewagreement) -- (valid);
+    \draw[flow] (valid) -- node[above left] {No} (reject);
+    \draw[flow] (reject) |- (end);
+    \draw[flow] (valid) -- node[above right] {Yes} (approve);
+    \draw[flow] (approve) |- (internship);
+    \draw[flow] (internship) -- (completed);
+    \draw[flow] (completed) -- node[above left] {Yes} (studentreview);
+    \draw[flow] (completed) -- node[above right] {Yes} (companyreview);
+    \draw[flow] (studentreview) |- (store);
+    \draw[flow] (companyreview) |- (store);
+    \draw[flow] (completed) -- ++(0,-1.3) -| node[pos=0.2, right] {No} (end);
+    \draw[flow] (store) -- (end);
+\end{tikzpicture}%
+}
+\caption{Activity diagram of agreement validation and post-internship review}
+\label{fig:activity-validation-review}
+\end{figure}
+
+\section{Sequence Diagrams}
+
+Sequence diagrams complement the activity view by showing the chronological exchange of messages between actors, frontend components, backend services, external systems, and the database. In accordance with the project guidelines, we present three sequence diagrams corresponding to the three core workflows of the platform.
+
+\subsection{Sequence Diagram --- Authentication}
+
+This diagram details the complete authentication cycle, including student registration, OTP-based email verification, login, token refresh, and logout.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.92\textheight,keepaspectratio]{3-sequence-authentication.png}
+\caption{Sequence diagram of authentication, verification, and session management}
+\label{fig:sequence-authentication}
+\end{figure}
+
+\subsection{Sequence Diagram --- Application Process}
+
+This sequence shows how the student, company, backend, database, and real-time notification service collaborate during an application submission and company decision.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.92\textheight,keepaspectratio]{4-sequence-application.png}
+\caption{Sequence diagram of the internship application process}
+\label{fig:sequence-application}
+\end{figure}
+
+\subsection{Sequence Diagram --- SmartMatch Recommendation}
+
+The third sequence diagram focuses on the SmartMatch engine and explains how the recommendation score is calculated from the student profile and the active offers available in the system.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth,height=0.92\textheight,keepaspectratio]{5-sequence-smartmatch.png}
+\caption{Sequence diagram of the SmartMatch recommendation workflow}
+\label{fig:sequence-smartmatch}
+\end{figure}
+
+\section{Relational Model}
+
+The relational model translates the conceptual design into a database structure that can be implemented in PostgreSQL. Figure~\ref{fig:relational-model} presents the core persistence schema used by Stag.io. For readability, the audit log table is omitted from the figure, but it remains part of the physical database schema.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+    font=\scriptsize,
+    entity/.style={draw, rounded corners, align=left, fill=gray!5, inner sep=6pt},
+    rel/.style={-Latex, thick},
+    card/.style={fill=white, inner sep=1pt}
+]
+    \node[entity] (users) at (0,0) {\begin{tabular}{@{}l@{}}\textbf{users}\\\hline PK id\\email\\role\\isEmailVerified\\createdAt\end{tabular}};
+    \node[entity] (universities) at (-10.5,-6.0) {\begin{tabular}{@{}l@{}}\textbf{universities}\\\hline PK id\\FK userId\\universityName\\domain\\isValidated\end{tabular}};
+    \node[entity] (students) at (-4.5,-6.0) {\begin{tabular}{@{}l@{}}\textbf{students}\\\hline PK id\\FK userId\\department\\cvUrl\\skills[]\end{tabular}};
+    \node[entity] (companies) at (4.5,-6.0) {\begin{tabular}{@{}l@{}}\textbf{companies}\\\hline PK id\\FK userId\\companyName\\location\\isValidated\end{tabular}};
+    \node[entity] (notifications) at (10.5,-6.0) {\begin{tabular}{@{}l@{}}\textbf{notifications}\\\hline PK id\\FK userId\\type\\isRead\\createdAt\end{tabular}};
+
+    \node[entity] (applications) at (-4.5,-12.5) {\begin{tabular}{@{}l@{}}\textbf{applications}\\\hline PK id\\FK studentId\\FK offerId\\status\\appliedAt\end{tabular}};
+    \node[entity] (offers) at (4.5,-12.5) {\begin{tabular}{@{}l@{}}\textbf{internship\_offers}\\\hline PK id\\FK companyId\\title\\status\\type\end{tabular}};
+
+    \node[entity] (reviews) at (-4.5,-19.0) {\begin{tabular}{@{}l@{}}\textbf{reviews}\\\hline PK id\\FK applicationId\\FK reviewerUserId\\FK revieweeUserId\\rating\end{tabular}};
+    \node[entity] (saved) at (0,-17.0) {\begin{tabular}{@{}l@{}}\textbf{saved\_offers}\\\hline PK id\\FK studentId\\FK offerId\\savedAt\end{tabular}};
+
+    \draw[rel] (users.south west) -- node[pos=0.6, above left, card, inner sep=1pt] {1 : 0..1} (students.north);
+    \draw[rel] (users.south east) -- node[pos=0.6, above right, card, inner sep=1pt] {1 : 0..1} (companies.north);
+    \draw[rel] (users.west) -| node[pos=0.75, right, card, inner sep=1pt] {1 : 0..1} (universities.north);
+    \draw[rel] (users.east) -| node[pos=0.75, left, card, inner sep=1pt] {1 : *} (notifications.north);
+
+    \draw[rel] (companies.south) -- node[midway, right, card, inner sep=1pt] {1 : *} (offers.north);
+    \draw[rel] (students.south) -- node[midway, left, card, inner sep=1pt] {1 : *} (applications.north);
+    
+    \draw[rel] (offers.west) -- node[midway, above, card, inner sep=1pt] {1 : *} (applications.east);
+    
+    \draw[rel] (applications.south) -- node[midway, left, card, inner sep=1pt] {1 : 0..2} (reviews.north);
+
+    \draw[rel] (students.south east) -- node[pos=0.35, above right, card, inner sep=1pt] {1 : *} (saved.north west);
+    \draw[rel] (offers.south west) -- node[pos=0.45, above left, card, inner sep=1pt] {1 : *} (saved.north east);
+\end{tikzpicture}%
+}
+\caption{Core relational model of the Stag.io database}
+\label{fig:relational-model}
+\end{figure}
+
+This relational organization enforces the main business rules of the application:
+
+\begin{itemize}
+    \item A user can own at most one student, company, or university profile through a one-to-one relationship.
+    \item A company can publish multiple internship offers, while each offer belongs to exactly one company.
+    \item A student can submit multiple applications, but each application references a single internship offer.
+    \item The tables \texttt{applications} and \texttt{saved\_offers} implement uniqueness constraints to prevent duplicate submissions and duplicate bookmarks.
+    \item Reviews are linked to validated internship experiences through the \texttt{applications} table, ensuring traceability of post-internship feedback.
+\end{itemize}
+
+\section{Conclusion}
+
+In this chapter, we transformed the functional requirements of Stag.io into a coherent design model. The class diagram clarified the structural organization of the domain, the navigation diagram outlined the principal user paths, and the activity and sequence diagrams explained the runtime behavior of the system for the most important workflows.
+
+We also presented the relational model that underpins data persistence in PostgreSQL and enforces the essential business constraints of the platform. Together, these models provide a consistent technical blueprint for the implementation of Stag.io and establish the foundation for the architectural and implementation choices presented in the following stages of the project.

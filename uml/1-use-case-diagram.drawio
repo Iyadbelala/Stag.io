@@ -1,0 +1,258 @@
+<mxfile host="app.diagrams.net" agent="Stag.io UML">
+  <diagram id="use-case-diagram" name="Global Use Case Diagram">
+    <mxGraphModel dx="1935" dy="1043" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1700" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- System Boundary -->
+        <mxCell id="system" value="Stag.io Platform" style="shape=umlFrame;whiteSpace=wrap;html=1;width=180;height=30;boundedLbl=1;verticalAlign=top;align=left;spacingLeft=10;fontStyle=1;fontSize=16;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;rounded=1;arcSize=6;" vertex="1" parent="1">
+          <mxGeometry x="340" y="40" width="1000" height="1100" as="geometry" />
+        </mxCell>
+
+        <!-- ============ USE CASES ============ -->
+
+        <!-- Authentication (Top Center) -->
+        <mxCell id="uc-auth" value="&lt;b&gt;Authenticate&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;(Login / Register / OTP / Password Reset)&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="720" y="80" width="230" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Student Use Cases (Left Column) -->
+        <mxCell id="uc-browse" value="&lt;b&gt;Browse Offers&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;&amp;amp; SmartMatch Recommendations&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="230" width="230" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc-apply" value="&lt;b&gt;Apply for an&lt;/b&gt;&lt;br&gt;&lt;b&gt;Internship&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="360" width="230" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc-profile" value="&lt;b&gt;Manage Profile&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="490" width="230" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc-bookmarks" value="&lt;b&gt;Save Offers&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="620" width="200" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc-reviews" value="&lt;b&gt;Submit Reviews&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;(Rating + Comment)&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="620" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc-chatbot" value="&lt;b&gt;AI Chatbot&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;Interact with Gemini Assistant&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="750" width="230" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc-generate-cv" value="&lt;b&gt;Generate CV&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;(PDF export EN/FR)&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="490" width="200" height="75" as="geometry" />
+        </mxCell>
+
+        <!-- Company Use Cases (Right Column) -->
+        <mxCell id="uc-offers" value="&lt;b&gt;Manage Internship&lt;/b&gt;&lt;br&gt;&lt;b&gt;Offers&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="230" width="230" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc-review-apps" value="&lt;b&gt;Review Applications&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;&amp;amp; Update Status&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="360" width="230" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- University Use Cases -->
+        <mxCell id="uc-validate" value="&lt;b&gt;Validate Internship&lt;/b&gt;&lt;br&gt;&lt;b&gt;Agreements&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="530" width="230" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="uc-track" value="&lt;b&gt;Track Students&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;&amp;amp; View Statistics&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="660" width="230" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- Admin Use Case -->
+        <mxCell id="uc-admin" value="&lt;b&gt;Approve Accounts&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;&amp;amp; Manage Users&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="900" width="230" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- Real-time Notifications (included, NOT directly used by actors) -->
+        <mxCell id="uc-notif" value="&lt;b&gt;Receive Real-time&lt;/b&gt;&lt;br&gt;&lt;b&gt;Notifications&lt;/b&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=12;fontColor=#333333;shadow=1;rounded=1;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="770" width="230" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- View Dashboard & Statistics -->
+        <mxCell id="uc-dashboard" value="&lt;b&gt;View Dashboard&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;&amp;amp; Statistics&lt;/font&gt;" style="ellipse;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontColor=#333333;shadow=1;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="800" width="220" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ============ PRIMARY ACTORS ============ -->
+
+        <!-- Student (Left) -->
+        <mxCell id="actor-student" value="Student" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=13;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="130" y="410" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Company (Right) -->
+        <mxCell id="actor-company" value="Company" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=13;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="340" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- University (Right) -->
+        <mxCell id="actor-uni" value="University" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=13;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="610" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Administrator (Bottom Left) -->
+        <mxCell id="actor-admin" value="Administrator" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="130" y="870" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Super Admin (Below Admin) -->
+        <mxCell id="actor-superadmin" value="Super Admin" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f8cecc;strokeColor=#b85450;fontSize=13;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="130" y="1020" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ============ SECONDARY ACTORS ============ -->
+        <mxCell id="actor-smtp" value="&lt;font size=&quot;2&quot;&gt;«secondary»&lt;/font&gt;&lt;br&gt;&lt;b&gt;Mail Server&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;(SMTP)&lt;/font&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="80" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actor-cloudinary" value="&lt;font size=&quot;2&quot;&gt;«secondary»&lt;/font&gt;&lt;br&gt;&lt;b&gt;Cloudinary&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;(Cloud Storage)&lt;/font&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="880" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actor-gemini" value="&lt;font size=&quot;2&quot;&gt;«secondary»&lt;/font&gt;&lt;br&gt;&lt;b&gt;Google Gemini&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;(AI Service)&lt;/font&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="130" y="160" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actor-captcha" value="&lt;font size=&quot;2&quot;&gt;«secondary»&lt;/font&gt;&lt;br&gt;&lt;b&gt;Turnstile&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;(CAPTCHA)&lt;/font&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#f5f5f5;strokeColor=#999999;fontSize=11;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="130" y="10" width="40" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- ============ STUDENT CONNECTIONS ============ -->
+        <mxCell id="e-stu-auth" style="endArrow=none;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" source="actor-student" target="uc-auth" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stu-browse" style="endArrow=none;strokeColor=#82b366;strokeWidth=2;" edge="1" source="actor-student" target="uc-browse" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stu-apply" style="endArrow=none;strokeColor=#82b366;strokeWidth=2;" edge="1" source="actor-student" target="uc-apply" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stu-profile" style="endArrow=none;strokeColor=#82b366;strokeWidth=2;" edge="1" source="actor-student" target="uc-profile" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stu-gencv" style="endArrow=none;strokeColor=#82b366;strokeWidth=2;" edge="1" source="actor-student" target="uc-generate-cv" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stu-bookmarks" style="endArrow=none;strokeColor=#82b366;strokeWidth=2;" edge="1" source="actor-student" target="uc-bookmarks" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stu-reviews" style="endArrow=none;strokeColor=#82b366;strokeWidth=2;" edge="1" source="actor-student" target="uc-reviews" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-stu-chatbot" style="endArrow=none;strokeColor=#82b366;strokeWidth=2;" edge="1" source="actor-student" target="uc-chatbot" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============ COMPANY CONNECTIONS ============ -->
+        <mxCell id="e-com-auth" style="endArrow=none;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" source="actor-company" target="uc-auth" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-com-offers" style="endArrow=none;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="actor-company" target="uc-offers" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-com-review-apps" style="endArrow=none;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="actor-company" target="uc-review-apps" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Company ALSO manages profile -->
+        <mxCell id="e-com-profile" style="endArrow=none;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="actor-company" target="uc-profile" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Company ALSO submits reviews about student interns -->
+        <mxCell id="e-com-reviews" style="endArrow=none;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="actor-company" target="uc-reviews" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Company views dashboard -->
+        <mxCell id="e-com-dash" style="endArrow=none;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="actor-company" target="uc-dashboard" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============ UNIVERSITY CONNECTIONS ============ -->
+        <mxCell id="e-uni-auth" style="endArrow=none;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" source="actor-uni" target="uc-auth" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-uni-validate" style="endArrow=none;strokeColor=#9673a6;strokeWidth=2;" edge="1" source="actor-uni" target="uc-validate" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-uni-track" style="endArrow=none;strokeColor=#9673a6;strokeWidth=2;" edge="1" source="actor-uni" target="uc-track" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- University ALSO manages profile -->
+        <mxCell id="e-uni-profile" style="endArrow=none;strokeColor=#9673a6;strokeWidth=2;" edge="1" source="actor-uni" target="uc-profile" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- University views dashboard -->
+        <mxCell id="e-uni-dash" style="endArrow=none;strokeColor=#9673a6;strokeWidth=2;" edge="1" source="actor-uni" target="uc-dashboard" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============ ADMIN CONNECTIONS ============ -->
+        <mxCell id="e-adm-auth" style="endArrow=none;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" source="actor-admin" target="uc-auth" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-adm-admin" style="endArrow=none;strokeColor=#b85450;strokeWidth=2;" edge="1" source="actor-admin" target="uc-admin" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Admin views dashboard -->
+        <mxCell id="e-adm-dash" style="endArrow=none;strokeColor=#b85450;strokeWidth=2;" edge="1" source="actor-admin" target="uc-dashboard" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============ SUPER ADMIN CONNECTIONS ============ -->
+        <!-- Super Admin inherits all Admin privileges (generalization arrow) -->
+        <mxCell id="e-super-inherit" value="" style="endArrow=block;endSize=16;endFill=0;strokeColor=#b85450;strokeWidth=2;" edge="1" source="actor-superadmin" target="actor-admin" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e-super-admin" style="endArrow=none;strokeColor=#b85450;strokeWidth=2;" edge="1" source="actor-superadmin" target="uc-admin" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============ SECONDARY ACTOR CONNECTIONS ============ -->
+        <!-- SMTP → Auth (OTP emails, password reset) -->
+        <mxCell id="e-smtp-auth" style="endArrow=none;strokeColor=#999999;strokeWidth=1;dashed=1;" edge="1" source="actor-smtp" target="uc-auth" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Cloudinary → Manage Profile (upload images, docs) -->
+        <mxCell id="e-cloud-profile" style="endArrow=none;strokeColor=#999999;strokeWidth=1;dashed=1;" edge="1" source="actor-cloudinary" target="uc-profile" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Cloudinary → Manage Offers (upload banners) -->
+        <mxCell id="e-cloud-offers" style="endArrow=none;strokeColor=#999999;strokeWidth=1;dashed=1;" edge="1" source="actor-cloudinary" target="uc-offers" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Gemini → AI Chatbot -->
+        <mxCell id="e-gemini-chatbot" style="endArrow=none;strokeColor=#999999;strokeWidth=1;dashed=1;" edge="1" source="actor-gemini" target="uc-chatbot" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Turnstile → Auth (CAPTCHA) -->
+        <mxCell id="e-captcha-auth" style="endArrow=none;strokeColor=#999999;strokeWidth=1;dashed=1;" edge="1" source="actor-captcha" target="uc-auth" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============ «include» RELATIONSHIPS ============ -->
+        <!-- Apply → includes → Notifications (company gets notified) -->
+        <mxCell id="inc-apply-notif" value="&lt;font size=&quot;2&quot;&gt;«include»&lt;/font&gt;" style="endArrow=open;endSize=12;dashed=1;html=1;strokeColor=#666666;strokeWidth=1;fontColor=#666666;" edge="1" source="uc-apply" target="uc-notif" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Review Applications → includes → Notifications (student gets notified) -->
+        <mxCell id="inc-revapp-notif" value="&lt;font size=&quot;2&quot;&gt;«include»&lt;/font&gt;" style="endArrow=open;endSize=12;dashed=1;html=1;strokeColor=#666666;strokeWidth=1;fontColor=#666666;" edge="1" source="uc-review-apps" target="uc-notif" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Validate Agreements → includes → Notifications (student + company notified) -->
+        <mxCell id="inc-val-notif" value="&lt;font size=&quot;2&quot;&gt;«include»&lt;/font&gt;" style="endArrow=open;endSize=12;dashed=1;html=1;strokeColor=#666666;strokeWidth=1;fontColor=#666666;" edge="1" source="uc-validate" target="uc-notif" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <!-- Approve Accounts → includes → Notifications (admin gets notified of pending) -->
+        <mxCell id="inc-admin-notif" value="&lt;font size=&quot;2&quot;&gt;«include»&lt;/font&gt;" style="endArrow=open;endSize=12;dashed=1;html=1;strokeColor=#666666;strokeWidth=1;fontColor=#666666;" edge="1" source="uc-admin" target="uc-notif" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

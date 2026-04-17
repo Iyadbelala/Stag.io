@@ -1,0 +1,182 @@
+<mxfile host="app.diagrams.net" agent="Stag.io UML">
+  <diagram id="deployment-diagram" name="Deployment Architecture Diagram">
+    <mxGraphModel dx="1800" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Deployment Architecture — Stag.io Platform" style="text;html=1;fontSize=20;fontStyle=1;align=center;fillColor=none;strokeColor=none;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="400" y="10" width="500" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ============ CLIENT TIER ============ -->
+        <mxCell id="tier-client" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E3F2FD;strokeColor=#6c8ebf;strokeWidth=2;arcSize=8;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="40" y="70" width="440" height="450" as="geometry" />
+        </mxCell>
+        <mxCell id="tier-client-label" value="&lt;b&gt;Client Tier&lt;/b&gt;" style="text;html=1;fontSize=14;fontStyle=1;align=left;fillColor=none;strokeColor=none;fontColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="200" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Browser -->
+        <mxCell id="browser" value="&lt;b&gt;Web Browser&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;Chrome / Firefox / Edge / Safari&lt;/font&gt;" style="shape=mxgraph.cisco.computers_and_peripherals.web_browser;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;shadow=1;fontSize=12;fontColor=#333333;verticalLabelPosition=bottom;verticalAlign=top;align=center;" vertex="1" parent="1">
+          <mxGeometry x="80" y="130" width="80" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Next.js Frontend -->
+        <mxCell id="nextjs" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;Next.js Frontend&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;• React 19 + TypeScript&lt;br&gt;• TailwindCSS 4&lt;br&gt;• next-intl (i18n: EN/FR)&lt;br&gt;• Socket.IO Client&lt;br&gt;• Axios HTTP Client&lt;br&gt;• Responsive (mobile‑first)&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#dae8fc;strokeColor=#6c8ebf;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="220" y="120" width="230" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- Pages inside frontend -->
+        <mxCell id="pages" value="&lt;p style=&quot;margin:0;text-align:center;font-size:10px;&quot;&gt;&lt;b&gt;Pages &amp; Dashboards&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:9px;padding:2px;&quot;&gt;Auth · Home · Offers · Companies&lt;br&gt;Student Dashboard · Company Dashboard&lt;br&gt;University Dashboard · Admin Panel&lt;br&gt;Super Admin · Chatbot · Profile&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#6c8ebf;rounded=1;arcSize=6;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="220" y="320" width="230" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e-browser-next" style="endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" source="browser" target="nextjs" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="e-next-pages" style="endArrow=block;endFill=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;" edge="1" source="nextjs" target="pages" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ============ SERVER TIER ============ -->
+        <mxCell id="tier-server" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#d6b656;strokeWidth=2;arcSize=8;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="540" y="70" width="480" height="950" as="geometry" />
+        </mxCell>
+        <mxCell id="tier-server-label" value="&lt;b&gt;Server Tier&lt;/b&gt;" style="text;html=1;fontSize=14;fontStyle=1;align=left;fillColor=none;strokeColor=none;fontColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="560" y="80" width="200" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- Express.js Backend -->
+        <mxCell id="express" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;Express.js Backend API&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;• Node.js + TypeScript&lt;br&gt;• RESTful API (/api/*)&lt;br&gt;• JWT Auth (access + refresh)&lt;br&gt;• Helmet security headers&lt;br&gt;• CORS + cookie parser&lt;br&gt;• Morgan request logging&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="590" y="120" width="230" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- Middleware -->
+        <mxCell id="middleware" value="&lt;p style=&quot;margin:0;text-align:center;font-size:10px;&quot;&gt;&lt;b&gt;Middleware&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:9px;padding:2px;&quot;&gt;Auth Guard · RBAC · Rate Limiter&lt;br&gt;Login Limiter · Error Handler&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#FFF9C4;strokeColor=#d6b656;rounded=1;arcSize=6;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="120" width="160" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- Routes -->
+        <mxCell id="routes" value="&lt;p style=&quot;margin:0;text-align:center;font-size:10px;&quot;&gt;&lt;b&gt;API Routes&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:9px;padding:2px;&quot;&gt;/auth · /offers · /applications&lt;br&gt;/profile · /matching · /reviews&lt;br&gt;/notifications · /saved · /search&lt;br&gt;/admin · /superadmin · /university&lt;br&gt;/chatbot · /companies&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#FFF9C4;strokeColor=#d6b656;rounded=1;arcSize=6;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="840" y="220" width="160" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- Services Layer -->
+        <mxCell id="services" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;Business Services Layer&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;• auth.service · matching.service&lt;br&gt;• applications.service · offers.service&lt;br&gt;• reviews.service · notifications.service&lt;br&gt;• profile.service · cv.service&lt;br&gt;• chatbot.service · university.service&lt;br&gt;• admin.service · superadmin.service&lt;br&gt;• search.service · saved.service&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="590" y="380" width="410" height="190" as="geometry" />
+        </mxCell>
+
+        <!-- SmartMatch Engine -->
+        <mxCell id="smartmatch" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;🎯 SmartMatch Engine&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;Weighted scoring algorithm:&lt;br&gt;Skills (50%) · Department (25%)&lt;br&gt;Location (15%) · Title (10%)&lt;br&gt;&lt;b&gt;&amp;lt; 100ms response time&lt;/b&gt;&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="590" y="600" width="200" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Socket.IO -->
+        <mxCell id="socketio" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;⚡ Socket.IO&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;Real-time WebSocket&lt;br&gt;JWT-authenticated rooms&lt;br&gt;Push notifications &amp;lt; 1s&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f8cecc;strokeColor=#b85450;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="820" y="600" width="180" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ORM Layer -->
+        <mxCell id="orm" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;Drizzle ORM&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;Type-safe schema &amp; queries&lt;br&gt;PostgreSQL driver (pg)&lt;br&gt;Migrations management&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#fff2cc;strokeColor=#d6b656;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="650" y="780" width="310" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- MCP Server -->
+        <mxCell id="mcp" value="&lt;b&gt;MCP Server&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;AI Agent Tools&lt;/font&gt;" style="verticalAlign=top;align=center;overflow=fill;html=1;whiteSpace=wrap;fillColor=#e1d5e7;strokeColor=#9673a6;rounded=1;arcSize=6;shadow=1;fontSize=10;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="590" y="920" width="130" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Connections within server -->
+        <mxCell id="e-exp-svc" style="endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="express" target="services" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-svc-sm" style="endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=2;" edge="1" source="services" target="smartmatch" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-svc-sock" style="endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=2;" edge="1" source="services" target="socketio" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e-svc-orm" style="endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="services" target="orm" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ============ DATA TIER ============ -->
+        <mxCell id="tier-data" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F3E5F5;strokeColor=#9673a6;strokeWidth=2;arcSize=8;opacity=30;" vertex="1" parent="1">
+          <mxGeometry x="40" y="570" width="440" height="450" as="geometry" />
+        </mxCell>
+        <mxCell id="tier-data-label" value="&lt;b&gt;Data Tier&lt;/b&gt;" style="text;html=1;fontSize=14;fontStyle=1;align=left;fillColor=none;strokeColor=none;fontColor=#9673a6;" vertex="1" parent="1">
+          <mxGeometry x="60" y="580" width="200" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- PostgreSQL -->
+        <mxCell id="postgres" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;🐘 PostgreSQL&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;• 9 tables + 6 enumerations&lt;br&gt;• Indexed queries&lt;br&gt;• Uniqueness constraints&lt;br&gt;• Cascading deletes&lt;br&gt;• CUID2 primary keys&lt;/p&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#e1d5e7;strokeColor=#9673a6;shadow=1;fontSize=11;strokeWidth=2;verticalAlign=top;align=left;overflow=fill;" vertex="1" parent="1">
+          <mxGeometry x="100" y="620" width="240" height="170" as="geometry" />
+        </mxCell>
+
+        <!-- Tables list -->
+        <mxCell id="tables" value="&lt;p style=&quot;margin:0;font-size:9px;padding:2px;&quot;&gt;&lt;b&gt;Tables:&lt;/b&gt; users · students · companies · universities&lt;br&gt;internship_offers · applications · saved_offers&lt;br&gt;reviews · notifications · audit_logs&lt;/p&gt;" style="text;html=1;align=left;fillColor=#f5f5f5;strokeColor=#9673a6;rounded=1;fontSize=10;spacing=4;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="810" width="280" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- Seed Data -->
+        <mxCell id="seed" value="&lt;b&gt;seed.ts&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;Demo data generator&lt;/font&gt;" style="verticalAlign=middle;align=center;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#9673a6;rounded=1;arcSize=6;fontSize=10;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="890" width="130" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ============ EXTERNAL SERVICES ============ -->
+        <mxCell id="tier-ext" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFEBEE;strokeColor=#b85450;strokeWidth=2;arcSize=8;opacity=20;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="70" width="480" height="950" as="geometry" />
+        </mxCell>
+        <mxCell id="tier-ext-label" value="&lt;b&gt;External Services&lt;/b&gt;" style="text;html=1;fontSize=14;fontStyle=1;align=left;fillColor=none;strokeColor=none;fontColor=#b85450;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="80" width="200" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- SMTP -->
+        <mxCell id="smtp" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;📧 SMTP Mail Server&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;Nodemailer transport&lt;br&gt;OTP verification emails&lt;br&gt;Password reset links&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#b85450;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="130" width="200" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Cloudinary -->
+        <mxCell id="cloudinary" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;☁️ Cloudinary&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;Image hosting (logos, photos)&lt;br&gt;Document storage (CVs, docs)&lt;br&gt;File type validation&lt;br&gt;JPEG · PNG · WebP · PDF&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#b85450;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="290" width="200" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Google Gemini -->
+        <mxCell id="gemini" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;🤖 Google Gemini&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;AI chatbot service&lt;br&gt;Conversation history&lt;br&gt;Contextual responses&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#b85450;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="470" width="200" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Cloudflare Turnstile -->
+        <mxCell id="turnstile" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;🛡️ Cloudflare Turnstile&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;CAPTCHA bot protection&lt;br&gt;Registration &amp; login forms&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#b85450;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="620" width="200" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- PDF Generation -->
+        <mxCell id="pdf" value="&lt;p style=&quot;margin:0;text-align:center;padding:4px;&quot;&gt;&lt;b&gt;📄 PDFKit / jsPDF&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:10px;padding:4px;&quot;&gt;CV generation (EN/FR)&lt;br&gt;Agreement documents&lt;br&gt;Admin reports&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#b85450;rounded=1;arcSize=6;shadow=1;fontSize=11;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="760" width="200" height="110" as="geometry" />
+        </mxCell>
+
+        <!-- Security callout -->
+        <mxCell id="security" value="&lt;p style=&quot;margin:0;text-align:center;padding:3px;&quot;&gt;&lt;b&gt;🔐 Security Stack&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0;font-size:9px;padding:3px;&quot;&gt;bcrypt (12 rounds) · SHA-256 tokens&lt;br&gt;JWT (15min access + 7d refresh)&lt;br&gt;RBAC · Helmet · CORS · Rate Limiting&lt;br&gt;Account lockout · Email enumeration prevention&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#FFF9C4;strokeColor=#d6b656;rounded=1;arcSize=6;shadow=1;fontSize=10;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="1350" y="130" width="190" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- ============ INTER-TIER CONNECTIONS ============ -->
+
+        <!-- Client → Server: REST API -->
+        <mxCell id="c-rest" value="&lt;b&gt;REST API&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;HTTPS + JSON&lt;/font&gt;" style="endArrow=block;endFill=1;strokeColor=#d6b656;strokeWidth=3;html=1;fontSize=11;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" source="nextjs" target="express" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Client → Server: WebSocket -->
+        <mxCell id="c-ws" value="&lt;b&gt;WebSocket&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;Socket.IO&lt;/font&gt;" style="endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=3;html=1;fontSize=11;fontColor=#333333;dashed=1;labelBackgroundColor=#ffffff;" edge="1" source="pages" target="socketio" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Server → Database -->
+        <mxCell id="c-db" value="&lt;b&gt;SQL&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;1&quot;&gt;Drizzle ORM&lt;/font&gt;" style="endArrow=block;endFill=1;strokeColor=#9673a6;strokeWidth=3;html=1;fontSize=11;fontColor=#333333;labelBackgroundColor=#ffffff;" edge="1" source="orm" target="postgres" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Server → External Services -->
+        <mxCell id="c-smtp" style="endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" source="express" target="smtp" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c-cloud" style="endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" source="services" target="cloudinary" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c-gemini" style="endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" source="services" target="gemini" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c-turn" style="endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" source="nextjs" target="turnstile" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c-pdf" style="endArrow=block;endFill=1;strokeColor=#b85450;strokeWidth=2;dashed=1;" edge="1" source="services" target="pdf" parent="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

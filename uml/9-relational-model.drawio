@@ -1,0 +1,166 @@
+<mxfile host="app.diagrams.net" agent="Stag.io UML">
+  <diagram id="relational-model" name="Relational Model (ER Diagram)">
+    <mxGraphModel dx="1800" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="Relational Model — Stag.io PostgreSQL Database Schema" style="text;html=1;fontSize=18;fontStyle=1;align=center;fillColor=none;strokeColor=none;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="400" y="10" width="600" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ============ USERS TABLE ============ -->
+        <mxCell id="t-users" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#6c8ebf;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;users&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;email : text «UNIQUE, NOT NULL»&lt;br&gt;passwordHash : text «NOT NULL»&lt;br&gt;role : UserRole «NOT NULL»&lt;br&gt;firstName : text&lt;br&gt;lastName : text&lt;br&gt;university : text&lt;br&gt;isEmailVerified : boolean «DEFAULT false»&lt;br&gt;emailVerificationCode : text&lt;br&gt;emailVerificationExpiry : timestamptz&lt;br&gt;passwordResetToken : text&lt;br&gt;passwordResetExpiry : timestamptz&lt;br&gt;deactivatedAt : timestamptz&lt;br&gt;createdAt : timestamptz «DEFAULT now()»&lt;br&gt;updatedAt : timestamptz «DEFAULT now()»&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#6c8ebf;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="620" y="60" width="310" height="340" as="geometry" />
+        </mxCell>
+
+        <!-- ============ STUDENTS TABLE ============ -->
+        <mxCell id="t-students" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#82b366;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;students&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;&lt;b&gt;🔗 userId&lt;/b&gt; : text «FK → users.id, UNIQUE»&lt;br&gt;department : text&lt;br&gt;cvUrl : text&lt;br&gt;skills : text[] «DEFAULT {}»&lt;br&gt;bio : text&lt;br&gt;profilePhotoUrl : text&lt;br&gt;portfolioPhotos : text[] «DEFAULT {}»&lt;br&gt;linkedinUrl : text&lt;br&gt;githubUrl : text&lt;br&gt;createdAt : timestamptz&lt;br&gt;updatedAt : timestamptz&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#82b366;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="100" y="480" width="310" height="290" as="geometry" />
+        </mxCell>
+
+        <!-- ============ COMPANIES TABLE ============ -->
+        <mxCell id="t-companies" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#d6b656;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;companies&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;&lt;b&gt;🔗 userId&lt;/b&gt; : text «FK → users.id, UNIQUE»&lt;br&gt;companyName : text «NOT NULL»&lt;br&gt;industry : text&lt;br&gt;website : text&lt;br&gt;logoUrl : text&lt;br&gt;description : text&lt;br&gt;location : text&lt;br&gt;contactPerson : text&lt;br&gt;isValidated : boolean «DEFAULT false»&lt;br&gt;verificationDocumentUrl : text&lt;br&gt;createdAt : timestamptz&lt;br&gt;updatedAt : timestamptz&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#d6b656;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="480" width="330" height="310" as="geometry" />
+        </mxCell>
+
+        <!-- ============ UNIVERSITIES TABLE ============ -->
+        <mxCell id="t-universities" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#9673a6;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;universities&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;&lt;b&gt;🔗 userId&lt;/b&gt; : text «FK → users.id, UNIQUE»&lt;br&gt;universityName : text «NOT NULL»&lt;br&gt;domain : text «UNIQUE, NOT NULL»&lt;br&gt;website : text&lt;br&gt;logoUrl : text&lt;br&gt;description : text&lt;br&gt;location : text&lt;br&gt;isValidated : boolean «DEFAULT false»&lt;br&gt;createdAt : timestamptz&lt;br&gt;updatedAt : timestamptz&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#9673a6;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="620" y="480" width="310" height="280" as="geometry" />
+        </mxCell>
+
+        <!-- ============ INTERNSHIP_OFFERS TABLE ============ -->
+        <mxCell id="t-offers" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#d6b656;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;internship_offers&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;&lt;b&gt;🔗 companyId&lt;/b&gt; : text «FK → companies.id»&lt;br&gt;title : text «NOT NULL»&lt;br&gt;description : text «NOT NULL»&lt;br&gt;requirements : text «NOT NULL»&lt;br&gt;duration : text «NOT NULL»&lt;br&gt;location : text «NOT NULL»&lt;br&gt;type : OfferType «DEFAULT 'onsite'»&lt;br&gt;status : OfferStatus «DEFAULT 'active'»&lt;br&gt;bannerUrl : text&lt;br&gt;createdAt : timestamptz&lt;br&gt;updatedAt : timestamptz&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:10px;padding:2px 0;color:#888;&quot;&gt;📇 idx_offers_company (companyId)&lt;br&gt;📇 idx_offers_status (status)&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#d6b656;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="60" width="330" height="350" as="geometry" />
+        </mxCell>
+
+        <!-- ============ APPLICATIONS TABLE ============ -->
+        <mxCell id="t-applications" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#82b366;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;applications&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;&lt;b&gt;🔗 studentId&lt;/b&gt; : text «FK → students.id»&lt;br&gt;&lt;b&gt;🔗 offerId&lt;/b&gt; : text «FK → internship_offers.id»&lt;br&gt;coverLetter : text&lt;br&gt;cvUrl : text&lt;br&gt;status : ApplicationStatus «DEFAULT 'pending'»&lt;br&gt;appliedAt : timestamptz «DEFAULT now()»&lt;br&gt;updatedAt : timestamptz&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:10px;padding:2px 0;color:#888;&quot;&gt;🔒 uq_application_student_offer (studentId, offerId)&lt;br&gt;📇 idx_applications_student (studentId)&lt;br&gt;📇 idx_applications_offer (offerId)&lt;br&gt;📇 idx_applications_status (status)&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#82b366;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="520" y="860" width="350" height="310" as="geometry" />
+        </mxCell>
+
+        <!-- ============ REVIEWS TABLE ============ -->
+        <mxCell id="t-reviews" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#b85450;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;reviews&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;&lt;b&gt;🔗 applicationId&lt;/b&gt; : text «FK → applications.id»&lt;br&gt;&lt;b&gt;🔗 reviewerUserId&lt;/b&gt; : text «FK → users.id»&lt;br&gt;&lt;b&gt;🔗 revieweeUserId&lt;/b&gt; : text «FK → users.id»&lt;br&gt;reviewerRole : ReviewerRole «NOT NULL»&lt;br&gt;rating : integer «NOT NULL, 1..5»&lt;br&gt;comment : text&lt;br&gt;createdAt : timestamptz&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#b85450;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="100" y="900" width="330" height="240" as="geometry" />
+        </mxCell>
+
+        <!-- ============ SAVED_OFFERS TABLE ============ -->
+        <mxCell id="t-saved" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#82b366;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;saved_offers&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;&lt;b&gt;🔗 studentId&lt;/b&gt; : text «FK → students.id»&lt;br&gt;&lt;b&gt;🔗 offerId&lt;/b&gt; : text «FK → internship_offers.id»&lt;br&gt;savedAt : timestamptz «DEFAULT now()»&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:10px;padding:2px 0;color:#888;&quot;&gt;🔒 uq_saved_student_offer (studentId, offerId)&lt;br&gt;📇 idx_saved_student (studentId)&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#82b366;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="100" y="60" width="330" height="210" as="geometry" />
+        </mxCell>
+
+        <!-- ============ NOTIFICATIONS TABLE ============ -->
+        <mxCell id="t-notifications" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#d6b656;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;notifications&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;&lt;b&gt;🔗 userId&lt;/b&gt; : text «FK → users.id»&lt;br&gt;type : NotificationType «NOT NULL»&lt;br&gt;title : text «NOT NULL»&lt;br&gt;message : text «NOT NULL»&lt;br&gt;isRead : boolean «DEFAULT false»&lt;br&gt;relatedId : text&lt;br&gt;createdAt : timestamptz&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:10px;padding:2px 0;color:#888;&quot;&gt;📇 idx_notifications_user (userId)&lt;br&gt;📇 idx_notifications_read (userId, isRead)&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#d6b656;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="480" width="300" height="270" as="geometry" />
+        </mxCell>
+
+        <!-- ============ AUDIT_LOGS TABLE ============ -->
+        <mxCell id="t-audit" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;background:#666666;color:white;padding:6px;border-radius:4px 4px 0 0;&quot;&gt;&lt;b&gt;audit_logs&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot; style=&quot;margin:0;&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:4px 0;&quot;&gt;&lt;b&gt;🔑 id&lt;/b&gt; : text «PK»&lt;br&gt;actorId : text «NOT NULL»&lt;br&gt;actorRole : text «NOT NULL»&lt;br&gt;action : text «NOT NULL»&lt;br&gt;targetId : text&lt;br&gt;metadata : jsonb&lt;br&gt;createdAt : timestamptz&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#f5f5f5;strokeColor=#666666;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=2;" vertex="1" parent="1">
+          <mxGeometry x="1480" y="60" width="280" height="210" as="geometry" />
+        </mxCell>
+
+        <!-- ============ RELATIONSHIPS ============ -->
+
+        <!-- users 1 → 0..1 students -->
+        <mxCell id="r1" value="" style="endArrow=ERmandOne;startArrow=ERzeroToOne;endFill=0;startFill=0;strokeColor=#6c8ebf;strokeWidth=2;exitX=0;exitY=0.7;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="t-users" target="t-students" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r1-label" value="&lt;font size=&quot;2&quot;&gt;1 : 0..1&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#6c8ebf;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r1">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- users 1 → 0..1 universities -->
+        <mxCell id="r2" value="" style="endArrow=ERmandOne;startArrow=ERzeroToOne;endFill=0;startFill=0;strokeColor=#9673a6;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="t-users" target="t-universities" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r2-label" value="&lt;font size=&quot;2&quot;&gt;1 : 0..1&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#9673a6;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r2">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- users 1 → 0..1 companies -->
+        <mxCell id="r3" value="" style="endArrow=ERmandOne;startArrow=ERzeroToOne;endFill=0;startFill=0;strokeColor=#d6b656;strokeWidth=2;exitX=1;exitY=0.7;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="t-users" target="t-companies" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r3-label" value="&lt;font size=&quot;2&quot;&gt;1 : 0..1&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#d6b656;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r3">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- users 1 → * notifications -->
+        <mxCell id="r4" value="" style="endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;strokeColor=#d6b656;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="t-users" target="t-notifications" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r4-label" value="&lt;font size=&quot;2&quot;&gt;1 : *&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#d6b656;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r4">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- companies 1 → * internship_offers -->
+        <mxCell id="r5" value="" style="endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;strokeColor=#d6b656;strokeWidth=2;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" source="t-companies" target="t-offers" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r5-label" value="&lt;font size=&quot;2&quot;&gt;1 : *&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#d6b656;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r5">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- students 1 → * applications -->
+        <mxCell id="r6" value="" style="endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;strokeColor=#82b366;strokeWidth=2;exitX=0.7;exitY=1;exitDx=0;exitDy=0;entryX=0;entryY=0.3;entryDx=0;entryDy=0;" edge="1" source="t-students" target="t-applications" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r6-label" value="&lt;font size=&quot;2&quot;&gt;1 : *&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#82b366;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r6">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- internship_offers 1 → * applications -->
+        <mxCell id="r7" value="" style="endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;strokeColor=#d6b656;strokeWidth=2;exitX=0;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;" edge="1" source="t-offers" target="t-applications" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r7-label" value="&lt;font size=&quot;2&quot;&gt;1 : *&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#d6b656;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r7">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- applications 1 → 0..2 reviews -->
+        <mxCell id="r8" value="" style="endArrow=ERmandOne;startArrow=ERzeroToMany;endFill=0;startFill=0;strokeColor=#b85450;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.3;entryDx=0;entryDy=0;" edge="1" source="t-applications" target="t-reviews" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r8-label" value="&lt;font size=&quot;2&quot;&gt;1 : 0..2&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#b85450;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r8">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- students 1 → * saved_offers -->
+        <mxCell id="r9" value="" style="endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;strokeColor=#82b366;strokeWidth=2;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" edge="1" source="t-students" target="t-saved" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r9-label" value="&lt;font size=&quot;2&quot;&gt;1 : *&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#82b366;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r9">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- internship_offers 1 → * saved_offers -->
+        <mxCell id="r10" value="" style="endArrow=ERmandOne;startArrow=ERmany;endFill=0;startFill=0;strokeColor=#d6b656;strokeWidth=2;exitX=0;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="t-offers" target="t-saved" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r10-label" value="&lt;font size=&quot;2&quot;&gt;1 : *&lt;/font&gt;" style="edgeLabel;html=1;fontSize=11;fontColor=#d6b656;fontStyle=1;fillColor=#f5f5f5;rounded=1;" vertex="1" connectable="0" parent="r10">
+          <mxGeometry x="-0.2" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- reviews → users (reviewer) dashed -->
+        <mxCell id="r11" value="" style="endArrow=block;endFill=1;endSize=8;dashed=1;strokeColor=#b85450;strokeWidth=1;exitX=0.3;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.8;entryDx=0;entryDy=0;" edge="1" source="t-reviews" target="t-users" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="r11-label" value="&lt;font size=&quot;1&quot;&gt;reviewer / reviewee&lt;/font&gt;" style="edgeLabel;html=1;fontSize=10;fontColor=#666666;" vertex="1" connectable="0" parent="r11">
+          <mxGeometry x="0.3" relative="1" as="geometry"><mxPoint as="offset" /></mxGeometry>
+        </mxCell>
+
+        <!-- ============ ENUM LEGEND ============ -->
+        <mxCell id="legend" value="&lt;p style=&quot;margin:0px;margin-top:4px;text-align:center;&quot;&gt;&lt;b&gt;Enumerations&lt;/b&gt;&lt;/p&gt;&lt;hr size=&quot;1&quot;&gt;&lt;p style=&quot;margin:0px;margin-left:6px;font-size:11px;padding:2px 0;&quot;&gt;&lt;b&gt;UserRole:&lt;/b&gt; student | company | admin | superadmin | university&lt;br&gt;&lt;b&gt;OfferType:&lt;/b&gt; remote | onsite | hybrid&lt;br&gt;&lt;b&gt;OfferStatus:&lt;/b&gt; draft | active | closed&lt;br&gt;&lt;b&gt;ApplicationStatus:&lt;/b&gt; pending | accepted | rejected | withdrawn | validated&lt;br&gt;&lt;b&gt;NotificationType:&lt;/b&gt; application_status_changed | new_application |&lt;br&gt;&amp;nbsp;&amp;nbsp;agreement_needs_validation | company_pending_approval | university_pending_approval | new_review&lt;br&gt;&lt;b&gt;ReviewerRole:&lt;/b&gt; student | company&lt;/p&gt;" style="verticalAlign=top;align=left;overflow=fill;html=1;whiteSpace=wrap;fillColor=#FFF9C4;strokeColor=#d6b656;rounded=1;arcSize=4;shadow=1;fontSize=12;strokeWidth=1;" vertex="1" parent="1">
+          <mxGeometry x="950" y="900" width="490" height="210" as="geometry" />
+        </mxCell>
+
+        <!-- Legend symbols -->
+        <mxCell id="legend2" value="&lt;p style=&quot;margin:0;font-size:10px;&quot;&gt;&lt;b&gt;Legend:&lt;/b&gt; 🔑 = Primary Key &amp;nbsp;|&amp;nbsp; 🔗 = Foreign Key &amp;nbsp;|&amp;nbsp; 📇 = Index &amp;nbsp;|&amp;nbsp; 🔒 = Unique Constraint&lt;/p&gt;" style="text;html=1;align=left;fillColor=#f5f5f5;strokeColor=#999999;rounded=1;shadow=1;fontSize=11;spacing=6;" vertex="1" parent="1">
+          <mxGeometry x="950" y="1130" width="490" height="30" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

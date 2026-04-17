@@ -9,10 +9,49 @@
 \usepackage{float}
 \usepackage{enumitem}
 \usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=black,
+    filecolor=black,
+    pdfborderstyle={/S/U/W 0}
+}
 \usepackage{times}
 \usepackage{graphicx}
 \usepackage{makecell}
 \usepackage{amssymb}
+\usepackage{longtable}
+\usepackage{tikz}
+\usepackage{listings}
+\usepackage{xcolor}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+
+% ── Listings Configuration ──
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+\lstset{style=mystyle}
 
 % ── Page Setup ──
 \geometry{margin=2.5cm}
@@ -26,6 +65,31 @@
 % ── Cover Page ──
 \input{cover}
 
+% ── Acknowledgments ──
+\input{remerciements}
+
+% ── Abstract / Résumé ──
+\input{resume}
+
+% ── Table of Contents ──
+\tableofcontents
+\newpage
+
+% ── List of Figures ──
+\cleardoublepage
+\addcontentsline{toc}{chapter}{\listfigurename}
+\listoffigures
+\newpage
+
+% ── List of Tables ──
+\cleardoublepage
+\addcontentsline{toc}{chapter}{\listtablename}
+\listoftables
+\newpage
+
+% ── General Introduction ──
+\input{intro}
+
 % ── Chapter 1 ──
 \input{chap1}
 
@@ -33,10 +97,18 @@
 \setcounter{chapter}{1}
 \input{chap2}
 
-% ── Future chapters (uncomment when ready) ──
-% \setcounter{chapter}{2}
-% \input{chap3}
-% \setcounter{chapter}{3}
-% \input{chap4}
+% ── Chapter 3 ──
+\setcounter{chapter}{2}
+\input{chap3}
+
+% ── Chapter 4 ──
+\setcounter{chapter}{3}
+\input{chap4}
+
+% ── General Conclusion ──
+\input{general_conclusion}
+
+% ── Bibliography ──
+\input{biblio}
 
 \end{document}

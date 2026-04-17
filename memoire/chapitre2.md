@@ -169,4 +169,123 @@ In addition to the primary actors, the following secondary actors interact with 
 
 ---
 
-*The following sections (2.4 Requirements Specification, 2.5 Use Case Diagrams, 2.6 Detailed Use Case Descriptions, 2.7 Conclusion) will be written in the coming days according to the established schedule.*
+## 2.4 Requirements Specification
+
+The requirements specification defines what the system must do (functional requirements) and the quality attributes it must satisfy (non-functional requirements). These requirements are derived from the project objectives, the actor analysis, and the limitations of existing solutions identified in Chapter 1.
+
+### 2.4.1 Functional Requirements
+
+The functional requirements describe the specific behaviors and services that the system must provide. They are organized by actor to clearly delineate each stakeholder's interactions with the platform.
+
+#### a) Functional Requirements — Student
+
+| Requirement | Description |
+|:---|:---|
+| Register with university email | The student must register using an email address whose domain matches a validated university on the platform. |
+| Verify email via OTP | After registration, the student must verify their email by entering a 6-digit one-time password (OTP) sent to their inbox. The code expires after 15 minutes. |
+| Log in / Log out | The student can authenticate using their email and password, and log out at any time. |
+| Reset password | The student can request a password reset link sent to their email. The link expires after 1 hour. |
+| Browse internship offers | The student can view all active internship offers with filtering options (type: on-site, remote, hybrid). |
+| Use SmartMatch recommendations | The student can activate SmartMatch mode to receive offers ranked by a relevance score (0–100) based on their profile: skills (50%), department (25%), location (15%), and title match (10%). |
+| Apply to an internship offer | The student can submit an application to an offer by attaching a cover letter and/or CV. A student cannot apply to the same offer twice. |
+| Track application status | The student can view the real-time status of their applications (pending, accepted, rejected, withdrawn, validated). |
+| Withdraw an application | The student can withdraw a pending application before the company has processed it. |
+| Manage profile | The student can update their personal information: skills, biography, academic department, portfolio photos, LinkedIn/GitHub URLs, and profile photo. |
+| Generate CV in PDF | The student can generate and download a formatted CV in PDF based on their profile data. |
+| Save offers as bookmarks | The student can bookmark offers for later viewing and remove bookmarks. |
+| Review a company | After completing an internship (application status = accepted), the student can leave a rating (1–5) and a comment for the company. |
+| Interact with AI chatbot | The student can use the integrated AI chatbot (powered by Google Gemini) to ask questions about the platform, with conversation history preserved. |
+| Receive real-time notifications | The student receives real-time notifications (via WebSocket) when their application status changes. |
+| Search offers | The student can search offers by keyword, filtering by title, description, or requirements. |
+| View dashboard statistics | The student can view their personal dashboard displaying application statistics and activity summary. |
+
+#### b) Functional Requirements — Company
+
+| Requirement | Description |
+|:---|:---|
+| Register a company account | The company can register by providing company name, industry, location, contact person, and optionally a verification document. |
+| Log in / Log out | The company can authenticate and log out. |
+| Create an internship offer | The company can create a new offer with title, description, requirements, duration, location, type (on-site/remote/hybrid), and optional banner image. Offers can be saved as draft or published as active. |
+| Edit an internship offer | The company can modify the details of an existing offer. |
+| Change offer status | The company can change an offer's status between draft, active, and closed. |
+| Delete an internship offer | The company can delete an offer. Deleting an offer cascades to remove associated applications. |
+| View received applications | The company can view all applications received for each of its offers, including applicant details, cover letter, and CV. |
+| Process applications | The company can accept or reject applications. Status changes trigger real-time notifications to the applicant. |
+| Manage company profile | The company can update its profile: logo, description, website, industry, location, and verification documents. |
+| View dashboard statistics | The company can view dashboard analytics: total offers, total applications, acceptance rates, and recent activity. |
+| Review a student | After an internship (application status = accepted), the company can leave a rating and comment for the student intern. |
+| Receive real-time notifications | The company receives notifications when a student submits a new application. |
+
+#### c) Functional Requirements — University
+
+| Requirement | Description |
+|:---|:---|
+| Register a university account | The university can register by providing its name, email domain (e.g., `univ-constantine2.dz`), website, and location. |
+| Log in / Log out | The university can authenticate and log out. |
+| Validate internship agreements | The university can validate or reject internship agreements for students whose email domain matches the university's registered domain. |
+| Track affiliated students | The university can view the list of students registered with its email domain, along with their application statuses and internship progress. |
+| Manage university profile | The university can update its profile: logo, description, website, and location. |
+| View dashboard statistics | The university can view dashboard analytics: total affiliated students, active internships, and agreement validation statistics. |
+| Receive real-time notifications | The university receives notifications when an agreement requires validation. |
+
+#### d) Functional Requirements — Administrator
+
+| Requirement | Description |
+|:---|:---|
+| Approve/reject company registrations | The administrator can review and approve or reject company registration requests. |
+| Approve/reject university registrations | The administrator can review and approve or reject university registration requests. |
+| Manage user accounts | The administrator can view all users, deactivate accounts, and modify user roles. |
+| View platform statistics | The administrator can view global platform statistics: total users by role, total offers, total applications, and recent activity. |
+| Generate platform reports | The administrator can generate detailed PDF reports containing platform-wide statistics and analytics. |
+| Receive real-time notifications | The administrator receives notifications when a new company or university registers and requires approval. |
+
+#### e) Functional Requirements — Super Administrator
+
+| Requirement | Description |
+|:---|:---|
+| All administrator privileges | The super administrator inherits all functional requirements of the administrator. |
+| Manage administrator accounts | The super administrator can create, modify, and delete administrator accounts. |
+| Full entity control | The super administrator has unrestricted access to manage all platform entities (users, companies, universities, offers, applications). |
+| View audit logs | The super administrator can view audit logs recording all significant actions performed on the platform (actor, action, target, timestamp). |
+
+#### f) Cross-Cutting Functional Requirements
+
+| Requirement | Description |
+|:---|:---|
+| Bilingual support (EN/FR) | The platform must support full internationalization in English and French, with dynamic language switching. |
+| CAPTCHA protection | Registration and login forms must be protected by CAPTCHA (Cloudflare Turnstile) to prevent automated bot attacks. |
+| Token-based authentication | The system must use JWT-based authentication with short-lived access tokens (15 minutes) and long-lived refresh tokens (7 days). |
+| Account lockout on failed attempts | The system must lock an account temporarily after multiple consecutive failed login attempts to prevent brute-force attacks. |
+| Real-time notifications via WebSocket | The system must deliver notifications in real time using Socket.IO, without requiring page refresh. |
+| Cloud-based file storage | All uploaded files (images, documents, CVs) must be stored on an external cloud storage service (Cloudinary). |
+
+### 2.4.2 Non-Functional Requirements
+
+Non-functional requirements define the quality attributes and constraints that the system must satisfy. They describe *how* the system performs its functions rather than *what* it does.
+
+| Category | Requirement |
+|:---|:---|
+| **Performance** | The SmartMatch recommendation engine must compute and return results in under 100 ms per request and score up to 500 offers in real time. |
+| **Performance** | API response times must not exceed 500 ms for standard operations (CRUD) under normal load conditions. |
+| **Performance** | Real-time notifications must be delivered to connected clients within 1 second of the triggering event. |
+| **Security** | Passwords must be hashed using bcrypt with a cost factor of 12 rounds before storage. Plain-text passwords must never be stored or logged. |
+| **Security** | Verification codes and password reset tokens must be hashed with SHA-256 before storage. Only the hash is persisted; the plain-text value is sent to the user. |
+| **Security** | The system must implement role-based access control (RBAC) with five distinct roles: student, company, university, admin, superadmin. Each API endpoint must enforce role-based authorization. |
+| **Security** | JWT access tokens must expire after 15 minutes. Refresh tokens must expire after 7 days. Token refresh must issue both a new access token and a new refresh token (token rotation). |
+| **Security** | The system must prevent email enumeration by returning generic error messages during password reset and email verification flows. |
+| **Usability** | The user interface must be responsive and adapt to all screen sizes (desktop, tablet, mobile) following a mobile-first approach. |
+| **Usability** | The platform must provide a premium, modern user experience with smooth transitions, micro-animations, and an intuitive navigation structure. |
+| **Usability** | Error messages must be clear, contextual, and guide the user toward resolving the issue. |
+| **Reliability** | The system must handle errors gracefully without exposing internal implementation details (stack traces, database queries) to end users. |
+| **Reliability** | File uploads must be validated for type and size before processing. Only allowed MIME types (images: JPEG, PNG, WebP; documents: PDF) must be accepted. |
+| **Scalability** | The database schema must use proper indexing on frequently queried columns (offer status, application status, user ID, company ID) to ensure efficient query performance as data grows. |
+| **Scalability** | The system architecture must separate concerns between the frontend (Next.js), backend API (Express), and database (PostgreSQL), enabling independent scaling of each tier. |
+| **Maintainability** | The codebase must follow a modular architecture with clear separation between routing, business logic (services), data access (ORM), and middleware layers. |
+| **Maintainability** | All database schema changes must be managed through a migration system (Drizzle ORM) to ensure reproducible and versioned schema evolution. |
+| **Availability** | The system must support graceful shutdown, allowing in-flight requests to complete before the server process terminates. |
+| **Auditability** | All significant administrative actions (user deactivation, role changes, approval/rejection decisions) must be recorded in an audit log with actor, action, target, and timestamp. |
+| **Compatibility** | The web application must be compatible with the latest versions of major browsers: Google Chrome, Mozilla Firefox, Microsoft Edge, and Safari. |
+
+---
+
+*The following sections (2.5 Use Case Diagrams, 2.6 Detailed Use Case Descriptions, 2.7 Conclusion) will be written in the coming days according to the established schedule.*

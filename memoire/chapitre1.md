@@ -24,9 +24,7 @@
 
 ## 1.1 Introduction
 
-Internships represent a fundamental component of higher education, serving as a bridge between academic learning and professional experience. They allow students to apply theoretical knowledge in real-world environments, develop practical skills, and build professional networks before entering the job market.
-
-However, the process of finding, applying for, and managing internships remains largely fragmented and manual in many regions, particularly in Algeria. This chapter provides a comprehensive overview of the project context, examines the current state of internship management, analyzes existing solutions in the market, and identifies the limitations that motivate the development of Stag.io.
+In this chapter, we present the general context of the project by examining the internship management landscape in higher education, both internationally and within Algeria. We then formulate the problem statement that motivates this work, analyze the most prominent existing solutions in the market, conduct a comparative study highlighting their limitations, and finally introduce our proposed solution.
 
 ---
 

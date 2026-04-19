@@ -299,12 +299,12 @@ export default function InternshipDetailPage() {
           )}
 
           {/* Header — floats over media when present */}
-          <div className={`px-6 sm:px-10 ${hasMedia ? "-mt-10 sm:-mt-14 relative z-10" : "pt-8 sm:pt-10"}`}>
+          <div className={`px-6 sm:px-10 ${hasMedia ? "relative z-10" : "pt-8 sm:pt-10"}`}>
             <div className="flex items-start gap-4 sm:gap-5">
-              <div className={`${hasMedia ? "rounded-2xl bg-surface-white p-1.5 shadow-md shadow-coffee-dark/10 ring-1 ring-surface-sand" : ""}`}>
+              <div className={`${hasMedia ? "-mt-10 sm:-mt-14 rounded-2xl bg-surface-white p-1.5 shadow-md shadow-coffee-dark/10 ring-1 ring-surface-sand" : ""}`}>
                 <CompanyAvatar name={internship.companyName} logoUrl={internship.companyLogoUrl} size="lg" />
               </div>
-              <div className="flex-1 min-w-0 pt-2 sm:pt-3">
+              <div className={`flex-1 min-w-0 ${hasMedia ? "pt-3 sm:pt-4" : "pt-2 sm:pt-3"}`}>
                 <div className="flex items-center gap-2 mb-1.5">
                   <span className="inline-flex items-center gap-1 rounded-full bg-coffee-gold/10 px-2.5 py-0.5 text-[11px] font-semibold text-coffee-warm uppercase tracking-wider">
                     {typeIcon(internship.type)}

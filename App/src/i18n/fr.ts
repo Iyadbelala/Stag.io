@@ -326,6 +326,7 @@ const fr: Record<string, string> = {
   "internships.share": "Partager",
   "internships.selectPrompt": "Sélectionnez un stage pour voir les détails.",
   "internships.detail.jobDetails": "Détails du poste",
+  "internships.detail.location": "Localisation",
   "internships.detail.pay": "Rémunération",
   "internships.detail.type": "Type de poste",
   "internships.detail.duration": "Durée",

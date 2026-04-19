@@ -316,6 +316,7 @@ const en: Record<string, string> = {
   "internships.share": "Share",
   "internships.selectPrompt": "Select an internship to view details.",
   "internships.detail.jobDetails": "Job details",
+  "internships.detail.location": "Location",
   "internships.detail.pay": "Pay",
   "internships.detail.type": "Job type",
   "internships.detail.duration": "Duration",

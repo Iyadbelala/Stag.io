@@ -32,8 +32,8 @@ const authRouter = Router();
 
 const REFRESH_COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'strict' as const,
+  secure: process.env.NODE_ENV === 'production', // MUST be true for sameSite='none'
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' as const : 'lax' as const,
   path: '/api/auth',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };

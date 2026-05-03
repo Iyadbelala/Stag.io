@@ -182,6 +182,7 @@ profileRouter.get('/cv/download', requireAuth, async (req: Request, res: Respons
     res.setHeader('Content-Length', pdfBuffer.length);
     res.send(pdfBuffer);
   } catch (err: unknown) {
+    console.error('[CV DOWNLOAD ERROR]', err);
     const e = err as { code?: string; status?: number; message: string };
     res.status(e.status ?? 500).json({
       success: false,

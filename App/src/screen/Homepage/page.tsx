@@ -93,15 +93,7 @@ export default function Homepage() {
 
         <div className="relative mx-auto flex max-w-7xl flex-col items-center px-6 py-24 text-center lg:py-32">
           {/* Eyebrow pill */}
-          <Reveal variant="fade-up" duration={600} delay={50}>
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-coffee-gold/30 bg-surface-white/70 px-4 py-1.5 text-xs font-medium text-coffee-warm backdrop-blur-sm shadow-sm shadow-coffee-warm/5">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-coffee-gold opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-coffee-gold" />
-              </span>
-              <span className="tracking-wide">Stag.io · Internships reimagined</span>
-            </div>
-          </Reveal>
+
 
           <Reveal variant="fade-up" duration={700} delay={100}>
             <h1 className="max-w-4xl font-heading text-4xl font-bold leading-[1.05] tracking-tight text-coffee-dark sm:text-5xl lg:text-7xl">

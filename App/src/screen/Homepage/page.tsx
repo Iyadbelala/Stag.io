@@ -206,12 +206,7 @@ export default function Homepage() {
         <div className="pointer-events-none absolute bottom-0 left-0 h-80 w-80 rounded-full bg-coffee-warm/5 blur-3xl translate-y-1/2 -translate-x-1/2" />
 
         <div className="relative mx-auto max-w-6xl px-6">
-          <Reveal variant="fade-up">
-            <div className="mx-auto mb-4 flex w-fit items-center gap-2 rounded-full bg-coffee-gold/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-coffee-warm">
-              <span className="h-1.5 w-1.5 rounded-full bg-coffee-gold" />
-              Why Stag.io
-            </div>
-          </Reveal>
+
           <Reveal variant="fade-up" delay={80}>
             <h2 className="mb-3 text-center font-heading text-3xl font-semibold tracking-tight text-coffee-dark sm:text-4xl lg:text-5xl">
               {t("features.title")}

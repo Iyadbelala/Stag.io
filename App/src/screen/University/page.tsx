@@ -24,7 +24,7 @@ import {
 } from "react-icons/hi";
 import { useAuth } from "@/Components/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { api, getAccessToken } from "@/lib/api";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
 
 /* ============================================
@@ -441,7 +441,7 @@ export default function UniversityDashboard() {
                       {/* CV */}
                       {selectedStudent.cvUrl && (
                         <div className="mt-3">
-                          <a href={selectedStudent.cvUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:underline">
+                          <a href={`${selectedStudent.cvUrl}${selectedStudent.cvUrl.includes('?') ? '&' : '?'}token=${getAccessToken()}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:underline">
                             <HiOutlineDocumentText size={16} />
                             {t("university.viewCV")}
                             <HiOutlineExternalLink size={14} />

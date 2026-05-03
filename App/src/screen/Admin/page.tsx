@@ -18,7 +18,7 @@ import {
 } from "react-icons/hi";
 import { useAuth } from "@/Components/contexts/AuthContext";
 import { useRouter } from "next/navigation";
-import { api } from "@/lib/api";
+import { api, getAccessToken } from "@/lib/api";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
 
 /* ============================================
@@ -183,7 +183,7 @@ function ApplicationRow({
             <div>
               <p className="text-[11px] font-medium uppercase tracking-wider text-text-muted mb-1">{t("companyDash.cvResume")}</p>
               {app.cvUrl ? (
-                <a href={app.cvUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:underline">
+                <a href={`${app.cvUrl}${app.cvUrl.includes('?') ? '&' : '?'}token=${getAccessToken()}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:underline">
                   <HiOutlineClipboardList size={14} />
                   {t("companyDash.viewCV")}
                 </a>

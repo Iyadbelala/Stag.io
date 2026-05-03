@@ -24,7 +24,7 @@ import { FaLinkedin, FaGithub } from "react-icons/fa";
 import Image from "next/image";
 import { useAuth } from "@/Components/contexts/AuthContext";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, getAccessToken } from "@/lib/api";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
 
 /* ============================================
@@ -165,7 +165,7 @@ function ActivityRow({ id, applicantName, position, status, appliedAt, coverLett
             <div>
               <p className="text-xs font-medium text-text-muted uppercase tracking-wide mb-1">{t("companyDash.cvResume")}</p>
               {cvUrl ? (
-                <a href={cvUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:text-coffee-gold underline">
+                <a href={`${cvUrl}${cvUrl.includes('?') ? '&' : '?'}token=${getAccessToken()}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:text-coffee-gold underline">
                   <HiOutlineClipboardList size={14} />
                   {t("companyDash.viewCV")}
                 </a>
@@ -796,7 +796,7 @@ function ApplicantProfileModal({
         <div className="flex items-center justify-between pt-2 border-t border-surface-sand">
           <div>
             {applicant.cvUrl ? (
-              <a href={applicant.cvUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:underline">
+              <a href={`${applicant.cvUrl}${applicant.cvUrl.includes('?') ? '&' : '?'}token=${getAccessToken()}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:underline">
                 <HiOutlineDocumentDownload size={16} />
                 {t("companyDash.viewCV")}
               </a>

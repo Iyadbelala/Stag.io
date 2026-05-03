@@ -17,7 +17,7 @@ import {
 import { useAuth } from "@/Components/contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { api } from "@/lib/api";
+import { api, getAccessToken } from "@/lib/api";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
 
 /* ============================================
@@ -184,7 +184,7 @@ function ActivityRow({
           {/* CV link */}
           {cvUrl && (
             <a
-              href={cvUrl}
+              href={`${cvUrl}${cvUrl.includes('?') ? '&' : '?'}token=${getAccessToken()}`}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-sm text-coffee-warm hover:underline"

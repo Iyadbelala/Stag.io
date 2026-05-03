@@ -3,6 +3,7 @@ import { db } from '../model/db';
 import { users, companies, students, internshipOffers, applications, universities } from '../model/schema';
 import PDFDocument from 'pdfkit';
 import { sendNotification } from './notifications.service';
+import QRCode from 'qrcode';
 
 /* ──────────────────────────────────────────────
    Helper
@@ -366,6 +367,15 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
     ? await db.select().from(companies).where(eq(companies.id, offer.companyId))
     : [undefined];
 
+  const studentName = `${studentUser?.firstName ?? ''} ${studentUser?.lastName ?? ''}`.trim() || 'N/A';
+  let qrCodeDataUri: string | null = null;
+  try {
+    const qrText = `Stag.io Agreement Verification\nRef: ${app.id}\nStudent: ${studentName}\nCompany: ${company?.companyName ?? 'N/A'}`;
+    qrCodeDataUri = await QRCode.toDataURL(qrText);
+  } catch (err) {
+    console.error('Failed to generate QR code', err);
+  }
+
   // Build the PDF in memory
   return new Promise<Buffer>((resolve, reject) => {
     const doc = new PDFDocument({ margin: 0, size: 'A4' });
@@ -375,7 +385,6 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
     doc.on('end', () => resolve(Buffer.concat(chunks)));
     doc.on('error', reject);
 
-    const studentName = `${studentUser?.firstName ?? ''} ${studentUser?.lastName ?? ''}`.trim() || 'N/A';
     const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
     const pageW = 595.28;
     const pageH = 841.89;
@@ -418,6 +427,11 @@ export async function generateApplicationPdf(applicationId: string): Promise<Buf
     // Title
     doc.font('Helvetica-Bold').fontSize(18).fillColor('#FFFFFF');
     doc.text('INTERNSHIP AGREEMENT', margin, 88, { width: contentW, align: 'center', characterSpacing: 1.5 });
+
+    // QR Code in Top Banner
+    if (qrCodeDataUri) {
+      doc.image(qrCodeDataUri, pageW - margin - 50, 45, { width: 50 });
+    }
 
     // Gold line under banner
     doc.rect(0, 125, pageW, 5).fill(gold);

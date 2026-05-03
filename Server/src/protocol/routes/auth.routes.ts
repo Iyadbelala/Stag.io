@@ -40,6 +40,7 @@ const REFRESH_COOKIE_OPTIONS = {
 
 /** Safe error handler — never leaks internal details for 500 errors */
 function handleError(res: Response, err: unknown) {
+  console.error('[AUTH ERROR]', err);
   const e = err as { code?: string; status?: number; message: string };
   const status = e.status ?? 500;
   res.status(status).json({

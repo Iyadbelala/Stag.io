@@ -37,7 +37,11 @@ export default function Turnstile({ onVerify, onExpire, className }: TurnstilePr
     if (!containerRef.current || !window.turnstile || widgetIdRef.current) return;
 
     const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
-    if (!siteKey) return;
+    if (!siteKey) {
+      // No site key configured — auto-skip verification
+      onVerify("skipped");
+      return;
+    }
 
     widgetIdRef.current = window.turnstile.render(containerRef.current, {
       sitekey: siteKey,

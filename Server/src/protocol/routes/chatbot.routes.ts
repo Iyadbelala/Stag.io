@@ -38,7 +38,7 @@ chatbotRouter.post('/', chatbotLimiter, async (req: Request, res: Response) => {
   }
 
   // Validate and sanitize history
-  let safeHistory: { role: string; parts: { text: string }[] }[] = [];
+  let safeHistory: { role: 'user' | 'bot'; text: string }[] = [];
   if (Array.isArray(history)) {
     safeHistory = history
       .slice(0, MAX_HISTORY_LENGTH)
@@ -47,9 +47,11 @@ chatbotRouter.post('/', chatbotLimiter, async (req: Request, res: Response) => {
           typeof entry === 'object' &&
           entry !== null &&
           'role' in entry &&
+          'text' in entry &&
           typeof (entry as Record<string, unknown>).role === 'string' &&
-          ['user', 'model'].includes((entry as Record<string, unknown>).role as string),
-      );
+          typeof (entry as Record<string, unknown>).text === 'string' &&
+          ['user', 'bot'].includes((entry as Record<string, unknown>).role as string),
+      ) as { role: 'user' | 'bot'; text: string }[];
   }
 
   // Optional auth — chatbot works for guests too, but with limited features

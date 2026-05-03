@@ -3,3 +3,17 @@ node_modules
 .env
 
 /src/generated/prisma
+
+# Build outputs
+dist
+bundle.js
+
+# Deployment and temporary files
+deploy_pkg/
+node_modules.zip
+check-ftp.js
+check-server.js
+deploy-ftp.js
+upload-config.js
+upload-node_modules.js
+web.config

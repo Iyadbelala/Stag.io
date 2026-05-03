@@ -302,11 +302,10 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
                   key={m}
                   type="button"
                   onClick={() => m !== mode && switchMode()}
-                  className={`rounded-full px-5 py-1.5 text-sm font-medium transition-all cursor-pointer ${
-                    mode === m
+                  className={`rounded-full px-5 py-1.5 text-sm font-medium transition-all cursor-pointer ${mode === m
                       ? "bg-gradient-to-r from-coffee-warm to-coffee-gold text-white shadow-md shadow-coffee-warm/20"
                       : "text-text-muted hover:text-coffee-warm"
-                  }`}
+                    }`}
                 >
                   {m === "login" ? t("auth.tabSignIn") : t("auth.tabRegister")}
                 </button>
@@ -723,11 +722,10 @@ export default function AuthenticationPage({ initialMode = "login" }: Authentica
                         </label>
                         <label
                           htmlFor="verificationDocument"
-                          className={`flex items-center gap-3 rounded-xl border-2 border-dashed px-4 py-4 text-sm cursor-pointer transition-all ${
-                            verificationDocument
+                          className={`flex items-center gap-3 rounded-xl border-2 border-dashed px-4 py-4 text-sm cursor-pointer transition-all ${verificationDocument
                               ? "border-coffee-gold/50 bg-coffee-gold/5"
                               : "border-surface-sand hover:border-coffee-gold/40 hover:bg-surface-cream/50"
-                          }`}
+                            }`}
                         >
                           <HiOutlineDocumentAdd size={20} className="shrink-0 text-coffee-warm" />
                           <span className={verificationDocument ? "text-text-primary font-medium" : "text-text-muted/70"}>

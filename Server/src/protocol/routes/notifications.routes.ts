@@ -41,7 +41,7 @@ notificationsRouter.get('/unread-count', requireAuth, async (req: Request, res: 
 /* PATCH /api/notifications/:id/read */
 notificationsRouter.patch('/:id/read', requireAuth, async (req: Request, res: Response) => {
   try {
-    await markAsRead(req.user!.sub, req.params.id);
+    await markAsRead(req.user!.sub, req.params.id as string);
     res.json({ success: true });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };
@@ -69,7 +69,7 @@ notificationsRouter.patch('/read-all', requireAuth, async (req: Request, res: Re
 /* DELETE /api/notifications/:id */
 notificationsRouter.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
-    await deleteNotification(req.user!.sub, req.params.id);
+    await deleteNotification(req.user!.sub, req.params.id as string);
     res.json({ success: true });
   } catch (err: unknown) {
     const e = err as { code?: string; status?: number; message: string };

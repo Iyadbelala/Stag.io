@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { api } from "@/lib/api";
 import { useTheme } from "@/Components/contexts/ThemeContext";
 import { HiPaperAirplane, HiXMark, HiChatBubbleLeftRight } from "react-icons/hi2";
@@ -51,8 +52,14 @@ export default function ChatBot() {
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [showWidget, setShowWidget] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // SSR guard — portals need a real DOM node
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Markdown renderer using theme-aware bold color
   const renderText = useCallback(
@@ -140,7 +147,9 @@ export default function ChatBot() {
   const formatTime = (date: Date) =>
     date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <>
       {/* ── CSS Animations ── */}
       <style jsx global>{`
@@ -407,6 +416,7 @@ export default function ChatBot() {
           </form>
         </div>
       )}
-    </>
+    </>,
+    document.body
   );
 }

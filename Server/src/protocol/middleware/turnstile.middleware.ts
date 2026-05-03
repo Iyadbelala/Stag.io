@@ -9,8 +9,9 @@ const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/sit
 export async function verifyTurnstile(req: Request, res: Response, next: NextFunction): Promise<void> {
   const secret = process.env.TURNSTILE_SECRET_KEY;
 
-  // Skip verification if Turnstile is not configured (dev environment)
-  if (!secret) {
+  // Skip verification if Turnstile is not configured or explicitly skipped
+  if (!secret || process.env.TURNSTILE_SKIP === 'true') {
+    delete req.body?.turnstileToken;
     next();
     return;
   }

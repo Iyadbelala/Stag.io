@@ -7,6 +7,9 @@ import { router } from './protocol/routes';
 
 const app = express();
 
+// Trust proxy for rate limiting behind Fly.io
+app.set('trust proxy', 1);
+
 // Security headers
 app.use(helmet());
 

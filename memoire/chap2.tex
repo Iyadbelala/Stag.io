@@ -282,64 +282,15 @@ Compatibility & Compatible with latest versions of Chrome, Firefox, Edge, and Sa
 
 Use case modeling provides a functional view of the system by highlighting the interactions between external actors and the services offered by the platform.
 
-\subsection{Global Use Case Diagram}
+\subsection{Use Case Diagram}
 
-Figure~\ref{fig:global-use-case} presents the consolidated use case diagram of the Stag.io platform. It focuses on the principal actors and the core services that structure the internship lifecycle, from authentication and profile management to offer publication, application processing, and agreement validation.
+Figure~\ref{fig:use-case} presents the use case diagram of the Stag.io platform. It identifies the principal actors and the core services that structure the internship lifecycle, from authentication and profile management to offer publication, application processing, and agreement validation.
 
 \begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[font=\small, >=stealth]
-    % System Boundary
-    \node[draw, rounded corners, minimum width=11cm, minimum height=10.5cm, fill=gray!2] (system) at (0, 0) {};
-    \node[font=\bfseries] at (0, 4.8) {Stag.io Platform};
-
-    % Core Use Cases
-    \node[draw, ellipse, align=center, minimum width=3.4cm, minimum height=1cm, fill=white] (auth) at (0, 3.6) {Authenticate};
-    \node[draw, ellipse, align=center, minimum width=3.8cm, minimum height=1cm, fill=white] (administration) at (0, -4.0) {Approve Accounts\\and Manage Users};
-
-    % Student Use Cases (Left)
-    \node[draw, ellipse, align=center, minimum width=3.6cm, minimum height=1cm, fill=white] (browse) at (-2.8, 1.8) {Browse Offers\\and SmartMatch};
-    \node[draw, ellipse, align=center, minimum width=3.6cm, minimum height=1cm, fill=white] (apply) at (-2.8, 0) {Apply for an\\Internship};
-    \node[draw, ellipse, align=center, minimum width=3.6cm, minimum height=1cm, fill=white] (profile) at (-2.8, -1.8) {Manage Profile\\and CV};
-
-    % Company/Uni Use Cases (Right)
-    \node[draw, ellipse, align=center, minimum width=3.6cm, minimum height=1cm, fill=white] (offers) at (2.8, 1.8) {Manage Internship\\Offers};
-    \node[draw, ellipse, align=center, minimum width=3.8cm, minimum height=1cm, fill=white] (applications) at (2.8, 0) {Review Applications\\and Update Status};
-    \node[draw, ellipse, align=center, minimum width=3.8cm, minimum height=1cm, fill=white] (agreements) at (2.8, -1.8) {Validate Internship\\Agreements};
-
-    % Actors (Left)
-    \node[align=center] (student) at (-7.8, 0.5) {\textbf{Student}};
-    \node[align=center] (admin) at (-7.8, -3.2) {\textbf{Administrator}};
-    \node[align=center] (superadmin) at (-7.8, -4.8) {\textbf{Super}\\~\textbf{Administrator}};
-
-    % Actors (Right)
-    \node[align=center] (company) at (7.8, 1.0) {\textbf{Company}};
-    \node[align=center] (university) at (7.8, -1.8) {\textbf{University}};
-
-    % Connections (Straight Lines)
-    \draw (student.east) -- (auth.west);
-    \draw (student.east) -- (browse.west);
-    \draw (student.east) -- (apply.west);
-    \draw (student.east) -- (profile.west);
-
-    \draw (company.west) -- (auth.east);
-    \draw (company.west) -- (offers.east);
-    \draw (company.west) -- (applications.east);
-
-    \draw (university.west) -- (auth.east);
-    \draw (university.west) -- (agreements.east);
-
-    \draw (admin.east) -- (administration.west);
-    \draw (superadmin.east) -- (administration.west);
-
-    % Orthogonal routing to Authenticate for Admins
-    \draw (admin.west) -- ++(-0.8,0) |- (auth.west);
-    \draw (superadmin.west) -- ++(-1.4,0) |- (auth.west);
-\end{tikzpicture}%
-}
-\caption{Global use case diagram of the Stag.io platform}
-\label{fig:global-use-case}
+\includegraphics[width=\textwidth,height=0.85\textheight,keepaspectratio]{1-use-case-diagram.png}
+\caption{Use case diagram of the Stag.io platform}
+\label{fig:use-case}
 \end{figure}
 
 The diagram highlights three central operational chains:
@@ -487,4 +438,4 @@ Postconditions & Offer repository updated consistently; visibility reflects curr
 
 \section{Conclusion}
 
-In this chapter, we presented the Stag.io project in detail, identified its primary and secondary actors, and formalized the functional and non-functional requirements. We then modeled the main interactions through a global use case diagram and detailed three essential use cases: authentication, internship application, and offer management. These elements establish the functional bridge between stakeholder needs and system behavior, and form the foundation for the design and modeling work presented in the next chapter.
+In this chapter, we presented the Stag.io project in detail, identified its primary and secondary actors, and formalized the functional and non-functional requirements. We then modeled the main interactions through a use case diagram and detailed three essential use cases: authentication, internship application, and offer management. These elements establish the functional bridge between stakeholder needs and system behavior, and form the foundation for the design and modeling work presented in the next chapter.

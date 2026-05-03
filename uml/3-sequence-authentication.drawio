@@ -40,7 +40,7 @@
         </mxCell>
 
         <!-- ============ REGISTRATION FRAGMENT ============ -->
-        <mxCell id="frag-reg" value="&lt;b&gt;alt&lt;/b&gt; [Student Registration]" style="shape=umlFrame;whiteSpace=wrap;html=1;width=200;height=25;boundedLbl=1;verticalAlign=top;align=left;spacingLeft=5;fillColor=#E8F5E9;strokeColor=#82b366;fontColor=#333333;rounded=1;fontSize=11;opacity=30;" vertex="1" parent="1">
+        <mxCell id="frag-reg" value="&lt;b&gt;alt&lt;/b&gt; [User Registration]" style="shape=umlFrame;whiteSpace=wrap;html=1;width=200;height=25;boundedLbl=1;verticalAlign=top;align=left;spacingLeft=5;fillColor=#E8F5E9;strokeColor=#82b366;fontColor=#333333;rounded=1;fontSize=11;opacity=30;" vertex="1" parent="1">
           <mxGeometry x="40" y="160" width="1580" height="320" as="geometry" />
         </mxCell>
 

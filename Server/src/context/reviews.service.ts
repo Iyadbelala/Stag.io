@@ -145,7 +145,7 @@ export async function createReview(
   // Notify the reviewee
   sendNotification(
     revieweeUserId,
-    'new_review',
+    'new_review' as any,
     'New Review Received',
     `${reviewerName} left you a ${input.rating}-star review for "${offer.title}"`,
     review.id,

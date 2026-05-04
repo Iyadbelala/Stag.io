@@ -271,8 +271,8 @@ function CreateOfferModal({ onClose, onCreated, t }: CreateOfferModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-      <div className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm px-4 py-8 sm:py-16 overflow-y-auto">
+      <div className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8">
         <button
           onClick={onClose}
           aria-label={t("companyDash.postNewInternship")}
@@ -523,8 +523,8 @@ function EditOfferModal({ offer, onClose, onUpdated, t }: EditOfferModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-      <div className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm px-4 py-8 sm:py-16 overflow-y-auto">
+      <div className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8">
         <button
           onClick={onClose}
           aria-label={t("companyDash.editInternship")}
@@ -713,9 +713,9 @@ function ApplicantProfileModal({
       .toUpperCase() || "?";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm px-4 py-8 sm:py-16 overflow-y-auto" onClick={onClose}>
       <div
-        className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto"
+        className="relative w-full max-w-lg rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8"
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute right-4 top-4 text-text-muted hover:text-coffee-dark cursor-pointer">
@@ -873,9 +873,9 @@ function AllApplicantsModal({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4" onClick={onClose}>
+      <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm px-4 py-8 sm:py-16 overflow-y-auto" onClick={onClose}>
         <div
-          className="relative w-full max-w-2xl rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8 max-h-[90vh] overflow-y-auto"
+          className="relative w-full max-w-2xl rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl sm:p-8"
           onClick={(e) => e.stopPropagation()}
         >
           <button onClick={onClose} className="absolute right-4 top-4 text-text-muted hover:text-coffee-dark cursor-pointer">
@@ -1329,7 +1329,7 @@ export default function CompanyDashboard() {
 
       {/* ---- Delete Confirmation Modal ---- */}
       {confirmDeleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm px-4 py-8 sm:py-16 overflow-y-auto">
           <div className="w-full max-w-sm rounded-card border border-surface-sand bg-surface-white p-6 shadow-xl">
             <p className="mb-6 text-sm text-text-primary">{t("common.deleteConfirm")}</p>
             <div className="flex justify-end gap-3">

@@ -42,7 +42,7 @@ export function ApplicationFormModal({ offerTitle, companyName, isSubmitting, on
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/40 backdrop-blur-sm px-4 py-10 sm:py-16 overflow-y-auto">
       <div className="relative w-full max-w-lg rounded-2xl border border-surface-sand bg-surface-white p-6 shadow-2xl sm:p-8 max-h-[90vh] overflow-y-auto animate-modal-enter">
         <button
           onClick={onClose}

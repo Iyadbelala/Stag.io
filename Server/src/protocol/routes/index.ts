@@ -1,21 +1,22 @@
 import { Router } from 'express';
-import { apiLimiter } from '../middleware/rate-limit.middleware';
-import { csrfProtection } from '../middleware/csrf.middleware';
-import authRouter from './auth.routes';
-import profileRouter from './profile.routes';
-import companyProfileRouter from './company-profile.routes';
-import companiesRouter from './companies.routes';
-import offersRouter from './offers.routes';
-import applicationsRouter from './applications.routes';
-import adminRouter from './admin.routes';
-import superadminRouter from './superadmin.routes';
-import universityRouter from './university.routes';
-import matchingRouter from './matching.routes';
-import searchRouter from './search.routes';
-import chatbotRouter from './chatbot.routes';
-import savedRouter from './saved.routes';
-import notificationsRouter from './notifications.routes';
-import reviewsRouter from './reviews.routes';
+import { apiLimiter } from '../middleware/rate-limit.middleware.js';
+import { csrfProtection } from '../middleware/csrf.middleware.js';
+import authRouter from './auth.routes.js';
+import profileRouter from './profile.routes.js';
+import companyProfileRouter from './company-profile.routes.js';
+import companiesRouter from './companies.routes.js';
+import offersRouter from './offers.routes.js';
+import applicationsRouter from './applications.routes.js';
+import adminRouter from './admin.routes.js';
+import superadminRouter from './superadmin.routes.js';
+import universityRouter from './university.routes.js';
+import matchingRouter from './matching.routes.js';
+import searchRouter from './search.routes.js';
+import chatbotRouter from './chatbot.routes.js';
+import savedRouter from './saved.routes.js';
+import notificationsRouter from './notifications.routes.js';
+import reviewsRouter from './reviews.routes.js';
+import contactRouter from './contact.routes.js';
 
 export const router = Router();
 
@@ -87,3 +88,6 @@ router.use('/notifications', notificationsRouter);
 
 // Reviews & Ratings
 router.use('/reviews', reviewsRouter);
+
+// Contact Form
+router.use('/contact', contactRouter);

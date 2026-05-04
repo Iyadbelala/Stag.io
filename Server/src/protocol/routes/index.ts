@@ -17,6 +17,7 @@ import savedRouter from './saved.routes.js';
 import notificationsRouter from './notifications.routes.js';
 import reviewsRouter from './reviews.routes.js';
 import contactRouter from './contact.routes.js';
+import publicRouter from './public.routes.js';
 
 export const router = Router();
 
@@ -91,3 +92,6 @@ router.use('/reviews', reviewsRouter);
 
 // Contact Form
 router.use('/contact', contactRouter);
+
+// Public unauthenticated endpoints (homepage stats, etc.)
+router.use('/public', publicRouter);

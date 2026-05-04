@@ -14,7 +14,7 @@ import {
 import Slide from "@/Components/ui/Slide";
 import type { SlideData } from "@/Components/ui/Slide";
 import { useLanguage } from "@/Components/contexts/LanguageContext";
-import { type ReactNode } from "react";
+import { type ReactNode, useEffect, useState } from "react";
 import {
   Reveal,
   Stagger,
@@ -22,6 +22,7 @@ import {
   TiltCard,
   Magnetic,
 } from "@/Components/ui/Motion";
+import { api } from "@/lib/api";
 
 /* ============================================
    Icon arrays (static — no translation needed)
@@ -40,13 +41,19 @@ const featureIcons: ReactNode[] = [
   <HiOutlineShieldCheck key="f4" size={28} />,
 ];
 
-const statValues = ["2,500+", "800+", "15,000+", "50+"];
 const statKeys = [
   "stats.internshipsPosted",
   "stats.partnerCompanies",
   "stats.studentsConnected",
   "stats.universities",
 ];
+
+type PublicStats = {
+  internshipsPosted: number;
+  partnerCompanies: number;
+  studentsConnected: number;
+  universities: number;
+};
 
 const statIcons = [
   <HiOutlineBriefcase key="si1" size={22} className="text-coffee-gold" />,
@@ -60,6 +67,29 @@ const statIcons = [
    ============================================ */
 export default function Homepage() {
   const { t } = useLanguage();
+  const [stats, setStats] = useState<PublicStats | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<{ success: true; data: PublicStats }>("/api/public/stats")
+      .then((res) => {
+        if (!cancelled) setStats(res.data.data);
+      })
+      .catch(() => {
+        /* leave stats null — UI shows 0 */
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const statValues: string[] = [
+    String(stats?.internshipsPosted ?? 0),
+    String(stats?.partnerCompanies ?? 0),
+    String(stats?.studentsConnected ?? 0),
+    String(stats?.universities ?? 0),
+  ];
 
   const slides: SlideData[] = [1, 2, 3, 4].map((n, i) => ({
     title: t(`slides.${n}.title`),
@@ -144,11 +174,6 @@ export default function Homepage() {
               <div className="flex items-center gap-2">
                 <HiOutlineAcademicCap size={16} className="text-coffee-gold" />
                 <span>Partnered with top universities</span>
-              </div>
-              <span className="h-1 w-1 rounded-full bg-text-muted/40" />
-              <div className="flex items-center gap-2">
-                <HiOutlineUserGroup size={16} className="text-coffee-warm" />
-                <span>Trusted by 15k+ students</span>
               </div>
             </div>
           </Reveal>
